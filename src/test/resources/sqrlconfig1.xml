@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sqrlConfig>
+    <nutValidityInSeconds>600</nutValidityInSeconds>
+    <qrCodeFileType>PNG</qrCodeFileType>
+    <backchannelServletPath>/sqrlbc</backchannelServletPath>
+    <serverFriendlyName>SQRL Java Server Demo</serverFriendlyName>
+    <aesKeyBytes>KCI0BLITcZiR8b8hp3VWtA==</aesKeyBytes>
+</sqrlConfig>
