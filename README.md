@@ -1,4 +1,6 @@
 <!--- https://jbt.github.io/markdown-edito --->
+
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/204/badge)](https://bestpractices.coreinfrastructure.org/projects/204)
 # sqrl-server-base
 
 This java library that implements the server side portions of the [SQRL](https://www.grc.com/sqrl/sqrl.htm) protocol.  It can be integrated into existing JEE apps in order to add SQRL as an authentication option to existing methods (username/password, etc).
