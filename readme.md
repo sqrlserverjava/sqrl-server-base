@@ -21,7 +21,7 @@ The intent is that additional libraries will be built on top of this for popular
 
 #### Dependencies
  * Java 1.8
- * [QRGen](https://github.com/kenglxn/QRGen) for QR code generation.  the 
+ * [QRGen](https://github.com/kenglxn/QRGen) for QR code generation 
  * [Zxing](https://github.com/zxing/zxing) Required by QRGen
  * [slf4j](http://www.slf4j.org//) for logging
  * [ed25519-java](https://github.com/str4d/ed25519-java) for fast   Ed25519 EC crypto
