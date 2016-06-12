@@ -5,8 +5,12 @@
 	<artifactId>sqrl-server-lib</artifactId>
 	<version>0.0.5-SNAPSHOT</version>
 	<name>SQRL Server Base Library</name>
-	<description>Library that implements the server side portions of the SQRL protocol.  </description>
+	<description>Library that implements the server side portions of the SQRL protocol.</description>
 	<packaging>jar</packaging>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
 	<licenses>
 		<license>
@@ -18,11 +22,21 @@
 	<developers>
 		<developer>
 			<name>Dave Badia</name>
+			<email>dbadiaoss@gmail.com</email>
 		</developer>
 	</developers>
 
 	<dependencies>
 		<dependency>
+			<!-- com.github.kenglxn.qrgen is NOT hosted in maven central
+				you must add the following to your pom
+				     <repositories>
+				        <repository>
+				            <id>jitpack.io</id>
+				            <url>https://jitpack.io</url>
+				        </repository>
+				    </repositories>
+			-->
 			<groupId>com.github.kenglxn.qrgen</groupId>
 			<artifactId>javase</artifactId>
 			<version>2.2.0</version>
@@ -76,7 +90,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<!-- Required to avoid java.lang.NoClassDefFoundError: org/springframework/http/MediaType 
+			<!-- Required to avoid java.lang.NoClassDefFoundError: 
+					org/springframework/http/MediaType 
 				in test cases when using MockHttpServletRequest -->
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
@@ -96,6 +111,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -107,6 +123,77 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.3</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>false</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
+	<scm>
+		<connection>scm:git:git@github.com:dbadia/sqrl-server-base.git</connection>
+		<developerConnection>scm:git:git@github.com:dbadia/sqrl-server-base.git</developerConnection>
+		<url>git@github.com:dbadia/sqrl-server-base.git</url>
+	</scm>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>
