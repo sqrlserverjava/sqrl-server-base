@@ -4,4 +4,4 @@ jdk:
 # QRGen is not in maven central, but to publish our jar to maven centerl, we cannot have
 # repositories in our pom.  So we set the repositories for the build here
 before_script:
-	- echo "MAVEN_OPTS=-Dmaven.repo.remote=http://repo1.maven.org/maven2/,https://jitpack.io"
+  - echo "MAVEN_OPTS=-Dmaven.repo.remote=http://repo1.maven.org/maven2/,https://jitpack.io"
