@@ -15,15 +15,6 @@
 		</license>
 	</licenses>
 
-<!--  TODO -->
-<!--  TODO 
-	<scm>
-		<connection>scm:git:git@github.com:kenglxn/QRGen.git</connection>
-		<developerConnection>scm:git:git@github.com:kenglxn/QRGen.git</developerConnection>
-		<url>git@github.com:kenglxn/QRGen.git</url>
-	</scm>
-	-->
-
 	<developers>
 		<developer>
 			<name>Dave Badia</name>
