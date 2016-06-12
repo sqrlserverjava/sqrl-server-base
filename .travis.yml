@@ -1,5 +1,5 @@
 language: java
-before_install: echo "MAVEN_OPTS=-Dmaven.repo.remote=http://repo1.maven.org/maven2/,https://jitpack.io" > ~/.mavenrc
+before_install: echo "MAVEN_OPTS='-Dmaven.repo.remote=http://repo1.maven.org/maven2/,https://jitpack.io'" > ~/.mavenrc
 jdk:
   - oraclejdk8
 # QRGen is not in maven central, but to publish our jar to maven centerl, we cannot have
