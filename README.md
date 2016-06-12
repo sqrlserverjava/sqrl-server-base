@@ -1,5 +1,6 @@
 <!--- https://jbt.github.io/markdown-edito --->
 
+[![Build Status](https://travis-ci.org/dbadia/sqrl-server-base.svg?branch=master)](https://travis-ci.org/dbadia/sqrl-server-base)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/204/badge)](https://bestpractices.coreinfrastructure.org/projects/204)
 # sqrl-server-base
 
