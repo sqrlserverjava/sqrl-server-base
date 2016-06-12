@@ -21,14 +21,6 @@
 		</developer>
 	</developers>
 
-	<repositories>
-		<!-- QRGen is no longer deployed to maven central -->
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
-	</repositories>
-	
 	<dependencies>
 		<dependency>
 			<groupId>com.github.kenglxn.qrgen</groupId>
