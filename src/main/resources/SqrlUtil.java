@@ -1,4 +1,4 @@
-package com.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;

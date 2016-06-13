@@ -2,7 +2,7 @@ package com.github.dbadia.sqrl.server;
 
 /**
  * Indicates that the one time use Nut token received from the SQRL client was already used in a previous request as
- * determined by {@link SqrlIdentityPersistance#hasTokenBeenUsed(com.dbadia.sqrl.server.backchannel.Nut)}
+ * determined by {@link SqrlIdentityPersistance#hasTokenBeenUsed(com.github.dbadia.sqrl.server.backchannel.Nut)}
  * 
  * @author Dave Badia
  *
