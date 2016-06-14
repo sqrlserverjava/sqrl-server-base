@@ -50,7 +50,7 @@ public class SqrlConfigTest {
 			final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 			final SqrlConfig sqrlConfig = (SqrlConfig) jaxbUnmarshaller.unmarshal(is);
 			assertEquals(600, sqrlConfig.getNutValidityInSeconds());
-			assertEquals(SqrlConfig.FileType.PNG, sqrlConfig.getQrCodeFileType());
+			assertEquals(SqrlConfig.ImageFormat.PNG, sqrlConfig.getQrCodeFileType());
 			assertEquals("/sqrlbc", sqrlConfig.getBackchannelServletPath());
 			assertEquals("SQRL Java Server Demo", sqrlConfig.getServerFriendlyName());
 			System.out.println(Arrays.toString(sqrlConfig.getAESKeyBytes()));

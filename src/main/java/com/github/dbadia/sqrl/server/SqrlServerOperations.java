@@ -1,5 +1,8 @@
 package com.github.dbadia.sqrl.server;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,18 +12,19 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.EnumMap;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.SqrlConfig.FileType;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
@@ -29,9 +33,12 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlRequest;
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
-
-import net.glxn.qrgen.core.image.ImageType;
-import net.glxn.qrgen.javase.QRCode;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 /**
  * The core SQRL class which processes all SQRL requests and generates the appropriates responses
@@ -279,15 +286,43 @@ public class SqrlServerOperations {
 
 	}
 
-	private ByteArrayOutputStream generateQrCode(final SqrlConfig config, final String url, final int qrCodeSizeInPixels)
-			throws SqrlException {
-		ImageType imageType = null;
-		if (config.getQrCodeFileType() == FileType.PNG) {
-			imageType = ImageType.PNG;
-		} else if (config.getQrCodeFileType() == FileType.GIF) {
-			imageType = ImageType.GIF;
+	private ByteArrayOutputStream generateQrCode(final SqrlConfig config, final String urlToEmbed,
+			final int qrCodeSizeInPixels) throws SqrlException {
+		// TODO:
+		// return QRCode.from(url).to(imageType).withSize(qrCodeSizeInPixels, qrCodeSizeInPixels).stream();
+		try {
+			final Map<EncodeHintType, Object> hintMap = new EnumMap<EncodeHintType, Object>(EncodeHintType.class);
+			hintMap.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+
+			// Now with zxing version 3.2.1 you could change border size (white border size to just 1)
+			hintMap.put(EncodeHintType.MARGIN, 1); /* default = 4 */
+			hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+
+			final QRCodeWriter qrCodeWriter = new QRCodeWriter();
+			final BitMatrix byteMatrix = qrCodeWriter.encode(urlToEmbed, BarcodeFormat.QR_CODE, qrCodeSizeInPixels,
+					qrCodeSizeInPixels, hintMap);
+			final int crunchifyWidth = byteMatrix.getWidth();
+			final BufferedImage image = new BufferedImage(crunchifyWidth, crunchifyWidth, BufferedImage.TYPE_INT_RGB);
+			image.createGraphics();
+
+			final Graphics2D graphics = (Graphics2D) image.getGraphics();
+			graphics.setColor(Color.WHITE);
+			graphics.fillRect(0, 0, crunchifyWidth, crunchifyWidth);
+			graphics.setColor(Color.BLACK);
+
+			for (int i = 0; i < crunchifyWidth; i++) {
+				for (int j = 0; j < crunchifyWidth; j++) {
+					if (byteMatrix.get(i, j)) {
+						graphics.fillRect(i, j, 1, 1);
+					}
+				}
+			}
+			final ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(image, config.getQrCodeFileType().toString().toLowerCase(), os);
+			return os;
+		} catch (final IOException | WriterException e) {
+			throw new SqrlException("Caught exception trying to determine clients IP address", e);
 		}
-		return QRCode.from(url).to(imageType).withSize(qrCodeSizeInPixels, qrCodeSizeInPixels).stream();
 	}
 
 	public static String buildRequestParamList(final HttpServletRequest servletRequest) {

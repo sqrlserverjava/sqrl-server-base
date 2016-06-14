@@ -29,8 +29,8 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SqrlConfig {
-	public static enum FileType {
-		PNG, GIF
+	public static enum ImageFormat {
+		PNG, JPG
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class SqrlConfig {
 	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toMillis(5);
 
 	@XmlElement
-	private FileType qrCodeFileType = FileType.PNG;
+	private ImageFormat qrCodeFileType = ImageFormat.PNG;
 	/**
 	 * The path (full URL or partial URI) of the backchannel servlet which the SQRL client will call
 	 */
@@ -82,11 +82,11 @@ public class SqrlConfig {
 		this.nutValidityInSeconds = nutValidityInSeconds;
 	}
 
-	public FileType getQrCodeFileType() {
+	public ImageFormat getQrCodeFileType() {
 		return qrCodeFileType;
 	}
 
-	public void setQrCodeFileType(final FileType qrCodeFileType) {
+	public void setQrCodeFileType(final ImageFormat qrCodeFileType) {
 		this.qrCodeFileType = qrCodeFileType;
 	}
 

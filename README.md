@@ -24,8 +24,7 @@ The intent is that additional libraries will be built on top of this for popular
 
 #### Dependencies
  * Java 1.8
- * [QRGen](https://github.com/kenglxn/QRGen) for QR code generation 
- * [Zxing](https://github.com/zxing/zxing) Required by QRGen
+ * [Zxing](https://github.com/zxing/zxing) 
  * [slf4j](http://www.slf4j.org//) for logging
  * [ed25519-java](https://github.com/str4d/ed25519-java) for fast   Ed25519 EC crypto
 
@@ -35,9 +34,9 @@ The SQRL protocol requires 2 interaction points with the user: 1) the web browse
 A persistence layer (typically a database) is required for the 2 endpoints to communicate state and to store various information about the SQRL users.  One of the SQRL database tables will include a foreign key reference to existing user data table.  Used SQRL nonces ("nuts") are stored in another table.  These nonces can be purged as soon as they expire.
 
 #### Integration Overview
-* Create a persistence class that implements `com.grc.sqrl.server.SqrlIdentityPersistance`
-* Create a `com.grc.sqrl.server.SQRLConfig` bean and set the required fields accordingly (see javadoc).  This can be done via Spring, JAXB, etc.
-* In your applciation code, you can now create a `com.grc.sqrl.server.SqrlServerOperations` object using the 2 objects above
+* Create a persistence class that implements `com.github.dbadia.sqrl.server.SqrlIdentityPersistance`
+* Create a `com.github.dbadia.sqrl.server.SQRLConfig` bean and set the required fields accordingly (see javadoc).  This can be done via Spring, JAXB, etc.
+* In your applciation code, you can now create a `com.github.dbadia.sqrl.server.SqrlServerOperations` object using the 2 objects above
 * Create a servlet to handle SQRL client requests.  The `doPost` method of this servlet should invoke `SqrlServerOperations.handleSqrlClientRequest(ServletRequest, ServletResponse)`
 * Login Page impact
 	* Decide on one of the two approaches explained in [Browser to SQRL Client Correlation](#browser-to-sqrl-client-correlation) 

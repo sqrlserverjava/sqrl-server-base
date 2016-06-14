@@ -28,29 +28,21 @@
 
 	<dependencies>
 		<dependency>
-			<!-- com.github.kenglxn.qrgen is NOT hosted in maven central
-				you must add the following to your pom
-				     <repositories>
-				        <repository>
-				            <id>jitpack.io</id>
-				            <url>https://jitpack.io</url>
-				        </repository>
-				    </repositories>
-			-->
-			<groupId>com.github.kenglxn.qrgen</groupId>
-			<artifactId>javase</artifactId>
-			<version>2.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.21</version>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>net.i2p.crypto</groupId>
 			<artifactId>eddsa</artifactId>
 			<version>0.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.21</version>
+		</dependency>
+
 		<!-- PROVIDED -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -90,8 +82,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<!-- Required to avoid java.lang.NoClassDefFoundError: 
-					org/springframework/http/MediaType 
+			<!-- Required to avoid java.lang.NoClassDefFoundError: org/springframework/http/MediaType 
 				in test cases when using MockHttpServletRequest -->
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
