@@ -11,6 +11,9 @@ import java.util.Base64;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -24,6 +27,8 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
  *
  */
 public class SqrlUtil {
+	private static final Logger logger = LoggerFactory.getLogger(SqrlUtil.class);
+
 	private static final ThreadLocal<String> threadLocalLogHeader = new ThreadLocal<String>() {
 		@Override
 		protected String initialValue() {
@@ -140,11 +145,13 @@ public class SqrlUtil {
 	}
 
 	public static void initLoggingHeader(final HttpServletRequest servletRequest) {
-		threadLocalLogHeader.set("");
+		final String sqrlAgentString = servletRequest.getHeader("user-agent");
+		logger.info("sqrlagent={}", sqrlAgentString);
+		threadLocalLogHeader.set(sqrlAgentString);
 	}
 
 	public static String updateLogHeader(final String logHeader) {
-		threadLocalLogHeader.set(logHeader);
+		threadLocalLogHeader.set(threadLocalLogHeader.get() + " " + logHeader);
 		return logHeader;
 	}
 
