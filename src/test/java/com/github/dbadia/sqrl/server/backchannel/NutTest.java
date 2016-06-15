@@ -9,7 +9,7 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.TestHelper;
 
 
 public class NutTest {
@@ -23,7 +23,7 @@ public class NutTest {
 	@Test
 	public void testNut_getters() throws Exception {
 		config.setBackchannelServletPath("http://davetest.com/sqrl");
-		final SqrlConfigOperations configOps = new SqrlConfigOperations(config);
+		final SqrlConfigOperations configOps = TestHelper.newSqrlConfigOperations(config);
 		final long timestamp = 1461244576746L;
 		final int inetInt = 4;
 		final int counter = 234;
@@ -42,7 +42,7 @@ public class NutTest {
 	@Test
 	public void testNut_parse() throws Exception {
 		config.setBackchannelServletPath("http://davetest.com/sqrl");
-		final SqrlConfigOperations configOps = new SqrlConfigOperations(config);
+		final SqrlConfigOperations configOps = TestHelper.newSqrlConfigOperations(config);
 		final SqrlNutToken nut = new SqrlNutToken(configOps, "QwJJFrvH1jBXakjOh_vVqg");
 		assertEquals(4, nut.getInetInt());
 		assertEquals(234, nut.getCounter());

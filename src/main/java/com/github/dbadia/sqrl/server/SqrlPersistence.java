@@ -12,7 +12,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
  * @author Dave Badia
  *
  */
-public interface SqrlIdentityPersistance {
+public interface SqrlPersistence {
 
 	/**
 	 * Check persistence to see if a user exists with the given sqrlIdk

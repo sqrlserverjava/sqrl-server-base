@@ -2,7 +2,6 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 import java.util.Map;
 
-import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 
 // @formatter:off

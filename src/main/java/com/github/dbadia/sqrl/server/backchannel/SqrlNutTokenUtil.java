@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
-import com.github.dbadia.sqrl.server.SqrlIdentityPersistance;
+import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlNutTokenReplayedException;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 
@@ -97,14 +97,14 @@ public class SqrlNutTokenUtil {
 	/**
 	 * Validates the {@link SqrlNutToken} from the {@link SqrlRequest} by:<br/>
 	 * <li>1. check the timestamp embedded in the Nut has expired
-	 * <li>2. call {@link SqrlIdentityPersistance} to see if the Nut has been replayed
+	 * <li>2. call {@link SqrlPersistence} to see if the Nut has been replayed
 	 * 
 	 * @param nutToken
 	 *            the Nut to be validated
 	 * @throws SqrlException
 	 *             if any validation fails or if persistence fails
 	 */
-	public static void validateNut(final SqrlNutToken nutToken, final SqrlConfig config, final SqrlIdentityPersistance sqrlPersistance)
+	public static void validateNut(final SqrlNutToken nutToken, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
 			throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		if (logger.isDebugEnabled()) {
@@ -120,11 +120,11 @@ public class SqrlNutTokenUtil {
 		}
 		// Mark the token as used since we will process this request
 		final String nutTokenString = nutToken.asSqBase64EncryptedNut();
-		if (sqrlPersistance.hasTokenBeenUsed(nutTokenString)) {
+		if (sqrlPersistence.hasTokenBeenUsed(nutTokenString)) {
 			throw new SqrlNutTokenReplayedException(SqrlUtil.getLogHeader() + "Nut token was replayed " + nutToken);
 		}
 		final Date nutExpiry = new Date(nutExpiryMs);
-		sqrlPersistance.markTokenAsUsed(nutTokenString, nutExpiry);
+		sqrlPersistence.markTokenAsUsed(nutTokenString, nutExpiry);
 	}
 
 	public static long computeNutExpiresAt(final SqrlNutToken nutToken, final SqrlConfig config) {

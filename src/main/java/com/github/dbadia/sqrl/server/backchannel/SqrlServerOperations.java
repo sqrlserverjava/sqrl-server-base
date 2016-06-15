@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.backchannel;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -13,7 +13,6 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.EnumMap;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,13 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
-import com.github.dbadia.sqrl.server.backchannel.SqrlInvalidRequestException;
-import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
-import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlRequest;
-import com.github.dbadia.sqrl.server.backchannel.SqrlServerReply;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
+import com.github.dbadia.sqrl.server.SqrlAuthPageData;
+import com.github.dbadia.sqrl.server.SqrlConfig;
+import com.github.dbadia.sqrl.server.SqrlConfigOperations;
+import com.github.dbadia.sqrl.server.SqrlException;
+import com.github.dbadia.sqrl.server.SqrlPersistence;
+import com.github.dbadia.sqrl.server.SqrlPersistenceException;
+import com.github.dbadia.sqrl.server.SqrlUtil;
+import com.github.dbadia.sqrl.server.TestHelper;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -62,26 +62,37 @@ public class SqrlServerOperations {
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
 
-	private final SqrlIdentityPersistance sqrlPersistance;
+	private final SqrlPersistence sqrlPersistence;
 	private final SqrlConfigOperations sqrlConfigOperations;
 	private final SqrlConfig config;
 
-	public SqrlServerOperations(final SqrlIdentityPersistance sqrlPersistance, final SqrlConfig config) throws SqrlException {
+	/**
+	 * Initializes the operations class with the given persistence and config
+	 * 
+	 * @param sqrlPersistence
+	 *            the persistence to be used for storing and retreiving SQRL data
+	 * @param config
+	 *            the SQRL settings to be used
+	 * @throws SqrlException
+	 */
+	public SqrlServerOperations(final SqrlPersistence sqrlPersistence, final SqrlConfig config) throws SqrlException {
 		// SqrlPersistane
-		if (sqrlPersistance == null) {
-			throw new IllegalArgumentException("SqrlPersistance object must not be null", null);
+		if (sqrlPersistence == null) {
+			throw new IllegalArgumentException("sqrlPersistence object must not be null", null);
 		}
-		this.sqrlPersistance = sqrlPersistance;
+		this.sqrlPersistence = sqrlPersistence;
 		if (config == null) {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
-		this.sqrlConfigOperations = new SqrlConfigOperations(config);
+		this.sqrlConfigOperations = TestHelper.newSqrlConfigOperations(config);
 		this.config = config;
 	}
 
 	/**
 	 * Called to generate the data the server needs to display to allow a user to authenticate via SQRL
 	 * 
+	 * @param request
+	 *            the servlet request
 	 * @param userInetAddress
 	 *            the IP address of the users browser
 	 * @param qrCodeSizeInPixels
@@ -116,8 +127,7 @@ public class SqrlServerOperations {
 
 			final String url = urlBuf.toString();
 			final ByteArrayOutputStream qrBaos = generateQrCode(config, url, qrCodeSizeInPixels);
-			final SqrlAuthPageData authPageData = new SqrlAuthPageData(url, qrBaos, nut, correlator);
-			return authPageData;
+			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlUtil.getLogHeader() + "Caught exception during correlator create", e);
 		}
@@ -127,15 +137,25 @@ public class SqrlServerOperations {
 		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(backchannelUri, userInetAddress);
 		final int randomInt = config.getSecureRandom().nextInt();
 		final long timestamp = System.currentTimeMillis();
-		final SqrlNutToken nut = new SqrlNutToken(inetInt, sqrlConfigOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
-		return nut;
+		return new SqrlNutToken(inetInt, sqrlConfigOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
 	}
 
-	public void handleSqrlClientRequest(final HttpServletRequest servletRequest, final HttpServletResponse response)
+	/**
+	 * The backchannel servlet which is accepting requests from SQRL clients should call this method to process the
+	 * request
+	 * 
+	 * @param servletRequest
+	 *            the servlet request
+	 * @param servletResponse
+	 *            the servlet response which will be populated accordingly
+	 * @throws IOException
+	 *             if an IO error occurs
+	 */
+	public void handleSqrlClientRequest(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse)
 			throws IOException {
 		SqrlUtil.initLoggingHeader(servletRequest);
 		if (logger.isInfoEnabled()) {
-			logger.info("Processing SQRL client request: {}", buildRequestParamList(servletRequest));
+			logger.info("Processing SQRL client request: {}", SqrlUtil.buildRequestParamList(servletRequest));
 		}
 		String correlator = "unknown";
 		try {
@@ -146,15 +166,16 @@ public class SqrlServerOperations {
 			final TifBuilder tifBuilder = new TifBuilder(checkIfIpsMatch(request.getNut(), servletRequest));
 			final SqrlNutToken nutToken = request.getNut();
 
-			SqrlNutTokenUtil.validateNut(nutToken, config, sqrlPersistance);
+			SqrlNutTokenUtil.validateNut(nutToken, config, sqrlPersistence);
 			final boolean idkExistsInDataStore = processClientCommand(request, nutToken, request.getClientCommand(),
 					tifBuilder, correlator);
 			final String serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tifBuilder,
 					correlator);
-			transmitReplyToSqrlClient(response, serverReplyString);
+			servletResponse.setStatus(HttpServletResponse.SC_OK);
+			transmitReplyToSqrlClient(servletResponse, serverReplyString);
 			logger.info("{}Request OK, responded with param: {}", logHeader,
 					SqrlUtil.base64UrlDecodeToString(serverReplyString));
-			logger.debug("{}Request OK, responded with   B64: {}", logHeader, serverReplyString);
+			logger.info("{}Request OK, responded with   B64: {}", logHeader, serverReplyString);
 			return;
 		} catch (final SqrlInvalidRequestException e) {
 			logger.error(SqrlUtil.getLogHeader() + "Recevied invalid SQRL request: " + e.getMessage(), e);
@@ -164,7 +185,7 @@ public class SqrlServerOperations {
 			SqrlUtil.clearLogHeader();
 		}
 		// TODO: send sqrl error reply per spec
-		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+		servletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 	}
 
 	private boolean processClientCommand(final SqrlRequest request, final SqrlNutToken nutToken, final String command,
@@ -172,21 +193,24 @@ public class SqrlServerOperations {
 		final String logHeader = SqrlUtil.getLogHeader();
 		logger.debug("{}Processing {} command for nut {}", logHeader, command, nutToken);
 		final String idk = request.getIdk();
-		boolean idkExistsInDataStore = sqrlPersistance.doesSqrlIdentityExistByIdk(idk);
+		boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
 		if (COMMAND_QUERY.equals(command)) {
 			if (idkExistsInDataStore) {
 				tifBuilder.setFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
-			} else if (request.hasPidk() && sqrlPersistance.doesSqrlIdentityExistByIdk(request.getPidk())) {
-				sqrlPersistance.updateIdkForSqrlIdentity(request.getPidk(), idk);
-				tifBuilder.setFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
+			} else if (request.hasPidk()) {
+				final String result = sqrlPersistence.fetchSqrlIdentityDataItem(idk, request.getPidk());
+				if (result == null) {
+					sqrlPersistence.updateIdkForSqrlIdentity(request.getPidk(), idk);
+					tifBuilder.setFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
+				}
 			}
 		} else if (COMMAND_IDENT.equals(command)) {
 			final Map<String, String> keysToBeStored = request.getKeysToBeStored();
-			sqrlPersistance.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
+			sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
 			idkExistsInDataStore = true;
 			// Sanity check that the keys were actually stored
 			for (final Map.Entry<String, String> entry : keysToBeStored.entrySet()) {
-				final String value = sqrlPersistance.fetchSqrlIdentityDataItem(idk, entry.getKey());
+				final String value = sqrlPersistence.fetchSqrlIdentityDataItem(idk, entry.getKey());
 				if (SqrlUtil.isBlank(value)) {
 					throw new SqrlPersistenceException(
 							SqrlUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was null or empty");
@@ -197,7 +221,7 @@ public class SqrlServerOperations {
 			}
 			// Now that we know the data is stored, show the user as authenticated
 			logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
-			sqrlPersistance.userAuthenticatedViaSqrl(idk, correlator);
+			sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
 		} else {
 			// TODO: COMMAND_ENABLE and friends
 			throw new SqrlException(SqrlUtil.getLogHeader() + "Unsupported client command " + command, null);
@@ -224,7 +248,7 @@ public class SqrlServerOperations {
 				case vuk:
 					if (idkExistsInDataStore) { // If the idk doesn't exist then we don't have these yet
 						additionalDataTable.put(clientOption.toString(),
-								sqrlPersistance.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), clientOption.toString()));
+								sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), clientOption.toString()));
 					}
 					break;
 				default:
@@ -250,11 +274,9 @@ public class SqrlServerOperations {
 	}
 
 	private InetAddress determineClientIpAddress(final HttpServletRequest servletRequest) throws SqrlException {
-		// TODO: header
-		// support
+		// TODO: header support
 		try {
-			final InetAddress clientAddress = InetAddress.getByName(servletRequest.getRemoteAddr());
-			return clientAddress;
+			return InetAddress.getByName(servletRequest.getRemoteAddr());
 		} catch (final UnknownHostException e) {
 			throw new SqrlException("Caught exception trying to determine clients IP address", e);
 		} 
@@ -262,10 +284,8 @@ public class SqrlServerOperations {
 
 	private void transmitReplyToSqrlClient(final HttpServletResponse response, final String serverReplyString)
 			throws IOException, SqrlException {
-		final String logHeader = SqrlUtil.getLogHeader();
 		// Send the reply to the SQRL client
 		response.setContentType("text/html;charset=utf-8");
-		response.setStatus(HttpServletResponse.SC_OK);
 		response.setContentLength(serverReplyString.length());
 		try (PrintWriter writer = response.getWriter()) {
 			writer.write(serverReplyString);
@@ -288,10 +308,8 @@ public class SqrlServerOperations {
 
 	private ByteArrayOutputStream generateQrCode(final SqrlConfig config, final String urlToEmbed,
 			final int qrCodeSizeInPixels) throws SqrlException {
-		// TODO:
-		// return QRCode.from(url).to(imageType).withSize(qrCodeSizeInPixels, qrCodeSizeInPixels).stream();
 		try {
-			final Map<EncodeHintType, Object> hintMap = new EnumMap<EncodeHintType, Object>(EncodeHintType.class);
+			final Map<EncodeHintType, Object> hintMap = new EnumMap<>(EncodeHintType.class);
 			hintMap.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 
 			// Now with zxing version 3.2.1 you could change border size (white border size to just 1)
@@ -324,15 +342,4 @@ public class SqrlServerOperations {
 			throw new SqrlException("Caught exception trying to determine clients IP address", e);
 		}
 	}
-
-	public static String buildRequestParamList(final HttpServletRequest servletRequest) {
-		final Enumeration<String> params = servletRequest.getParameterNames();
-		final StringBuilder buf = new StringBuilder();
-		while (params.hasMoreElements()) {
-			final String paramName = params.nextElement();
-			buf.append(paramName).append("=").append(servletRequest.getParameter(paramName)).append("  ");
-		}
-		return buf.toString();
-	}
-
 }

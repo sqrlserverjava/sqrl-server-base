@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.backchannel;
 
 import static junit.framework.TestCase.assertNotNull;
 
@@ -13,7 +13,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import com.github.dbadia.sqrl.server.SqrlAuthPageData;
+import com.github.dbadia.sqrl.server.SqrlConfig;
+import com.github.dbadia.sqrl.server.SqrlPersistence;
+import com.github.dbadia.sqrl.server.TCUtil;
 import com.github.dbadia.sqrl.server.SqrlConfig.ImageFormat;
+import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
 
 @RunWith(Parameterized.class)
 public class SqrlServerOperationsQrCodeTest {
@@ -36,11 +41,11 @@ public class SqrlServerOperationsQrCodeTest {
 		final String loginRequestUrl = "http://127.0.0.1:8080/sqrlexample/login";
 
 		// Data from a real transaction with a long expiry
-		final SqrlIdentityPersistance sqrlPersistance = TCUtil.buildValidSqrlPersistance();
+		final SqrlPersistence sqrlPersistence = TCUtil.buildValidsqrlPersistence();
 		sqrlConfig.setNutValidityInSeconds(Integer.MAX_VALUE);
 		sqrlConfig.setBackchannelServletPath(configBackchannelPath);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistance, sqrlConfig);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, sqrlConfig);
 
 		// Emulate the login page generation
 		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);

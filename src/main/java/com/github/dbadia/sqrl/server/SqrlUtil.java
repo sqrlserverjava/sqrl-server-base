@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Base64;
+import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -67,15 +68,10 @@ public class SqrlUtil {
 	}
 
 	public static byte[] base64UrlDecode(final String toDecodeParam) throws SqrlException {
-		String toDecode = toDecodeParam;
-		// TODO: remove now that we are using the proper UrlEncoder
-		while (toDecode.length() % 4 != 0) {
-			toDecode += "=";
-		}
 		try {
-			return Base64.getUrlDecoder().decode(toDecode.getBytes());
+			return Base64.getUrlDecoder().decode(toDecodeParam.getBytes());
 		} catch (final IllegalArgumentException e) {
-			throw new SqrlException("Error base64 decoding: " + toDecode, e);
+			throw new SqrlException("Error base64 decoding: " + toDecodeParam, e);
 		}
 	}
 
@@ -142,6 +138,16 @@ public class SqrlUtil {
 
 	public static String computeSfnFromUrl(final HttpServletRequest request) {
 		return request.getServerName();
+	}
+
+	public static String buildRequestParamList(final HttpServletRequest servletRequest) {
+		final Enumeration<String> params = servletRequest.getParameterNames();
+		final StringBuilder buf = new StringBuilder();
+		while (params.hasMoreElements()) {
+			final String paramName = params.nextElement();
+			buf.append(paramName).append("=").append(servletRequest.getParameter(paramName)).append("  ");
+		}
+		return buf.toString();
 	}
 
 	public static void initLoggingHeader(final HttpServletRequest servletRequest) {

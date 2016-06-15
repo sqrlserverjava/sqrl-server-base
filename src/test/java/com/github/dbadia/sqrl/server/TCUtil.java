@@ -6,10 +6,6 @@ import java.net.URL;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlException;
-import com.github.dbadia.sqrl.server.SqrlIdentityPersistance;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 
 public class TCUtil {
@@ -30,12 +26,30 @@ public class TCUtil {
 		return sqrlConfig;
 	}
 
-	public static final SqrlIdentityPersistance buildValidSqrlPersistance() {
-		return new TestOnlySqrlPersistance2();
+	public static final SqrlPersistence buildValidsqrlPersistence() {
+		return new TestOnlysqrlPersistence();
 	}
 
 	public static MockHttpServletRequest buildMockRequest(final String uriString) throws URISyntaxException {
 		return buildMockRequest(new URI(uriString));
+	}
+
+	/**
+	 * 
+	 * @param loginRequestUrl
+	 * @param mockDataParams
+	 *            a URI string from the GRC client log such as "client=123&server=456&ids=789"
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static MockHttpServletRequest buildMockRequest(final String requestUrl, final String mockDataParams)
+			throws URISyntaxException {
+		final MockHttpServletRequest mockRequest = buildMockRequest(requestUrl);
+		for (final String nameValuePair : mockDataParams.split("&")) {
+			final String[] parts = nameValuePair.split("=");
+			mockRequest.addParameter(parts[0], parts[1]);
+		}
+		return mockRequest;
 	}
 
 	public static MockHttpServletRequest buildMockRequest(final URI uri) {
@@ -64,4 +78,6 @@ public class TCUtil {
 		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(sqrlConfig), counter, timestamp, random);
 		return nut;
 	}
+
+
 }

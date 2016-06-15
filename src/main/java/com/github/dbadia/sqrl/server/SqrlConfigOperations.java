@@ -30,9 +30,9 @@ import org.slf4j.LoggerFactory;
 public class SqrlConfigOperations {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlConfig.class);
 
-	private static enum BackchannelSettingType {
+	private enum BackchannelSettingType {
 		FULL_URL, FULL_PATH, PARTIAL_PATH
-	};
+	}
 
 	private final SqrlConfig sqrlConfig;
 
@@ -42,7 +42,7 @@ public class SqrlConfigOperations {
 	private URI backchannelRequestUrl;
 	private String subsequentRequestPath;
 
-	public SqrlConfigOperations(final SqrlConfig sqrlConfig) {
+	SqrlConfigOperations(final SqrlConfig sqrlConfig) {
 		this.sqrlConfig = sqrlConfig;
 
 		// SecureRandom init
@@ -90,7 +90,7 @@ public class SqrlConfigOperations {
 
 	public URI getBackchannelRequestUrl(final HttpServletRequest loginPageRequest) throws SqrlException {
 		// No synchronization as worst case is we compute the value a few times
-		String backchannelRequestString = null;
+		String backchannelRequestString = null; // NOSONAR: false positive dead store
 		if (this.backchannelRequestUrl == null) {
 			final String requestUrl = loginPageRequest.getRequestURL().toString();
 			if(backchannelSettingType == BackchannelSettingType.FULL_PATH) {
@@ -131,7 +131,7 @@ public class SqrlConfigOperations {
 	 */
 	private static URI changeToSqrlScheme(final String fullBackChannelUrl) throws SqrlException {
 		// Compute the proper protocol
-		StringBuilder urlBuf = null;
+		StringBuilder urlBuf = null; // NOSONAR: false positive dead store
 		if (fullBackChannelUrl.startsWith(SCHEME_HTTPS_COLON)) {
 			urlBuf = new StringBuilder(fullBackChannelUrl.replace(SCHEME_HTTPS, SCHEME_SQRL));
 		} else if (fullBackChannelUrl.startsWith("http:")) {
@@ -165,7 +165,7 @@ public class SqrlConfigOperations {
 	 * backchannelServletPath can be: 1) full URL, 2) full path ("/sqrlbc") or 3) partial path ("sqrlbc")
 	 */
 	private static BackchannelSettingType validateBackchannelSetting(final String backchannelServletPath) {
-		BackchannelSettingType type = null;
+		BackchannelSettingType type = null; // NOSONAR: false postive dead store
 		if (backchannelServletPath == null) {
 			throw new IllegalArgumentException("SqrlConfig object must have backchannelServletPath set", null);
 		} else if(backchannelServletPath.startsWith("/")) {

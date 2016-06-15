@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlException;
-import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 
 /**
@@ -54,7 +53,7 @@ public class SqrlRequest {
 	 */
 	private final String serverParrot;
 
-	public SqrlRequest(final HttpServletRequest servletRequest, final SqrlConfigOperations configOps)
+	SqrlRequest(final HttpServletRequest servletRequest, final SqrlConfigOperations configOps)
 			throws SqrlException {
 		final String clientParam = getRequiredParameter(servletRequest, "client");
 		final String serverParam = getRequiredParameter(servletRequest, "server");
@@ -118,7 +117,7 @@ public class SqrlRequest {
 		clientCommand = clientNameValuePairTable.get(CLIENT_PARAM_CMD);
 	}
 
-	public String extractFromServerString(final String variableToFind) throws SqrlException {
+	String extractFromServerString(final String variableToFind) throws SqrlException {
 		String toFind = variableToFind;
 		if (!variableToFind.endsWith("=")) {
 			toFind += "=";
@@ -148,7 +147,7 @@ public class SqrlRequest {
 		if (value == null || value.trim().length() == 0) {
 			throw new SqrlInvalidRequestException(
 					"Missing required parameter " + requiredParamName + ".  Request contained: "
-							+ SqrlServerOperations.buildRequestParamList(servletRequest));
+							+ SqrlUtil.buildRequestParamList(servletRequest));
 		}
 		return value;
 	}
