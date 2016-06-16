@@ -15,7 +15,6 @@ import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlNutTokenReplayedException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.SqrlUtil;
 
 /**
  * Various util methods for the {@link SqrlNutToken}
@@ -113,19 +112,20 @@ public class SqrlNutTokenUtil {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		if (logger.isDebugEnabled()) {
 			final Date nutExpiry = new Date(nutExpiryMs);
-			logger.debug("{} Now={}, nutExpiry={}", SqrlUtil.getLogHeader(), new Date(), nutExpiry);
+			logger.debug("{} Now={}, nutExpiry={}", SqrlLoggingUtil.getLogHeader(), new Date(), nutExpiry);
 		}
 		if (System.currentTimeMillis() > nutExpiryMs) {
 			// TODO: set a TIF
 			throw new SqrlInvalidRequestException(
-					SqrlUtil.getLogHeader() + "Nut expired by " + (nutExpiryMs - System.currentTimeMillis())
+					SqrlLoggingUtil.getLogHeader() + "Nut expired by " + (nutExpiryMs - System.currentTimeMillis())
 					+ "ms, nut timetamp ms=" + nutToken.getIssuedTimestamp() + ", expiry is set to "
 					+ config.getNutValidityInSeconds() + " seconds");
 		}
 		// Mark the token as used since we will process this request
 		final String nutTokenString = nutToken.asSqBase64EncryptedNut();
 		if (sqrlPersistence.hasTokenBeenUsed(nutTokenString)) {
-			throw new SqrlNutTokenReplayedException(SqrlUtil.getLogHeader() + "Nut token was replayed " + nutToken);
+			throw new SqrlNutTokenReplayedException(
+					SqrlLoggingUtil.getLogHeader() + "Nut token was replayed " + nutToken);
 		}
 		final Date nutExpiry = new Date(nutExpiryMs);
 		sqrlPersistence.markTokenAsUsed(nutTokenString, nutExpiry);

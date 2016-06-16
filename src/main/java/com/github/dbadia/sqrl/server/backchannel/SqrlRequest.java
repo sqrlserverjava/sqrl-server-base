@@ -39,10 +39,10 @@ public class SqrlRequest {
 	private static final String CLIENT_PARAM_CMD = "cmd";
 	private static final String CLIENT_PARAM_OPT = "opt";
 
-	private final static List<String> KEY_IDS = new ArrayList<>();
+	private static final List<String> KEY_IDS = new ArrayList<>();
 	private static final String NUT_EQUALS = "nut=";
 
-	private String clientVersion;
+	private final String sqrlProtocolVersion;
 	private final SqrlNutToken nut;
 	private final String clientCommand;
 	private final Map<String, byte[]> clientKeys = new ConcurrentHashMap<>();
@@ -61,9 +61,9 @@ public class SqrlRequest {
 
 		// parse client
 		final Map<String, String> clientNameValuePairTable = parseLinesToNameValueMap(decoded);
-		final String version = clientNameValuePairTable.get(CLIENT_PARAM_VER);
-		if(!"1".equals(version)) {
-			throw new SqrlException("Unsupported SQRL Client version " + version, null);
+		sqrlProtocolVersion = clientNameValuePairTable.get(CLIENT_PARAM_VER);
+		if (!"1".equals(sqrlProtocolVersion)) {
+			throw new SqrlException("Unsupported SQRL Client version " + sqrlProtocolVersion, null);
 		}
 
 		// parse opt
@@ -106,7 +106,7 @@ public class SqrlRequest {
 			final byte[] messageBytes = (clientParam + serverParam).getBytes();
 			final boolean isSignatureValid = SqrlUtil.verifyED25519(signatureFromMessage, messageBytes, publicKey);
 			if (!isSignatureValid) {
-				throw new SqrlException("Signature invalid, mismatch", null);
+				throw new SqrlException("Signature invalid for request with nut " + nut.asSqBase64EncryptedNut(), null);
 			}
 		} catch (final SqrlException e) {
 			throw e;
@@ -172,34 +172,38 @@ public class SqrlRequest {
 		}
 	}
 
-	public String getClientCommand() {
+	String getClientCommand() {
 		return clientCommand;
 	}
 
-	public SqrlNutToken getNut() {
+	SqrlNutToken getNut() {
 		return nut;
 	}
 
-	public Map<String, String> getKeysToBeStored() {
+	Map<String, String> getKeysToBeStored() {
 		final Map<String, String> toBeStored = new ConcurrentHashMap<>(clientKeysBsse64);
 		toBeStored.remove(KEY_TYPE_IDENTITY);
 		toBeStored.remove(KEY_TYPE_PREVIOUS_IDENTITY);
 		return toBeStored;
 	}
 
-	public String getIdk() {
+	String getIdk() {
 		return clientKeysBsse64.get(KEY_TYPE_IDENTITY);
 	}
 
-	public boolean hasPidk() {
+	boolean hasPidk() {
 		return clientKeysBsse64.containsKey(KEY_TYPE_PREVIOUS_IDENTITY);
 	}
 
-	public String getPidk() {
+	String getPidk() {
 		return clientKeysBsse64.get(KEY_TYPE_PREVIOUS_IDENTITY);
 	}
 
-	public List<SqrlClientOpt> getOptList() {
+	List<SqrlClientOpt> getOptList() {
 		return optList;
+	}
+
+	String getSqrlProtocolVersion() {
+		return sqrlProtocolVersion;
 	}
 }

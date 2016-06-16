@@ -12,9 +12,6 @@ import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -28,20 +25,17 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
  *
  */
 public class SqrlUtil {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlUtil.class);
-
-	private static final ThreadLocal<String> threadLocalLogHeader = new ThreadLocal<String>() {
-		@Override
-		protected String initialValue() {
-			return "";
-		}
-	};
 
 	private SqrlUtil() {
+		// Util class
 	}
 
 	/**
-	 * base64url encoding with the = characters removed per the SQRL spec
+	 * Performs the SQRL required base64URL encoding
+	 * 
+	 * @param bytes
+	 *            the data to be encoded
+	 * @return the encoded string
 	 */
 	public static String sqrlBase64UrlEncode(final byte[] bytes) {
 		try {
@@ -56,8 +50,11 @@ public class SqrlUtil {
 	}
 
 	/**
-	 * base64url encoding with the = characters removed per the SQRL spec
+	 * Performs the SQRL required base64URL encoding
 	 * 
+	 * @param toEncode
+	 *            the string to be encoded
+	 * @return the encoded string
 	 */
 	public static String sqrlBase64UrlEncode(final String toEncode) {
 		try {
@@ -109,26 +106,25 @@ public class SqrlUtil {
 	 *            the signature data
 	 * @param messageBytes
 	 *            the message that was signed
-	 * @param publicKey
+	 * @param publicKeyBytes
 	 *            the public key to be used for verification
 	 * @return true if verification was successful
 	 * @throws SqrlException
 	 *             if an error occurs during ED25519 operations
 	 */
 	public static boolean verifyED25519(final byte[] signatureFromMessage, final byte[] messageBytes,
-			final byte[] publicKey) throws SqrlException {
+			final byte[] publicKeyBytes) throws SqrlException {
 		try {
-			final Signature sgr = new EdDSAEngine(MessageDigest.getInstance("SHA-512"));
-			final EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.CURVE_ED25519_SHA512);
+			final Signature signature = new EdDSAEngine(MessageDigest.getInstance("SHA-512"));
+			final EdDSAParameterSpec edDsaSpec = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.CURVE_ED25519_SHA512);
 
-			final PublicKey vKey = new EdDSAPublicKey(new EdDSAPublicKeySpec(publicKey, spec));
-			sgr.initVerify(vKey);
+			final PublicKey publicKey = new EdDSAPublicKey(new EdDSAPublicKeySpec(publicKeyBytes, edDsaSpec));
+			signature.initVerify(publicKey);
 
-			sgr.update(messageBytes);
-			final boolean result = sgr.verify(signatureFromMessage);
-			return result;
+			signature.update(messageBytes);
+			return signature.verify(signatureFromMessage);
 		} catch (final GeneralSecurityException e) {
-			throw new SqrlException("Got exception during EC sig verify", e);
+			throw new SqrlException("Got exception during EC signature verification", e);
 		}
 	}
 
@@ -185,6 +181,13 @@ public class SqrlUtil {
 		return request.getServerName();
 	}
 
+	/**
+	 * Internal use only. Builds a string of name value pairs from the request
+	 * 
+	 * @param servletRequest
+	 *            the request
+	 * @return a string of the name value pairs that were in the request
+	 */
 	public static String buildRequestParamList(final HttpServletRequest servletRequest) {
 		final Enumeration<String> params = servletRequest.getParameterNames();
 		final StringBuilder buf = new StringBuilder();
@@ -193,31 +196,5 @@ public class SqrlUtil {
 			buf.append(paramName).append("=").append(servletRequest.getParameter(paramName)).append("  ");
 		}
 		return buf.toString();
-	}
-
-	public static void initLoggingHeader(final HttpServletRequest servletRequest) {
-		final String sqrlAgentString = servletRequest.getHeader("user-agent");
-		logger.info("sqrlagent={}", sqrlAgentString);
-		threadLocalLogHeader.set(sqrlAgentString);
-	}
-
-	/**
-	 * Internal use only.
-	 * 
-	 * @param logHeader
-	 *            the data to be appended to the current log header
-	 * @return the updated logHeader for convience
-	 */
-	public static String updateLogHeader(final String logHeader) {
-		threadLocalLogHeader.set(threadLocalLogHeader.get() + " " + logHeader);
-		return logHeader;
-	}
-
-	public static void clearLogHeader() {
-		threadLocalLogHeader.remove();
-	}
-
-	public static String getLogHeader() {
-		return threadLocalLogHeader.get();
 	}
 }

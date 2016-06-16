@@ -128,7 +128,7 @@ public class SqrlServerOperations {
 			final ByteArrayOutputStream qrBaos = generateQrCode(config, url, qrCodeSizeInPixels);
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
-			throw new SqrlException(SqrlUtil.getLogHeader() + "Caught exception during correlator create", e);
+			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
 		}
 	}
 
@@ -152,7 +152,7 @@ public class SqrlServerOperations {
 	 */
 	public void handleSqrlClientRequest(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse)
 			throws IOException {
-		SqrlUtil.initLoggingHeader(servletRequest);
+		SqrlLoggingUtil.initLoggingHeader(servletRequest);
 		if (logger.isInfoEnabled()) {
 			logger.info("Processing SQRL client request: {}", SqrlUtil.buildRequestParamList(servletRequest));
 		}
@@ -160,7 +160,7 @@ public class SqrlServerOperations {
 		try {
 			final SqrlRequest request = new SqrlRequest(servletRequest, sqrlConfigOperations);
 			correlator = request.extractFromServerString(CORRELATOR_PARAM);
-			final String logHeader = SqrlUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
+			final String logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
 					.append(request.getClientCommand()).append(":: ").toString());
 			final TifBuilder tifBuilder = new TifBuilder(checkIfIpsMatch(request.getNut(), servletRequest));
 			final SqrlNutToken nutToken = request.getNut();
@@ -177,11 +177,12 @@ public class SqrlServerOperations {
 			logger.info("{}Request OK, responded with   B64: {}", logHeader, serverReplyString);
 			return;
 		} catch (final SqrlInvalidRequestException e) {
-			logger.error(SqrlUtil.getLogHeader() + "Recevied invalid SQRL request: " + e.getMessage(), e);
+			logger.error(SqrlLoggingUtil.getLogHeader() + "Recevied invalid SQRL request: " + e.getMessage(), e);
 		} catch (final SqrlException e) {
-			logger.error(SqrlUtil.getLogHeader() + "General exception processing SQRL request: " + e.getMessage(), e);
+			logger.error(
+					SqrlLoggingUtil.getLogHeader() + "General exception processing SQRL request: " + e.getMessage(), e);
 		} finally {
-			SqrlUtil.clearLogHeader();
+			SqrlLoggingUtil.clearLogHeader();
 		}
 		// TODO: send sqrl error reply per spec
 		servletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -189,7 +190,7 @@ public class SqrlServerOperations {
 
 	private boolean processClientCommand(final SqrlRequest request, final SqrlNutToken nutToken, final String command,
 			final TifBuilder tifBuilder, final String correlator) throws SqrlException {
-		final String logHeader = SqrlUtil.getLogHeader();
+		final String logHeader = SqrlLoggingUtil.getLogHeader();
 		logger.debug("{}Processing {} command for nut {}", logHeader, command, nutToken);
 		final String idk = request.getIdk();
 		boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
@@ -212,10 +213,11 @@ public class SqrlServerOperations {
 				final String value = sqrlPersistence.fetchSqrlIdentityDataItem(idk, entry.getKey());
 				if (SqrlUtil.isBlank(value)) {
 					throw new SqrlPersistenceException(
-							SqrlUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was null or empty");
+							SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey()
+							+ " was null or empty");
 				} else if (!entry.getValue().equals(value)) {
 					throw new SqrlPersistenceException(
-							SqrlUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was corrupt");
+							SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was corrupt");
 				}
 			}
 			// Now that we know the data is stored, show the user as authenticated
@@ -223,7 +225,7 @@ public class SqrlServerOperations {
 			sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
 		} else {
 			// TODO: COMMAND_ENABLE and friends
-			throw new SqrlException(SqrlUtil.getLogHeader() + "Unsupported client command " + command, null);
+			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Unsupported client command " + command, null);
 		}
 		return idkExistsInDataStore;
 	}
@@ -231,7 +233,7 @@ public class SqrlServerOperations {
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlRequest sqrlRequest,
 			final boolean idkExistsInDataStore, final TifBuilder tifBuilder, final String correlator)
 					throws SqrlException {
-		final String logHeader = SqrlUtil.getLogHeader();
+		final String logHeader = SqrlLoggingUtil.getLogHeader();
 		try {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());
 
@@ -266,9 +268,10 @@ public class SqrlServerOperations {
 			logger.debug("{}Build serverReplyString: {}", logHeader, serverReplyString);
 			return serverReplyString;
 		} catch (final URISyntaxException e) {
-			throw new SqrlException(SqrlUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
-					+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
-					e);
+			throw new SqrlException(
+					SqrlLoggingUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
+							+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
+							e);
 		}
 	}
 
@@ -298,7 +301,7 @@ public class SqrlServerOperations {
 	private boolean checkIfIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest) throws SqrlException {
 		final String ipAddressString = servletRequest.getRemoteAddr();
 		if (SqrlUtil.isBlank(ipAddressString)) {
-			throw new SqrlException(SqrlUtil.getLogHeader() + "No ip address found in sqrl request");
+			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "No ip address found in sqrl request");
 		}
 		final InetAddress requesterIpAddress = SqrlUtil.ipStringToInetAddresss(servletRequest.getRemoteAddr());
 		return SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, nut.getInetInt());

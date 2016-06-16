@@ -97,10 +97,10 @@ public interface SqrlPersistence {
 
 	/**
 	 * Mark the given token as used in persistence. After this call, any subsequent calls to
-	 * {@link #hasTokenBeenUsed(SqrlNutToken)} must return true for this token until expiryTime. Once the expiryTime has been
-	 * reached, persistence cleanup can occur and this token can be deleted from persistence
+	 * {@link #hasTokenBeenUsed(SqrlNutToken)} must return true for this token until expiryTime. Once the expiryTime has
+	 * been reached, persistence cleanup can occur and this token can be deleted from persistence
 	 * 
-	 * @param nut
+	 * @param nutTokenString
 	 *            the {@link SqrlNutToken} token in sqbase64 format as received from the client
 	 * @param expiryTime
 	 *            the time at which this token can safely be deleted from persistence since it will fail timestamp

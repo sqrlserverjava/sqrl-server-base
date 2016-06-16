@@ -33,7 +33,7 @@ public class SqrlServerReply {
 
 	 */
 	// @formatter:on
-	public SqrlServerReply(final String nut, final SqrlTif tif, final String queryWithoutNut, final String correlator,
+	SqrlServerReply(final String nut, final SqrlTif tif, final String queryWithoutNut, final String correlator,
 			final Map<String, String> additionalDataTable) {
 		super();
 		this.nut = nut;
@@ -43,7 +43,7 @@ public class SqrlServerReply {
 		this.additionalDataTable = additionalDataTable;
 	}
 
-	public String toBase64() {
+	String toBase64() {
 		final StringBuilder buf = new StringBuilder();
 		buf.append("ver=").append(VERSION_1).append(SEPARATOR);
 		buf.append("nut=").append(nut).append(SEPARATOR);
