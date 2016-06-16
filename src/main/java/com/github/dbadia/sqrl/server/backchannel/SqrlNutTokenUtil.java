@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
-import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlNutTokenReplayedException;
+import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 
 /**
@@ -25,7 +25,11 @@ import com.github.dbadia.sqrl.server.SqrlUtil;
 public class SqrlNutTokenUtil {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlNutTokenUtil.class);
 
-	public static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress) throws SqrlException {
+	private SqrlNutTokenUtil() {
+		// Util class, all static methods
+	}
+
+	static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress) throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
 		// perform a match/no-match comparison to detect same-device phishing attacks. Therefore, any 128-bit IPv6
@@ -49,7 +53,7 @@ public class SqrlNutTokenUtil {
 		}
 	}
 
-	public static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt)
+	static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt)
 			throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
@@ -104,7 +108,7 @@ public class SqrlNutTokenUtil {
 	 * @throws SqrlException
 	 *             if any validation fails or if persistence fails
 	 */
-	public static void validateNut(final SqrlNutToken nutToken, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
+	static void validateNut(final SqrlNutToken nutToken, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
 			throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		if (logger.isDebugEnabled()) {
@@ -127,9 +131,17 @@ public class SqrlNutTokenUtil {
 		sqrlPersistence.markTokenAsUsed(nutTokenString, nutExpiry);
 	}
 
+	/**
+	 * Computes when a given SQRL "nut" nonce token will expire
+	 * 
+	 * @param nutToken
+	 *            the token for which expiration time will be computed
+	 * @param config
+	 *            the SQRL config
+	 * @return the time, in millis, when the token will expire
+	 */
 	public static long computeNutExpiresAt(final SqrlNutToken nutToken, final SqrlConfig config) {
-		final long nutValidityMillis = (config.getNutValidityInSeconds() * 1000L);
-		final long expiresAt = nutToken.getIssuedTimestamp() + nutValidityMillis;
-		return expiresAt;
+		final long nutValidityMillis = config.getNutValidityInSeconds() * 1000L;
+		return nutToken.getIssuedTimestamp() + nutValidityMillis;
 	}
 }

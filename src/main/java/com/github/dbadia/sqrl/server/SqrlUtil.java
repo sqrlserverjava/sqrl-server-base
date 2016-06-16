@@ -67,6 +67,15 @@ public class SqrlUtil {
 		}
 	}
 
+	/**
+	 * Performs the SQRL required base64URL decoding
+	 * 
+	 * @param toDecodeParam
+	 *            the data to be decoded
+	 * @return the decoded byte array
+	 * @throws SqrlException
+	 *             if an error occurs
+	 */
 	public static byte[] base64UrlDecode(final String toDecodeParam) throws SqrlException {
 		try {
 			return Base64.getUrlDecoder().decode(toDecodeParam.getBytes());
@@ -75,25 +84,37 @@ public class SqrlUtil {
 		}
 	}
 
+	/**
+	 * Performs the SQRL required base64URL decoding
+	 * 
+	 * @param toDecodeParam
+	 *            the data to be decoded
+	 * @return the decoded data as a string using the UTF-8 character set
+	 * @throws SqrlException
+	 *             if UTF8 is not supported
+	 */
 	public static String base64UrlDecodeToString(final String toDecode) throws SqrlException {
-		return new String(base64UrlDecode(toDecode));
+		try {
+			return new String(base64UrlDecode(toDecode), SqrlConstants.UTF8);
+		} catch (final UnsupportedEncodingException e) {
+			// This should never happen as the java specification requires that all JVMs support UTF8
+			throw new SqrlException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
+		}
 	}
 
 	/**
-	 * @deprecated use {@link #base64UrlDecode(String)}
+	 * Internal use only. Verifies the ED25519 signature
+	 * 
+	 * @param signatureFromMessage
+	 *            the signature data
+	 * @param messageBytes
+	 *            the message that was signed
+	 * @param publicKey
+	 *            the public key to be used for verification
+	 * @return true if verification was successful
+	 * @throws SqrlException
+	 *             if an error occurs during ED25519 operations
 	 */
-	@Deprecated
-	public static byte[] base64Decode(final String toDecode) {
-		return Base64.getDecoder().decode(toDecode.getBytes());
-	}
-
-	/**
-	 * Note, the SQRL protocol requires {@link SqrlUtil#sqrlBase64UrlEncode(byte[])
-	 */
-	public static String base64Encode(final byte[] toEncode) {
-		return new String(Base64.getEncoder().encode(toEncode));
-	}
-
 	public static boolean verifyED25519(final byte[] signatureFromMessage, final byte[] messageBytes,
 			final byte[] publicKey) throws SqrlException {
 		try {
@@ -113,6 +134,10 @@ public class SqrlUtil {
 
 	/**
 	 * Provides the functionality of Apache commons StringUtils.isBlank() without bringing in the dependency
+	 * 
+	 * @param string
+	 *            the string to check
+	 * @return true if blank, false otherwise
 	 */
 	public static boolean isBlank(final String string) {
 		return string == null || string.trim().length() == 0;
@@ -120,11 +145,24 @@ public class SqrlUtil {
 
 	/**
 	 * Provides the functionality of Apache commons StringUtils.isNotBlank() without bringing in the dependency
+	 * 
+	 * @param string
+	 *            the string to check
+	 * @return true if not blank, false otherwise
 	 */
 	public static boolean isNotBlank(final String string) {
 		return !isBlank(string);
 	}
 
+	/**
+	 * Internal use only.
+	 * 
+	 * @param ipAddressString
+	 *            the ip address to parse
+	 * @return the IP address
+	 * @throws SqrlException
+	 *             if an {@link UnknownHostException} occurs
+	 */
 	public static InetAddress ipStringToInetAddresss(final String ipAddressString) throws SqrlException {
 		if (SqrlUtil.isBlank(ipAddressString)) {
 			throw new SqrlException("ipAddressString was null or empty");
@@ -132,10 +170,17 @@ public class SqrlUtil {
 		try {
 			return InetAddress.getByName(ipAddressString);
 		} catch (final UnknownHostException e) {
-			throw new SqrlException("Got UnknownHostException for <" + ipAddressString + ">");
+			throw new SqrlException("Got UnknownHostException for <" + ipAddressString + ">", e);
 		}
 	}
 
+	/**
+	 * Internal use only. Computes the SQRL server friendly name (SFN) from the servers URl. Typically used if a SFN is
+	 * not specified in the config
+	 * 
+	 * @param request
+	 * @return
+	 */
 	public static String computeSfnFromUrl(final HttpServletRequest request) {
 		return request.getServerName();
 	}
@@ -156,6 +201,13 @@ public class SqrlUtil {
 		threadLocalLogHeader.set(sqrlAgentString);
 	}
 
+	/**
+	 * Internal use only.
+	 * 
+	 * @param logHeader
+	 *            the data to be appended to the current log header
+	 * @return the updated logHeader for convience
+	 */
 	public static String updateLogHeader(final String logHeader) {
 		threadLocalLogHeader.set(threadLocalLogHeader.get() + " " + logHeader);
 		return logHeader;

@@ -31,7 +31,6 @@ import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlPersistenceException;
 import com.github.dbadia.sqrl.server.SqrlUtil;
-import com.github.dbadia.sqrl.server.TestHelper;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -84,7 +83,7 @@ public class SqrlServerOperations {
 		if (config == null) {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
-		this.sqrlConfigOperations = TestHelper.newSqrlConfigOperations(config);
+		this.sqrlConfigOperations = new SqrlConfigOperations(config);
 		this.config = config;
 	}
 

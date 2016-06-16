@@ -42,7 +42,13 @@ public class SqrlConfigOperations {
 	private URI backchannelRequestUrl;
 	private String subsequentRequestPath;
 
-	SqrlConfigOperations(final SqrlConfig sqrlConfig) {
+	/**
+	 * Internal use only.
+	 * 
+	 * @param sqrlConfig
+	 *            the SQRL config object
+	 */
+	public SqrlConfigOperations(final SqrlConfig sqrlConfig) {
 		this.sqrlConfig = sqrlConfig;
 
 		// SecureRandom init
@@ -88,6 +94,15 @@ public class SqrlConfigOperations {
 		return aesKey;
 	}
 
+	/**
+	 * Internal use only. Determines backchannel request URL based on the loginPageRequest
+	 * 
+	 * @param loginPageRequest
+	 *            the login page request
+	 * @return the URI where SQRL client requests should be sent
+	 * @throws SqrlException
+	 *             if an invalid backchannelSettingType is present
+	 */
 	public URI getBackchannelRequestUrl(final HttpServletRequest loginPageRequest) throws SqrlException {
 		// No synchronization as worst case is we compute the value a few times
 		String backchannelRequestString = null; // NOSONAR: false positive dead store
@@ -147,6 +162,15 @@ public class SqrlConfigOperations {
 		}
 	}
 
+	/**
+	 * Internal use only. Computes the subsequent URI path for the SQRL client
+	 * 
+	 * @param sqrlBackchannelRequest
+	 *            the original SQRL client request
+	 * @return the URI string to be sent back to the client
+	 * @throws SqrlException
+	 *             if a URISyntaxException occurs
+	 */
 	public String getSubsequentRequestPath(final HttpServletRequest sqrlBackchannelRequest) throws SqrlException {
 		// No synchronization as worst case is we compute the value a few times
 		if (subsequentRequestPath == null) {

@@ -7,9 +7,7 @@ import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.TestHelper;
 
 
 public class NutTest {
@@ -23,7 +21,7 @@ public class NutTest {
 	@Test
 	public void testNut_getters() throws Exception {
 		config.setBackchannelServletPath("http://davetest.com/sqrl");
-		final SqrlConfigOperations configOps = TestHelper.newSqrlConfigOperations(config);
+		final SqrlConfigOperations configOps = new SqrlConfigOperations(config);
 		final long timestamp = 1461244576746L;
 		final int inetInt = 4;
 		final int counter = 234;
@@ -42,26 +40,11 @@ public class NutTest {
 	@Test
 	public void testNut_parse() throws Exception {
 		config.setBackchannelServletPath("http://davetest.com/sqrl");
-		final SqrlConfigOperations configOps = TestHelper.newSqrlConfigOperations(config);
+		final SqrlConfigOperations configOps = new SqrlConfigOperations(config);
 		final SqrlNutToken nut = new SqrlNutToken(configOps, "QwJJFrvH1jBXakjOh_vVqg");
 		assertEquals(4, nut.getInetInt());
 		assertEquals(234, nut.getCounter());
 		assertEquals(1461244576000L, nut.getIssuedTimestamp());
 		assertEquals(6, nut.getRandomInt());
-	}
-
-	@Test
-	public void testNut_parse2() throws Exception {
-		final byte[] nutBytes = SqrlUtil.base64Decode("mHrG30UxMg6iAGcLILSXOg==");
-
-		// TODO: need encrypted
-		// final Nut nut = new Nut(nutBytes);
-		// InetAddress fromNut = InetAddress.getByAddress(Nut.unpack(nut.getInetInt()));
-		// System.out.println(fromNut);
-		//
-		// String addressStr = InetAddresses.fromInteger(nut.getInetInt()).toString();
-		// System.out.println(addressStr);
-		//
-		// System.out.println(new Date(nut.getTimestamp() * 1000));
 	}
 }
