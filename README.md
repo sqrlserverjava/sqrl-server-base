@@ -1,4 +1,4 @@
-<!--- https://jbt.github.io/markdown-edito --->
+<!--- http://dillinger.io/ --->
 
 [![Build Status](https://travis-ci.org/dbadia/sqrl-server-base.svg?branch=master)](https://travis-ci.org/dbadia/sqrl-server-base)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/204/badge)](https://bestpractices.coreinfrastructure.org/projects/204)
@@ -24,7 +24,7 @@ The intent is that additional libraries will be built on top of this for popular
 
 #### Dependencies
  * Java 1.8
- * [Zxing](https://github.com/zxing/zxing) 
+ * [Zxing](https://github.com/zxing/zxing) for QR code generation
  * [slf4j](http://www.slf4j.org//) for logging
  * [ed25519-java](https://github.com/str4d/ed25519-java) for fast   Ed25519 EC crypto
 
