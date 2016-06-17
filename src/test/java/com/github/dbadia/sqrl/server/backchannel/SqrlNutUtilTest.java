@@ -37,7 +37,7 @@ public class SqrlNutUtilTest {
 		final URI url = new URI("http://davetest.com/sqrl");
 		final InetAddress address = InetAddress.getByName("69.50.232.54");
 		assertTrue(address instanceof Inet4Address);
-		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
 		assertEquals("http (insecure) should result in zero", 0, actual);
 	}
 
@@ -46,7 +46,7 @@ public class SqrlNutUtilTest {
 		final URI url = new URI("https://davetest.com/sqrl");
 		final InetAddress address = InetAddress.getByName("69.50.232.54");
 		assertTrue(address instanceof Inet4Address);
-		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
 		assertEquals(1160964150, actual);
 	}
 
@@ -55,11 +55,18 @@ public class SqrlNutUtilTest {
 		final URI url = new URI("http://davetest.com/sqrl");
 		final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
 		assertTrue(address instanceof Inet6Address);
-		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
 		assertEquals("http (insecure) should result in zero", 0, actual);
 	}
 
-	// TODO: public void testInetAddressToInt_ipv6_https() throws Throwable {
+	@Test
+	public void testInetAddressToInt_ipv6_https() throws Throwable {
+		final URI url = new URI("https://davetest.com/sqrl");
+		final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
+		assertTrue(address instanceof Inet6Address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
+		assertEquals(-461733409, actual);
+	}
 
 	/* *************** URLs with qrl:// or sqrl:// *****************/
 	@Test
@@ -67,7 +74,7 @@ public class SqrlNutUtilTest {
 		final URI url = new URI("qrl://davetest.com/sqrl");
 		final InetAddress address = InetAddress.getByName("69.50.232.54");
 		assertTrue(address instanceof Inet4Address);
-		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
 		assertEquals("qrl (insecure) should result in zero", 0, actual);
 	}
 
@@ -76,7 +83,7 @@ public class SqrlNutUtilTest {
 		final URI url = new URI("sqrl://davetest.com/sqrl");
 		final InetAddress address = InetAddress.getByName("69.50.232.54");
 		assertTrue(address instanceof Inet4Address);
-		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
 		assertEquals(1160964150, actual);
 	}
 
@@ -85,12 +92,18 @@ public class SqrlNutUtilTest {
 		final URI url = new URI("qrl://davetest.com/sqrl");
 		final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
 		assertTrue(address instanceof Inet6Address);
-		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
 		assertEquals("qrl (insecure) should result in zero", 0, actual);
 	}
 
-	// TODO: public void testInetAddressToInt_ipv6_https() throws Throwable {
-
+	@Test
+	public void testInetAddressToInt_ipv6_sqrl() throws Throwable {
+		// final URI url = new URI("sqrl://davetest.com/sqrl");
+		// final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
+		// assertTrue(address instanceof Inet6Address);
+		// final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
+		// assertEquals(1160964150, actual); // TODO:
+	}
 
 	@Test
 	public void testValidateInetAddress_ipv4_pass() throws Throwable {
@@ -128,7 +141,7 @@ public class SqrlNutUtilTest {
 	public void testInetAddressToInt_http() throws Exception {
 		final URI uri = new URI("http://grc.com");
 		final InetAddress requesterIpAddress = InetAddress.getByName("127.0.0.1");
-		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(uri, requesterIpAddress);
+		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(uri, requesterIpAddress, config);
 		assertEquals(0, inetInt);
 	}
 
@@ -136,7 +149,7 @@ public class SqrlNutUtilTest {
 	public void testInetAddressToInt_https() throws Exception {
 		final InetAddress requesterIpAddress = InetAddress.getByName("127.0.0.1");
 		final URI uri = new URI("https://grc.com");
-		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(uri, requesterIpAddress);
+		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(uri, requesterIpAddress, config);
 		assertEquals(2130706433, inetInt);
 	}
 

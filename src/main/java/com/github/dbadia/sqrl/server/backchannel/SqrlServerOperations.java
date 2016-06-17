@@ -133,7 +133,7 @@ public class SqrlServerOperations {
 	}
 
 	private SqrlNutToken buildNut(final URI backchannelUri, final InetAddress userInetAddress) throws SqrlException {
-		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(backchannelUri, userInetAddress);
+		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(backchannelUri, userInetAddress, config);
 		final int randomInt = config.getSecureRandom().nextInt();
 		final long timestamp = System.currentTimeMillis();
 		return new SqrlNutToken(inetInt, sqrlConfigOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
