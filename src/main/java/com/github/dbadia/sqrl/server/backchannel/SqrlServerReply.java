@@ -16,7 +16,7 @@ public class SqrlServerReply {
 	public static final String SEPARATOR = "\r\n";
 
 	private final String nut;
-	private final SqrlTif tif;
+	private final int tifInt;
 	private final String queryWithoutNut;
 	private final String correlator;
 	private final Map<String, String> additionalDataTable;
@@ -37,7 +37,7 @@ public class SqrlServerReply {
 			final Map<String, String> additionalDataTable) {
 		super();
 		this.nut = nut;
-		this.tif = tif;
+		this.tifInt = tif.getTifInt();
 		this.queryWithoutNut = queryWithoutNut;
 		this.correlator = correlator;
 		this.additionalDataTable = additionalDataTable;
@@ -47,7 +47,7 @@ public class SqrlServerReply {
 		final StringBuilder buf = new StringBuilder();
 		buf.append("ver=").append(VERSION_1).append(SEPARATOR);
 		buf.append("nut=").append(nut).append(SEPARATOR);
-		buf.append("tif=").append(tif).append(SEPARATOR);
+		buf.append("tif=").append(tifInt).append(SEPARATOR);
 		buf.append("qry=").append(queryWithoutNut).append("?nut=").append(nut);
 		buf.append("&").append(SqrlServerOperations.CORRELATOR_PARAM).append("=").append(correlator).append(SEPARATOR);
 		for (final Map.Entry<String, String> entry : additionalDataTable.entrySet()) {

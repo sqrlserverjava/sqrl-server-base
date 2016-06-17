@@ -6,14 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.SqrlPersistenceException;
-
 /**
  * An in memory {@link SqrlPersistence} implementation that is only suitable for test case use
  * 
  */
-class TestOnlysqrlPersistence implements SqrlPersistence {
+public class TestOnlySqrlPersistence implements SqrlPersistence {
 
 	private final List<String> knownUsers = new ArrayList<>();
 	private final Map<String, String> authenticatedUsers = new ConcurrentHashMap<>();
@@ -21,7 +18,7 @@ class TestOnlysqrlPersistence implements SqrlPersistence {
 
 	private final Map<String, Map<String, String>> sqrlIdentityDataTable = new ConcurrentHashMap<>();
 
-	TestOnlysqrlPersistence() {
+	public TestOnlySqrlPersistence() {
 	}
 
 	@Override

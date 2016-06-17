@@ -1,5 +1,6 @@
 package com.github.dbadia.sqrl.server.backchannel;
 
+import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -8,24 +9,26 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
+import java.time.LocalDateTime;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlException;
+import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
-import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
 
 import junitx.framework.ArrayAssert;
+import junitx.framework.ObjectAssert;
 
-public class NutUtilTest {
+public class SqrlNutUtilTest {
 	private SqrlConfig config = TCUtil.buildValidSqrlConfig();
-
+	private SqrlPersistence persistence = TCUtil.buildValidsqrlPersistence();
 	@Before
 	public void setup() throws Exception {
 		config = TCUtil.buildValidSqrlConfig();
+		persistence = TCUtil.buildValidsqrlPersistence();
 	}
 
 	/* *************** URLs with http:// or https:// *****************/
@@ -188,13 +191,29 @@ public class NutUtilTest {
 	 * @throws SqrlException
 	 */
 	@Test
-	public void testNutExpiresInJan2016() throws SqrlException {
+	public void testComputeNutExpiresInJan2016() throws SqrlException {
 		final int nutValidityInSeconds = 1000;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
-		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config);
+		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
+		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
 		final long nutIssuedTime = nut.getIssuedTimestamp();
 		final long expiresAt = SqrlNutTokenUtil.computeNutExpiresAt(nut, config);
 		assertTrue(expiresAt > nutIssuedTime);
 		assertEquals(nutValidityInSeconds * 1000, expiresAt - nutIssuedTime);
+		assertEquals(1452816000L, expiresAt);
+	}
+
+	@Test
+	public void testValidateNutTimestamp_ExpiredInJan2016() throws SqrlException {
+		final int nutValidityInSeconds = 1000;
+		config.setNutValidityInSeconds(nutValidityInSeconds);
+		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
+		final SqrlNutToken nutToken = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
+		try {
+			SqrlNutTokenUtil.validateNut(nutToken, config, persistence);
+			fail("Exceptio expected");
+		} catch (final Exception e) {
+			ObjectAssert.assertInstanceOf(SqrlException.class, e);
+		}
 	}
 }

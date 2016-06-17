@@ -10,7 +10,7 @@ import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.TCUtil;
 
 
-public class NutTest {
+public class SqrlNutTest {
 	private SqrlConfig config = TCUtil.buildValidSqrlConfig();
 
 	@Before

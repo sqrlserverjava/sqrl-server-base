@@ -23,10 +23,6 @@ public class SqrlTif {
 		this.tifInt = tifInt;
 	}
 
-	public byte[] getTifBytes() {
-		return SqrlNutTokenUtil.unpack(tifInt);
-	}
-
 	public int getTifInt() {
 		return tifInt;
 	}

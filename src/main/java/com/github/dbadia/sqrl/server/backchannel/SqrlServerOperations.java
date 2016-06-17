@@ -293,8 +293,6 @@ public class SqrlServerOperations {
 			writer.write(serverReplyString);
 			writer.flush();
 			writer.close();
-		} catch (final IOException e) {
-			throw e;
 		}
 	}
 
@@ -341,7 +339,7 @@ public class SqrlServerOperations {
 			ImageIO.write(image, config.getQrCodeFileType().toString().toLowerCase(), os);
 			return os;
 		} catch (final IOException | WriterException e) {
-			throw new SqrlException("Caught exception trying to determine clients IP address", e);
+			throw new SqrlException("Caught exception during QR code generation", e);
 		}
 	}
 }

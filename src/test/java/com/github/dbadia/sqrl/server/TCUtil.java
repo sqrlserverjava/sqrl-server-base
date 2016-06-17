@@ -3,6 +3,8 @@ package com.github.dbadia.sqrl.server;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -27,7 +29,7 @@ public class TCUtil {
 	}
 
 	public static final SqrlPersistence buildValidsqrlPersistence() {
-		return new TestOnlysqrlPersistence();
+		return new TestOnlySqrlPersistence();
 	}
 
 	public static MockHttpServletRequest buildMockRequest(final String uriString) throws URISyntaxException {
@@ -80,4 +82,14 @@ public class TCUtil {
 	}
 
 
+	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig sqrlConfig, final LocalDateTime nutIssuedAt)
+			throws SqrlException {
+		final long timestamp = nutIssuedAt.toEpochSecond(ZoneOffset.UTC);
+		final int inetInt = 4;
+		final int counter = 234;
+		final int random = 6;
+		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(sqrlConfig), counter, timestamp,
+				random);
+		return nut;
+	}
 }

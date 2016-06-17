@@ -110,14 +110,15 @@ public class SqrlNutTokenUtil {
 	static void validateNut(final SqrlNutToken nutToken, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
 			throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
+		final long now = System.currentTimeMillis();
 		if (logger.isDebugEnabled()) {
 			final Date nutExpiry = new Date(nutExpiryMs);
-			logger.debug("{} Now={}, nutExpiry={}", SqrlLoggingUtil.getLogHeader(), new Date(), nutExpiry);
+			logger.debug("{} Now={}, nutExpiry={}", SqrlLoggingUtil.getLogHeader(), new Date(now), nutExpiry);
 		}
-		if (System.currentTimeMillis() > nutExpiryMs) {
+		if (now > nutExpiryMs) {
 			// TODO: set a TIF
 			throw new SqrlInvalidRequestException(
-					SqrlLoggingUtil.getLogHeader() + "Nut expired by " + (nutExpiryMs - System.currentTimeMillis())
+					SqrlLoggingUtil.getLogHeader() + "Nut expired by " + (nutExpiryMs - now)
 					+ "ms, nut timetamp ms=" + nutToken.getIssuedTimestamp() + ", expiry is set to "
 					+ config.getNutValidityInSeconds() + " seconds");
 		}
