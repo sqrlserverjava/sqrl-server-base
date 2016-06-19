@@ -12,6 +12,9 @@ import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -25,6 +28,7 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
  *
  */
 public class SqrlUtil {
+	private static final Logger logger = LoggerFactory.getLogger(SqrlUtil.class);
 
 	private SqrlUtil() {
 		// Util class
@@ -96,6 +100,15 @@ public class SqrlUtil {
 		} catch (final UnsupportedEncodingException e) {
 			// This should never happen as the java specification requires that all JVMs support UTF8
 			throw new SqrlException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
+		}
+	}
+
+	public static String base64UrlDecodeToStringOrErrorMessage(final String toDecode) {
+		try {
+			return base64UrlDecodeToString(toDecode);
+		} catch (final Exception e) {
+			logger.error("Error during url decode, returning error string for " + toDecode, e);
+			return "<error during base64url decode>";
 		}
 	}
 

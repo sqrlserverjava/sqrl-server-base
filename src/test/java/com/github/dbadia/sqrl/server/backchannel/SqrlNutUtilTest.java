@@ -24,11 +24,11 @@ import junitx.framework.ObjectAssert;
 
 public class SqrlNutUtilTest {
 	private SqrlConfig config = TCUtil.buildValidSqrlConfig();
-	private SqrlPersistence persistence = TCUtil.buildValidsqrlPersistence();
+	private SqrlPersistence persistence = TCUtil.buildEmptySqrlPersistence();
 	@Before
 	public void setup() throws Exception {
 		config = TCUtil.buildValidSqrlConfig();
-		persistence = TCUtil.buildValidsqrlPersistence();
+		persistence = TCUtil.buildEmptySqrlPersistence();
 	}
 
 	/* *************** URLs with http:// or https:// *****************/

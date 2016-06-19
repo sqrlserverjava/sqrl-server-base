@@ -1,5 +1,6 @@
 package com.github.dbadia.sqrl.server;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
@@ -13,6 +14,8 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
  *
  */
 public interface SqrlPersistence {
+
+	String TRANSIENT_NAME_SERVER_PARROT = "lastServerParam";
 
 	/**
 	 * Check persistence to see if a user exists with the given sqrlIdk
@@ -107,5 +110,39 @@ public interface SqrlPersistence {
 	 *            validation
 	 */
 	public void markTokenAsUsed(final String nutTokenString, Date expiryTime) throws SqrlPersistenceException;
+
+	/**
+	 * Store or replace a short lived name/value for a given correlator; if the correlator/name pair already exists, the
+	 * value and deleteAfter should be updated with the new values
+	 * 
+	 * @param correlator
+	 *            correlator to which this data belongs
+	 * @param name
+	 *            the name of the item
+	 * @param value
+	 *            the value of the item
+	 * @param deleteAfter
+	 *            the time at which this data can be safely deleted
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
+	 */
+	public void storeTransientAuthenticationData(String correlator, String name, String value,
+			LocalDateTime deleteAfter) throws SqrlPersistenceException;
+
+	/**
+	 * Fetch a short lived name/value for a given correlator and name
+	 * 
+	 * @param correlator
+	 *            correlator to which this data belongs
+	 * @param name
+	 *            the name of the item to be fetched
+	 * @return the value for the correlator and name
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
+	 * @throws SqrlException
+	 *             if the data did not exist
+	 */
+	public String fetchTransientAuthData(String correlator, String transientNameServerParrot)
+			throws SqrlPersistenceException, SqrlException;
 
 }

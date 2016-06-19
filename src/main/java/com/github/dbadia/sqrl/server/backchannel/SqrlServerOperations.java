@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
+import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlPersistenceException;
@@ -56,7 +58,7 @@ public class SqrlServerOperations {
 	private static final String COMMAND_DISABLE = "disable";
 	private static final String COMMAND_ENABLE = "enable";
 	private static final String COMMAND_REMOVE = "remove";
-	public static final String CORRELATOR_PARAM = "cor";
+
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
@@ -122,10 +124,14 @@ public class SqrlServerOperations {
 			final MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			final String correlator = SqrlUtil
 					.sqrlBase64UrlEncode(digest.digest(nut.asSqBase64EncryptedNut().getBytes()));
-			urlBuf.append("&").append(CORRELATOR_PARAM).append("=").append(correlator);
+			urlBuf.append("&").append(SqrlConstants.CLIENT_PARAM_CORRELATOR).append("=").append(correlator);
 
 			final String url = urlBuf.toString();
 			final ByteArrayOutputStream qrBaos = generateQrCode(config, url, qrCodeSizeInPixels);
+			// Store the url in the server parrot value so it will be there when the SQRL client makes the request
+			sqrlPersistence.storeTransientAuthenticationData(correlator, SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT,
+					SqrlUtil.sqrlBase64UrlEncode(url),
+					LocalDateTime.now().plusSeconds(config.getNutValidityInSeconds()));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
@@ -157,35 +163,52 @@ public class SqrlServerOperations {
 			logger.info("Processing SQRL client request: {}", SqrlUtil.buildRequestParamList(servletRequest));
 		}
 		String correlator = "unknown";
+		final TifBuilder tifBuilder = new TifBuilder();
+		boolean idkExistsInDataStore = false;
+		String requestState = "invalid";
 		try {
-			final SqrlRequest request = new SqrlRequest(servletRequest, sqrlConfigOperations);
-			correlator = request.extractFromServerString(CORRELATOR_PARAM);
-			final String logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
-					.append(request.getClientCommand()).append(":: ").toString());
-			final TifBuilder tifBuilder = new TifBuilder(checkIfIpsMatch(request.getNut(), servletRequest));
-			final SqrlNutToken nutToken = request.getNut();
+			String logHeader = "";
+			SqrlRequest request = null;
+			try {
+				request = new SqrlRequest(servletRequest, sqrlPersistence, sqrlConfigOperations);
+				correlator = request.getCorrelator();
+				logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
+						.append(request.getClientCommand()).append(":: ").toString());
+				if (checkIfIpsMatch(request.getNut(), servletRequest)) {
+					tifBuilder.addFlag(SqrlTif.TIF_IPS_MATCHED);
+				}
+				final SqrlNutToken nutToken = request.getNut();
 
-			SqrlNutTokenUtil.validateNut(nutToken, config, sqrlPersistence);
-			final boolean idkExistsInDataStore = processClientCommand(request, nutToken, request.getClientCommand(),
-					tifBuilder, correlator);
-			final String serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tifBuilder,
-					correlator);
-			servletResponse.setStatus(HttpServletResponse.SC_OK);
-			transmitReplyToSqrlClient(servletResponse, serverReplyString);
-			logger.info("{}Request OK, responded with param: {}", logHeader,
-					SqrlUtil.base64UrlDecodeToString(serverReplyString));
-			logger.info("{}Request OK, responded with   B64: {}", logHeader, serverReplyString);
-			return;
-		} catch (final SqrlInvalidRequestException e) {
-			logger.error(SqrlLoggingUtil.getLogHeader() + "Recevied invalid SQRL request: " + e.getMessage(), e);
-		} catch (final SqrlException e) {
-			logger.error(
-					SqrlLoggingUtil.getLogHeader() + "General exception processing SQRL request: " + e.getMessage(), e);
+				SqrlNutTokenUtil.validateNut(nutToken, config, sqrlPersistence);
+				idkExistsInDataStore = processClientCommand(request, nutToken, request.getClientCommand(),
+						tifBuilder, correlator);
+				servletResponse.setStatus(HttpServletResponse.SC_OK);
+				requestState = "OK";
+			} catch (final SqrlException e) {
+				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
+				if(e instanceof SqrlInvalidRequestException) {
+					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
+					logger.error(SqrlLoggingUtil.getLogHeader() + "Recevied invalid SQRL request: " + e.getMessage(), e);
+				} else {
+					logger.error(
+							SqrlLoggingUtil.getLogHeader() + "General exception processing SQRL request: " + e.getMessage(), e);
+				}
+				servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
+			// We have processed the request, success or failure. Now transmit the reply
+			String serverReplyString = ""; // for logging
+			try {
+				serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tifBuilder.createTif(),
+						correlator);
+				transmitReplyToSqrlClient(servletResponse, serverReplyString);
+			} catch (final SqrlException e) {
+				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
+						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString));
+				logger.info("{}Request {}, responded with   B64: {}", logHeader, requestState, serverReplyString);
+			}
 		} finally {
 			SqrlLoggingUtil.clearLogHeader();
 		}
-		// TODO: send sqrl error reply per spec
-		servletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 	}
 
 	private boolean processClientCommand(final SqrlRequest request, final SqrlNutToken nutToken, final String command,
@@ -196,12 +219,12 @@ public class SqrlServerOperations {
 		boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
 		if (COMMAND_QUERY.equals(command)) {
 			if (idkExistsInDataStore) {
-				tifBuilder.setFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
+				tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
 			} else if (request.hasPidk()) {
 				final String result = sqrlPersistence.fetchSqrlIdentityDataItem(idk, request.getPidk());
 				if (result == null) {
 					sqrlPersistence.updateIdkForSqrlIdentity(request.getPidk(), idk);
-					tifBuilder.setFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
+					tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
 				}
 			}
 		} else if (COMMAND_IDENT.equals(command)) {
@@ -231,7 +254,7 @@ public class SqrlServerOperations {
 	}
 
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlRequest sqrlRequest,
-			final boolean idkExistsInDataStore, final TifBuilder tifBuilder, final String correlator)
+			final boolean idkExistsInDataStore, final SqrlTif tif, final String correlator)
 					throws SqrlException {
 		final String logHeader = SqrlLoggingUtil.getLogHeader();
 		try {
@@ -240,29 +263,30 @@ public class SqrlServerOperations {
 			// Nut is one time use, so generate a new one for the reply
 			final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest));
 
-			// Add any additional data to the response based on the options the client requested
-			// Keep additionalDataTable in order as SQRL client will ignore everything after an unrecognized option
 			final Map<String, String> additionalDataTable = new TreeMap<>();
-			for (final SqrlClientOpt clientOption : sqrlRequest.getOptList()) {
-				switch (clientOption) {
-				case suk:
-				case vuk:
-					if (idkExistsInDataStore) { // If the idk doesn't exist then we don't have these yet
-						additionalDataTable.put(clientOption.toString(),
-								sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), clientOption.toString()));
+			if (sqrlRequest != null) {
+				// Add any additional data to the response based on the options the client requested
+				// Keep additionalDataTable in order as SQRL client will ignore everything after an unrecognized option
+				for (final SqrlClientOpt clientOption : sqrlRequest.getOptList()) {
+					switch (clientOption) {
+					case suk:
+					case vuk:
+						if (idkExistsInDataStore) { // If the idk doesn't exist then we don't have these yet
+							additionalDataTable.put(clientOption.toString(), sqrlPersistence
+									.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), clientOption.toString()));
+						}
+						break;
+					default:
+						logger.error("{}Don't know how to reply to SQRL client opt {}", logHeader, clientOption);
+						break;
 					}
-					break;
-				default:
-					logger.error("{}Don't know how to reply to SQRL client opt {}", logHeader,
-							clientOption);
-					break;
 				}
 			}
 
 			// Build the final reply object
 			final String subsequentRequestPath = sqrlConfigOperations.getSubsequentRequestPath(servletRequest);
 
-			final SqrlServerReply reply = new SqrlServerReply(replyNut.asSqBase64EncryptedNut(), tifBuilder.createTif(),
+			final SqrlServerReply reply = new SqrlServerReply(replyNut.asSqBase64EncryptedNut(), tif,
 					subsequentRequestPath, correlator, additionalDataTable);
 			final String serverReplyString = reply.toBase64();
 			logger.debug("{}Build serverReplyString: {}", logHeader, serverReplyString);
@@ -285,7 +309,7 @@ public class SqrlServerOperations {
 	}
 
 	private void transmitReplyToSqrlClient(final HttpServletResponse response, final String serverReplyString)
-			throws IOException, SqrlException {
+			throws IOException {
 		// Send the reply to the SQRL client
 		response.setContentType("text/html;charset=utf-8");
 		response.setContentLength(serverReplyString.length());

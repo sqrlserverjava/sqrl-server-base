@@ -2,6 +2,7 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 import java.util.Map;
 
+import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 
 // @formatter:off
@@ -49,7 +50,7 @@ public class SqrlServerReply {
 		buf.append("nut=").append(nut).append(SEPARATOR);
 		buf.append("tif=").append(tifInt).append(SEPARATOR);
 		buf.append("qry=").append(queryWithoutNut).append("?nut=").append(nut);
-		buf.append("&").append(SqrlServerOperations.CORRELATOR_PARAM).append("=").append(correlator).append(SEPARATOR);
+		buf.append("&").append(SqrlConstants.CLIENT_PARAM_CORRELATOR).append("=").append(correlator).append(SEPARATOR);
 		for (final Map.Entry<String, String> entry : additionalDataTable.entrySet()) {
 			buf.append(entry.getKey()).append("=").append(entry.getValue()).append(SEPARATOR);
 		}

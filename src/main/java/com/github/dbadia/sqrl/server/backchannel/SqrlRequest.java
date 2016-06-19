@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
+import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
+import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 
 /**
@@ -48,22 +50,24 @@ public class SqrlRequest {
 	private final Map<String, byte[]> clientKeys = new ConcurrentHashMap<>();
 	private final Map<String, String> clientKeysBsse64 = new ConcurrentHashMap<>();
 	private final List<SqrlClientOpt> optList = new ArrayList();
-	/**
-	 * The decoded server param, which contains the query string we put in the QR code
-	 */
-	private final String serverParrot;
 
-	SqrlRequest(final HttpServletRequest servletRequest, final SqrlConfigOperations configOps)
-			throws SqrlException {
+	private final String serverParam;
+	private final String correlator;
+
+	SqrlRequest(final HttpServletRequest servletRequest, final SqrlPersistence persistence,
+			final SqrlConfigOperations configOps) throws SqrlException {
 		final String clientParam = getRequiredParameter(servletRequest, "client");
-		final String serverParam = getRequiredParameter(servletRequest, "server");
+		serverParam = getRequiredParameter(servletRequest, "server");
 		final String decoded = SqrlUtil.base64UrlDecodeToString(clientParam);
+		// parse server - not a name value pair, just the query string we gave
+		final String serverParamDecoded = SqrlUtil.base64UrlDecodeToString(serverParam);
+		correlator = extractFromServerString(SqrlConstants.CLIENT_PARAM_CORRELATOR);
 
 		// parse client
 		final Map<String, String> clientNameValuePairTable = parseLinesToNameValueMap(decoded);
 		sqrlProtocolVersion = clientNameValuePairTable.get(CLIENT_PARAM_VER);
 		if (!"1".equals(sqrlProtocolVersion)) {
-			throw new SqrlException("Unsupported SQRL Client version " + sqrlProtocolVersion, null);
+			throw new SqrlInvalidRequestException("Unsupported SQRL Client version " + sqrlProtocolVersion, null);
 		}
 
 		// parse opt
@@ -88,10 +92,19 @@ public class SqrlRequest {
 			}
 		}
 
-		// parse server - not a name value pair, just the query string we gave
-		serverParrot = SqrlUtil.base64UrlDecodeToString(serverParam);
+		// Per the SQRL spec, since the server response is not signed, we must check the value that comes
+		// back to ensure it wasn't tampered with
+		final String expectedServerValue = persistence.fetchTransientAuthData(correlator,
+				SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT);
+		if (!expectedServerValue.equals(serverParam)) {
+			if (logger.isInfoEnabled()) {
+				logger.info("Server parrot mismatch, possible tampering.  Expected={}, Received={}",
+						expectedServerValue, serverParam);
+			}
+			throw new SqrlException("Server parrot mismatch, possible tampering");
+		}
+
 		nut = new SqrlNutToken(configOps, extractFromServerString(NUT_EQUALS));
-		// TODO: compare serverParrot somewhere / somehow
 
 		final String idsParam = servletRequest.getParameter("ids");
 		final byte[] signatureFromMessage = SqrlUtil.base64UrlDecode(idsParam);
@@ -118,16 +131,17 @@ public class SqrlRequest {
 	}
 
 	String extractFromServerString(final String variableToFind) throws SqrlException {
+		final String toSearch = SqrlUtil.base64UrlDecodeToString(serverParam);
 		String toFind = variableToFind;
 		if (!variableToFind.endsWith("=")) {
 			toFind += "=";
 		}
 		// Find the nut param
-		int index = serverParrot.indexOf(toFind);
+		int index = toSearch.indexOf(toFind);
 		if (index == -1) {
-			throw new SqrlException("Could not find " + toFind + " in server parrot: " + serverParrot);
+			throw new SqrlException("Could not find " + toFind + " in server parrot: " + toSearch);
 		}
-		String value = serverParrot.substring(index + toFind.length());
+		String value = toSearch.substring(index + toFind.length());
 		// Need to find the end of the nut string - could be & if from our login page URL or SqrlServerReply.SEPARATOR
 		// if from a server reply
 		index = value.indexOf(SqrlServerReply.SEPARATOR);
@@ -205,5 +219,9 @@ public class SqrlRequest {
 
 	String getSqrlProtocolVersion() {
 		return sqrlProtocolVersion;
+	}
+
+	public String getCorrelator() {
+		return correlator;
 	}
 }

@@ -1,5 +1,6 @@
 package com.github.dbadia.sqrl.server;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 	private final Map<String, Long> usedTokens = new ConcurrentHashMap<>();
 
 	private final Map<String, Map<String, String>> sqrlIdentityDataTable = new ConcurrentHashMap<>();
+	private final Map<String, Map<String, String>> sqrlTransientAuthDataTable = new ConcurrentHashMap<>();
 
 	public TestOnlySqrlPersistence() {
 	}
@@ -72,5 +74,29 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 			throw new SqrlPersistenceException("No data for this user");
 		}
 		return extraUserDataTable.get(toFetch);
+	}
+
+	@Override
+	public void storeTransientAuthenticationData(final String correlator, final String name, final String value,
+			final LocalDateTime deleteAfter) {
+		Map<String, String> transientAuthDataForCorrelator = sqrlTransientAuthDataTable.get(correlator);
+		if (transientAuthDataForCorrelator == null) {
+			transientAuthDataForCorrelator = new ConcurrentHashMap<>();
+			sqrlTransientAuthDataTable.put(correlator, transientAuthDataForCorrelator);
+		}
+		transientAuthDataForCorrelator.put(name, value);
+	}
+
+	@Override
+	public String fetchTransientAuthData(final String correlator, final String name)
+			throws SqrlPersistenceException, SqrlException {
+		final Map<String, String> table = sqrlTransientAuthDataTable.get(correlator);
+		if (table != null) {
+			final String value = table.get(name);
+			if (value != null && value.trim().length() > 0) {
+				return value;
+			}
+		}
+		throw new SqrlException("Transient auth data not found for " + name + " with correlator " + correlator);
 	}
 }

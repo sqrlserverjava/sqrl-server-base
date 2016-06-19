@@ -18,6 +18,7 @@ public class SqrlConstants {
 	public static final CharSequence FORWARD_SLASH_X2_LOCALHOST = "//localhost";
 	public static final CharSequence FORWARD_SLASH_X2_127_0_0_1 = "//127.0.0.1"; // NOSONAR
 	public static final int AES_KEY_LENGTH = 16;
+	public static final String CLIENT_PARAM_CORRELATOR = "cor";
 
 	private SqrlConstants() {
 		// Constants class

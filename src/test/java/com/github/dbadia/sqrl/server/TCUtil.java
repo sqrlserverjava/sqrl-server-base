@@ -28,7 +28,7 @@ public class TCUtil {
 		return sqrlConfig;
 	}
 
-	public static final SqrlPersistence buildValidsqrlPersistence() {
+	public static final SqrlPersistence buildEmptySqrlPersistence() {
 		return new TestOnlySqrlPersistence();
 	}
 
