@@ -98,30 +98,50 @@ public class SqrlNutUtilTest {
 
 	@Test
 	public void testInetAddressToInt_ipv6_sqrl() throws Throwable {
-		// final URI url = new URI("sqrl://davetest.com/sqrl");
-		// final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
-		// assertTrue(address instanceof Inet6Address);
-		// final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address);
-		// assertEquals(1160964150, actual); // TODO:
+		final URI url = new URI("sqrl://davetest.com/sqrl");
+		final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
+		assertTrue(address instanceof Inet6Address);
+		final int actual = SqrlNutTokenUtil.inetAddressToInt(url, address, config);
+		assertEquals(-461733409, actual);
 	}
 
 	@Test
 	public void testValidateInetAddress_ipv4_pass() throws Throwable {
 		final InetAddress address = InetAddress.getByName("69.50.232.54");
-		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1160964150);
+		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1160964150, config);
 		assertTrue(actual);
 	}
 
 	@Test
 	public void testValidateInetAddress_ipv4_fail_1() throws Throwable {
 		final InetAddress address = InetAddress.getByName("198.105.254.130");
-		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1160964150);
+		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1160964150, config);
 		assertFalse(actual);
 	}
 
 	public void testValidateInetAddress_ipv4_fail_2() throws Throwable {
 		final InetAddress address = InetAddress.getByName("69.50.232.54");
-		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1511609640);
+		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1511609640, config);
+		assertFalse(actual);
+	}
+
+	@Test
+	public void testValidateInetAddress_ipv6_pass() throws Throwable {
+		final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
+		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, -461733409, config);
+		assertTrue(actual);
+	}
+
+	@Test
+	public void testValidateInetAddress_ipv6_fail_1() throws Throwable {
+		final InetAddress address = InetAddress.getByName("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1160964150, config);
+		assertFalse(actual);
+	}
+
+	public void testValidateInetAddress_ipv6_fail_2() throws Throwable {
+		final InetAddress address = InetAddress.getByName("2607:f258:102:3::2");
+		final boolean actual = SqrlNutTokenUtil.validateInetAddress(address, 1511609640, config);
 		assertFalse(actual);
 	}
 
@@ -132,13 +152,13 @@ public class SqrlNutUtilTest {
 		assertEquals(464684342, actual);
 	}
 	@Test
-	public void testUnpack_ipv4() throws Throwable {
+	public void testUnpack() throws Throwable {
 		final byte[] actual = SqrlNutTokenUtil.unpack(464684342);
 		ArrayAssert.assertEquals(new byte[] { 27, -78, -123, 54 }, actual);
 	}
 
 	@Test
-	public void testInetAddressToInt_http() throws Exception {
+	public void testInetAddressV4ToInt_http() throws Exception {
 		final URI uri = new URI("http://grc.com");
 		final InetAddress requesterIpAddress = InetAddress.getByName("127.0.0.1");
 		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(uri, requesterIpAddress, config);
@@ -146,32 +166,11 @@ public class SqrlNutUtilTest {
 	}
 
 	@Test
-	public void testInetAddressToInt_https() throws Exception {
+	public void testInetAddressV4ToInt_https() throws Exception {
 		final InetAddress requesterIpAddress = InetAddress.getByName("127.0.0.1");
 		final URI uri = new URI("https://grc.com");
 		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(uri, requesterIpAddress, config);
 		assertEquals(2130706433, inetInt);
-	}
-
-	@Test
-	public void testValidateInetAddress_http() throws Exception {
-		final InetAddress requesterIpAddress = InetAddress.getByName("127.0.0.1");
-		final int inetInt = 0;
-		assertFalse(SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, inetInt));
-	}
-
-	@Test
-	public void testIntToInetAddress_httpsMatch() throws Exception {
-		final InetAddress requesterIpAddress = InetAddress.getByName("127.0.0.1");
-		final int inetInt = 2130706433;
-		assertTrue(SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, inetInt));
-	}
-
-	@Test
-	public void testIntToInetAddress_httpsMismatch() throws Exception {
-		final InetAddress requesterIpAddress = InetAddress.getByName("192.168.1.1");
-		final int inetInt = 2130706433;
-		assertFalse(SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, inetInt));
 	}
 
 	/* ************ Nut expiry tests *********************/

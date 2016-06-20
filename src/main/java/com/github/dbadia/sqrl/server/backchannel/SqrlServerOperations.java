@@ -329,7 +329,7 @@ public class SqrlServerOperations {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "No ip address found in sqrl request");
 		}
 		final InetAddress requesterIpAddress = SqrlUtil.ipStringToInetAddresss(servletRequest.getRemoteAddr());
-		return SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, nut.getInetInt());
+		return SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, nut.getInetInt(), config);
 
 	}
 

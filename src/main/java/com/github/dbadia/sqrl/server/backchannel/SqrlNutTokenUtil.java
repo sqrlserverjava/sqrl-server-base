@@ -43,24 +43,7 @@ public class SqrlNutTokenUtil {
 			if (requesterIpAddress instanceof Inet4Address) {
 				return SqrlNutTokenUtil.pack(requesterIpAddress.getAddress());
 			} else if (requesterIpAddress instanceof Inet6Address) {
-				// Compress per https://www.grc.com/sqrl/server.htm
-				// IPv6 addresses can be safely compressed to 32 bits by hashing the full IPv6 IP with a secret salt and
-				// retaining the least significant 32 bits of the hash result. The hash's salt can be the AES key
-				try {
-					final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-					// salt with aes key bytes
-					messageDigest.update(sqrlConfig.getAESKeyBytes());
-					final byte[] result = messageDigest.digest(requesterIpAddress.getAddress());
-					// Get the least significant 32 bits of the hash result
-					final byte[] toPack = new byte[IPV6_TO_PACK_BYTES];
-					final int start = result.length - IPV6_TO_PACK_BYTES;
-					System.arraycopy(result, start, toPack, 0, IPV6_TO_PACK_BYTES);
-					final int packed = SqrlNutTokenUtil.pack(toPack);
-					logger.debug("IPV6 {} compressed and packed to {}", requesterIpAddress, packed);
-					return packed;
-				} catch (final NoSuchAlgorithmException e) {
-					throw new SqrlException("Error occured while hashing IPV6 address", e);
-				}
+				return packInet6Address((Inet6Address) requesterIpAddress, sqrlConfig);
 			} else {
 				throw new SqrlException("Unknown InetAddress type of " + requesterIpAddress.getClass());
 			}
@@ -71,7 +54,8 @@ public class SqrlNutTokenUtil {
 		}
 	}
 
-	static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt)
+	static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt,
+			final SqrlConfig sqrlConfig)
 			throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
@@ -83,7 +67,6 @@ public class SqrlNutTokenUtil {
 			return false;
 		}
 		if (requesterIpAddress instanceof Inet4Address) {
-
 			final byte[] bytes = SqrlNutTokenUtil.unpack(inetInt);
 			try {
 				final InetAddress fromNut = InetAddress.getByAddress(bytes);
@@ -92,12 +75,11 @@ public class SqrlNutTokenUtil {
 				throw new SqrlException("Got UnknownHostException for inet " + inetInt, e);
 			}
 		} else if (requesterIpAddress instanceof Inet6Address) {
-			// TODO: IPv6 support
-			throw new SqrlException("Inet6Address not implemented");
+			final int currentIpPacked = packInet6Address((Inet6Address) requesterIpAddress, sqrlConfig);
+			return currentIpPacked == inetInt;
 		} else {
 			throw new SqrlException("Unknown InetAddress type of " + requesterIpAddress.getClass());
 		}
-
 	}
 
 	// From https://stackoverflow.com/questions/2241229/going-from-127-0-0-1-to-2130706433-and-back-again
@@ -163,5 +145,27 @@ public class SqrlNutTokenUtil {
 	public static long computeNutExpiresAt(final SqrlNutToken nutToken, final SqrlConfig config) {
 		final long nutValidityMillis = config.getNutValidityInSeconds() * 1000L;
 		return nutToken.getIssuedTimestamp() + nutValidityMillis;
+	}
+
+	private static int packInet6Address(final Inet6Address requesterIpAddress, final SqrlConfig sqrlConfig)
+			throws SqrlException {
+		// Compress per https://www.grc.com/sqrl/server.htm
+		// IPv6 addresses can be safely compressed to 32 bits by hashing the full IPv6 IP with a secret salt and
+		// retaining the least significant 32 bits of the hash result. The hash's salt can be the AES key
+		try {
+			final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+			// salt with aes key bytes
+			messageDigest.update(sqrlConfig.getAESKeyBytes());
+			final byte[] result = messageDigest.digest(requesterIpAddress.getAddress());
+			// Get the least significant 32 bits of the hash result
+			final byte[] toPack = new byte[IPV6_TO_PACK_BYTES];
+			final int start = result.length - IPV6_TO_PACK_BYTES;
+			System.arraycopy(result, start, toPack, 0, IPV6_TO_PACK_BYTES);
+			final int packed = SqrlNutTokenUtil.pack(toPack);
+			logger.debug("IPV6 {} compressed and packed to {}", requesterIpAddress, packed);
+			return packed;
+		} catch (final NoSuchAlgorithmException e) {
+			throw new SqrlException("Error occured while hashing IPV6 address", e);
+		}
 	}
 }

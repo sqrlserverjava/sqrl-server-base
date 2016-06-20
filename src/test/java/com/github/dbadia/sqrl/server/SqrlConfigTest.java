@@ -15,8 +15,6 @@ import javax.xml.bind.Unmarshaller;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.github.dbadia.sqrl.server.SqrlConfig;
-
 import junitx.framework.ArrayAssert;
 
 public class SqrlConfigTest {
@@ -27,7 +25,7 @@ public class SqrlConfigTest {
 		jaxbContext = JAXBContext.newInstance(SqrlConfig.class);
 	}
 
-	private static final String EXPECTED_TEST_MARSHALL = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sqrlConfig><nutValidityInSeconds>300000</nutValidityInSeconds><qrCodeFileType>PNG</qrCodeFileType></sqrlConfig>";
+	private static final String EXPECTED_TEST_MARSHALL = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sqrlConfig><nutValidityInSeconds>900000</nutValidityInSeconds><qrCodeFileType>PNG</qrCodeFileType></sqrlConfig>";
 
 	/**
 	 * Basic test to ensure we don't break {@link SqrlConfig} JAXB marshalling by trying to do something illegal (try

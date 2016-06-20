@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-// TODO: doc required and optional
 // @formatter:off
 /**
  * Bean which stores our server-side SQRL configuration settings. 
@@ -18,7 +17,6 @@ import javax.xml.bind.annotation.XmlTransient;
  * <ul>
  * <li>{@link #aesKeyBytes} - </li>
  * <li>{@link #backchannelServletPath}
- * <li>the third item
  * </ul><p>
  *  <b>Recommended</b> fields to be set are:
  * 
@@ -37,11 +35,11 @@ public class SqrlConfig {
 	 * The amount of time the SQRL "Nut" will be valid for. That is the maximum amount of time that can pass between us
 	 * (server) generating the QR code and us receiving the clients response
 	 * 
-	 * TODO: what is a reasonable default? This is a new protocol so they may need time to read about it, download and
-	 * install app, etc
+	 * It is strongly recommended that this value be set to 15 minutes ore more as this is a new protocol. The user may
+	 * use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it works etc.
 	 */
 	@XmlElement
-	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toMillis(5);
+	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toMillis(15);
 
 	@XmlElement
 	private ImageFormat qrCodeFileType = ImageFormat.PNG;
@@ -110,16 +108,32 @@ public class SqrlConfig {
 		return backchannelServletPath;
 	}
 
+	// @formatter:off
 	/**
-	 * Required: sets the URL to the servlet endpoint which will handle SQRL client requests, can be either a full URL
-	 * or a URI for example: http://127.0.0.1:8080/sqrlbc /sqrlbc
+	 * Required: sets the URL to the servlet endpoint which will handle SQRL client requests, can be either a full URL,
+	 * a full URI, or a partial URI.
+	 * <p/>
 	 * 
-	 * If the value is a partial URI ("/sqrlbc" or "sqrlbc")), then the request URL will be used as the
-	 * protocol/host/port TODO: example
+	 * <table summary="Backchannel Servlet Path Examples">
+	 *   <tr>
+	 *      <td>Setting</td><td>Login URL</td><td>Computed BC url</td>
+	 *   </tr>
+	 *   <tr>
+	 *      <td>https://sqrljava.tech/sqrlexample/sqrlbc</td><td>https://sqrljava.tech/sqrlexample/login</td><td>https://sqrljava.tech/sqrlexample/sqrlbc</td>
+	 *   </tr>
+	 *   <tr>
+	 *      <td>/sqrl/sqrlbc</td><td>https://sqrljava.tech/myapp/login</td><td>https://sqrljava.tech/<b>sqrl/sqrlbc</b></td>
+	 *   </tr>
+	 *   <tr>
+	 *      <td>sqrlbc</td><td>https://sqrljava.tech/sqrlexample/login</td><td>https://sqrljava.tech/sqrlexample/<b>sqrlbc</b></td>
+	 *   </tr>
+	 * </table>
 	 * 
 	 * @param backchannelServletPath
-	 *            the servlet endpoint which will handle SQRL client requests, for example: http://127.0.0.1:8080/sqrlbc
+	 *            the servlet endpoint which will handle SQRL client requests.  Can be a full URL,
+	 * a full URI, or a partial URI
 	 */
+	// @formatter:on
 	public void setBackchannelServletPath(final String backchannelServletPath) {
 		this.backchannelServletPath = backchannelServletPath;
 	}
