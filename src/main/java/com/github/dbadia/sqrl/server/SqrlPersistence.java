@@ -84,7 +84,7 @@ public interface SqrlPersistence {
 	 *            the SQRL ID which the user authenticated with.
 	 * @param toFetch
 	 *            The name of the SQRL data to be fetched. Was the key in the {@link Map} when
-	 * @return the data
+	 * @return the data or null if it does not exist
 	 */
 	public String fetchSqrlIdentityDataItem(String sqrlIdk, String toFetch) throws SqrlPersistenceException;
 

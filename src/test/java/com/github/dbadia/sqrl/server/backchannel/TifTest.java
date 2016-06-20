@@ -47,6 +47,44 @@ public class TifTest {
 			assertTrue(isTifPresent(tif, expectedTif));
 		}
 		assertEquals(expectedValue, tif.getTifInt());
+
+		// TODO: test with absent
+	}
+
+
+	/* **************** Util methods *****************/
+	static final void assertTif(final SqrlTif tif, final int... expectedTifArray) {
+		for (final int expectedTifInt : expectedTifArray) {
+			assertTifPresent(tif, expectedTifInt);
+		}
+		final List<Integer> absentTifList = buildAbsentTifList(expectedTifArray);
+		for (final int absentTifInt : absentTifList) {
+			assertTifAbsent(tif, absentTifInt);
+		}
+	}
+
+	private static void assertTifAbsent(final SqrlTif tif, final int absentTifInt) {
+		assertTrue("Found expected absent " + absentTifInt + " in tif " + tif, isTifAbsent(tif, absentTifInt));
+	}
+
+	static final List<Integer> buildAbsentTifList(final int[] expectedTifArray) {
+		final List<Integer> absentTifList = SqrlTif.getAllTifs();
+		for (final int tif : expectedTifArray) {
+			absentTifList.remove(Integer.valueOf(tif));
+		}
+		return absentTifList;
+	}
+
+	static final void assertTifPresent(final SqrlTif tif, final int tifToLookFor) {
+		assertTrue("Expected " + tifToLookFor + " in tif " + tif, isTifPresent(tif, tifToLookFor));
+	}
+
+	static final boolean isTifPresent(final SqrlTif tif, final int tifToLookFor) {
+		return (tif.getTifInt() & tifToLookFor) == tifToLookFor;
+	}
+
+	static final boolean isTifAbsent(final SqrlTif tif, final int tifToLookFor) {
+		return !isTifPresent(tif, tifToLookFor);
 	}
 
 	// Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
@@ -61,12 +99,4 @@ public class TifTest {
 		this.tifList = tifList;
 	}
 
-	/* **************** Util methods *****************/
-	private static final boolean isTifPresent(final SqrlTif tif, final int tifToLookFor) {
-		return (tif.getTifInt() & tifToLookFor) == tifToLookFor;
-	}
-
-	private static final boolean isTifAbsent(final SqrlTif tif, final int tifToLookFor) {
-		return !isTifPresent(tif, tifToLookFor);
-	}
 }

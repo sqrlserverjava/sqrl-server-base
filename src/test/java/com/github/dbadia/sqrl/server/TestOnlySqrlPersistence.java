@@ -31,6 +31,7 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 	@Override
 	public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore)
 			throws SqrlPersistenceException {
+		knownUsers.add(sqrlIdk);
 		Map<String, String> sqrlDataForIdentity = sqrlIdentityDataTable.get(sqrlIdk);
 		if (sqrlDataForIdentity == null) {
 			sqrlDataForIdentity = new ConcurrentHashMap<>();
@@ -71,7 +72,7 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 	public String fetchSqrlIdentityDataItem(final String sqrlIdk, final String toFetch) throws SqrlPersistenceException {
 		final Map<String, String> extraUserDataTable = sqrlIdentityDataTable.get(sqrlIdk);
 		if (extraUserDataTable == null || extraUserDataTable.isEmpty()) {
-			throw new SqrlPersistenceException("No data for this user");
+			return null;
 		}
 		return extraUserDataTable.get(toFetch);
 	}

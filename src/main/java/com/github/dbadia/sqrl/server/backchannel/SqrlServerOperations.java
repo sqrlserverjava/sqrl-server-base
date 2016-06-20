@@ -203,7 +203,7 @@ public class SqrlServerOperations {
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
 			} catch (final SqrlException e) {
 				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
-						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString));
+						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString), e);
 				logger.info("{}Request {}, responded with   B64: {}", logHeader, requestState, serverReplyString);
 			}
 		} finally {
@@ -217,16 +217,19 @@ public class SqrlServerOperations {
 		logger.debug("{}Processing {} command for nut {}", logHeader, command, nutToken);
 		final String idk = request.getIdk();
 		boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
-		if (COMMAND_QUERY.equals(command)) {
-			if (idkExistsInDataStore) {
-				tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
-			} else if (request.hasPidk()) {
-				final String result = sqrlPersistence.fetchSqrlIdentityDataItem(idk, request.getPidk());
-				if (result == null) {
-					sqrlPersistence.updateIdkForSqrlIdentity(request.getPidk(), idk);
-					tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
-				}
+		// Set IDK /PIDK Tifs
+		if (idkExistsInDataStore) {
+			tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
+		} else if (request.hasPidk()) {
+			final String result = sqrlPersistence.fetchSqrlIdentityDataItem(idk, request.getPidk());
+			if (result == null) {
+				sqrlPersistence.updateIdkForSqrlIdentity(request.getPidk(), idk);
+				tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
 			}
+		}
+		// Now process the command
+		if (COMMAND_QUERY.equals(command)) {
+			// Nothing else to do
 		} else if (COMMAND_IDENT.equals(command)) {
 			final Map<String, String> keysToBeStored = request.getKeysToBeStored();
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
