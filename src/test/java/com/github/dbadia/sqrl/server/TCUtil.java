@@ -15,17 +15,17 @@ public class TCUtil {
 	static final byte[] AES_TEST_KEY = new byte[16];
 
 	public static final SqrlConfig buildValidSqrlConfig() {
-		final SqrlConfig sqrlConfig = new SqrlConfig();
-		sqrlConfig.setServerFriendlyName("Dave Test");
-		sqrlConfig.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
+		final SqrlConfig config = new SqrlConfig();
+		config.setServerFriendlyName("Dave Test");
+		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
 		// set AES key to all zeros for test cases
-		sqrlConfig.setAESKeyBytes(AES_TEST_KEY);
+		config.setAESKeyBytes(AES_TEST_KEY);
 		// TestSecureRandom isn't random at all which is very fast
 		// If we didn't set a secure random, SecureRandom.getInstance will be called
 		// which would slow down most of our test cases for no good reason
-		sqrlConfig.setSecureRandom(new TestSecureRandom());
+		config.setSecureRandom(new TestSecureRandom());
 
-		return sqrlConfig;
+		return config;
 	}
 
 	public static final SqrlPersistence buildEmptySqrlPersistence() {
@@ -72,23 +72,23 @@ public class TCUtil {
 		return mockRequest;
 	}
 
-	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig sqrlConfig) throws SqrlException {
+	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config) throws SqrlException {
 		final long timestamp = System.currentTimeMillis();
 		final int inetInt = 4;
 		final int counter = 234;
 		final int random = 6;
-		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(sqrlConfig), counter, timestamp, random);
+		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(config), counter, timestamp, random);
 		return nut;
 	}
 
 
-	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig sqrlConfig, final LocalDateTime nutIssuedAt)
+	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config, final LocalDateTime nutIssuedAt)
 			throws SqrlException {
 		final long timestamp = nutIssuedAt.toEpochSecond(ZoneOffset.UTC);
 		final int inetInt = 4;
 		final int counter = 234;
 		final int random = 6;
-		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(sqrlConfig), counter, timestamp,
+		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(config), counter, timestamp,
 				random);
 		return nut;
 	}

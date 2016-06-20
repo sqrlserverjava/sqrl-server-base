@@ -64,7 +64,7 @@ public class SqrlServerOperations {
 
 
 	private final SqrlPersistence sqrlPersistence;
-	private final SqrlConfigOperations sqrlConfigOperations;
+	private final SqrlConfigOperations configOperations;
 	private final SqrlConfig config;
 
 	/**
@@ -85,7 +85,7 @@ public class SqrlServerOperations {
 		if (config == null) {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
-		this.sqrlConfigOperations = new SqrlConfigOperations(config);
+		this.configOperations = new SqrlConfigOperations(config);
 		this.config = config;
 	}
 
@@ -104,7 +104,7 @@ public class SqrlServerOperations {
 	 */
 	public SqrlAuthPageData buildQrCodeForAuthPage(final HttpServletRequest request, final InetAddress userInetAddress,
 			final int qrCodeSizeInPixels) throws SqrlException {
-		final URI backchannelUri = sqrlConfigOperations.getBackchannelRequestUrl(request);
+		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString());
 		// Now we append the nut and our SFN
 		// Even though urlBuf only contains the baseUrl, it's enough for NetUtil.inetAddressToInt
@@ -142,7 +142,7 @@ public class SqrlServerOperations {
 		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(backchannelUri, userInetAddress, config);
 		final int randomInt = config.getSecureRandom().nextInt();
 		final long timestamp = System.currentTimeMillis();
-		return new SqrlNutToken(inetInt, sqrlConfigOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
+		return new SqrlNutToken(inetInt, configOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
 	}
 
 	/**
@@ -170,7 +170,7 @@ public class SqrlServerOperations {
 			String logHeader = "";
 			SqrlRequest request = null;
 			try {
-				request = new SqrlRequest(servletRequest, sqrlPersistence, sqrlConfigOperations);
+				request = new SqrlRequest(servletRequest, sqrlPersistence, configOperations);
 				correlator = request.getCorrelator();
 				logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
 						.append(request.getClientCommand()).append(":: ").toString());
@@ -287,7 +287,7 @@ public class SqrlServerOperations {
 			}
 
 			// Build the final reply object
-			final String subsequentRequestPath = sqrlConfigOperations.getSubsequentRequestPath(servletRequest);
+			final String subsequentRequestPath = configOperations.getSubsequentRequestPath(servletRequest);
 
 			final SqrlServerReply reply = new SqrlServerReply(replyNut.asSqBase64EncryptedNut(), tif,
 					subsequentRequestPath, correlator, additionalDataTable);

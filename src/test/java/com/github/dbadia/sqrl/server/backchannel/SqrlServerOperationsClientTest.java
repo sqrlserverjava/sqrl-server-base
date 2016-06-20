@@ -35,10 +35,10 @@ public class SqrlServerOperationsClientTest {
 		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig sqrlConfig = TCUtil.buildValidSqrlConfig();
-		sqrlConfig.setNutValidityInSeconds(Integer.MAX_VALUE);
+		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, sqrlConfig);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		// sqrlServerOps.buildQrCodeForAuthPage will insert the correlator into persistece, simulate that here
 		final String correlatorFromServerParam = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
 		String serverParam = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
@@ -104,10 +104,10 @@ public class SqrlServerOperationsClientTest {
 		sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, Collections.emptyMap());
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig sqrlConfig = TCUtil.buildValidSqrlConfig();
-		sqrlConfig.setNutValidityInSeconds(Integer.MAX_VALUE);
+		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, sqrlConfig);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		// sqrlServerOps.buildQrCodeForAuthPage will insert the correlator into persistece, simulate that here
 		final String correlatorFromServerParam = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
 		String serverParam = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";

@@ -33,10 +33,10 @@ public class SqrlConfigTest {
 	 */
 	@Test
 	public void testMarshall() throws Exception {
-		final SqrlConfig sqrlConfig = new SqrlConfig();
+		final SqrlConfig config = new SqrlConfig();
 		final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 		final StringWriter writer = new StringWriter();
-		jaxbMarshaller.marshal(sqrlConfig, writer);
+		jaxbMarshaller.marshal(config, writer);
 		assertEquals(EXPECTED_TEST_MARSHALL, writer.toString());
 	}
 
@@ -46,15 +46,15 @@ public class SqrlConfigTest {
 		assertNotNull(is);
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
 			final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			final SqrlConfig sqrlConfig = (SqrlConfig) jaxbUnmarshaller.unmarshal(is);
-			assertEquals(600, sqrlConfig.getNutValidityInSeconds());
-			assertEquals(SqrlConfig.ImageFormat.PNG, sqrlConfig.getQrCodeFileType());
-			assertEquals("/sqrlbc", sqrlConfig.getBackchannelServletPath());
-			assertEquals("SQRL Java Server Demo", sqrlConfig.getServerFriendlyName());
-			System.out.println(Arrays.toString(sqrlConfig.getAESKeyBytes()));
+			final SqrlConfig config = (SqrlConfig) jaxbUnmarshaller.unmarshal(is);
+			assertEquals(600, config.getNutValidityInSeconds());
+			assertEquals(SqrlConfig.ImageFormat.PNG, config.getQrCodeFileType());
+			assertEquals("/sqrlbc", config.getBackchannelServletPath());
+			assertEquals("SQRL Java Server Demo", config.getServerFriendlyName());
+			System.out.println(Arrays.toString(config.getAESKeyBytes()));
 			final byte[] expectedKeyBytes = new byte[] { 40, 34, 52, 4, -78, 19, 113, -104, -111, -15, -65, 33, -89, 117,
 					86, -76 };
-			ArrayAssert.assertEquals(expectedKeyBytes, sqrlConfig.getAESKeyBytes());
+			ArrayAssert.assertEquals(expectedKeyBytes, config.getAESKeyBytes());
 		}
 	}
 }

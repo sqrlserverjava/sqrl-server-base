@@ -30,11 +30,11 @@ public class SqrlServerOperationsNegativeTest {
 		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig sqrlConfig = TCUtil.buildValidSqrlConfig();
-		sqrlConfig.setNutValidityInSeconds(Integer.MAX_VALUE);
-		// sqrlConfig.setBackchannelServletPath(configBackchannelPath);
+		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		config.setNutValidityInSeconds(Integer.MAX_VALUE);
+		// config.setBackchannelServletPath(configBackchannelPath);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, sqrlConfig);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		// final String sqrlIdk = "CW6EXEMdclZc3JEJky_KwMF_DhMbkV15E6Q14pyqMNY";
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
@@ -64,10 +64,10 @@ public class SqrlServerOperationsNegativeTest {
 		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig sqrlConfig = TCUtil.buildValidSqrlConfig();
-		sqrlConfig.setNutValidityInSeconds(Integer.MAX_VALUE);
+		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, sqrlConfig);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw"
@@ -105,10 +105,10 @@ public class SqrlServerOperationsNegativeTest {
 				LocalDateTime.now().plusMinutes(1));
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig sqrlConfig = TCUtil.buildValidSqrlConfig();
-		sqrlConfig.setNutValidityInSeconds(Integer.MAX_VALUE);
+		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, sqrlConfig);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw"

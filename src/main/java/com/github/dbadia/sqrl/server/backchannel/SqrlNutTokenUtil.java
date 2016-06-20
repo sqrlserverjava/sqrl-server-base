@@ -31,7 +31,7 @@ public class SqrlNutTokenUtil {
 		// Util class, all static methods
 	}
 
-	static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress, final SqrlConfig sqrlConfig) throws SqrlException {
+	static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress, final SqrlConfig config) throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
 		// perform a match/no-match comparison to detect same-device phishing attacks. Therefore, any 128-bit IPv6
@@ -43,7 +43,7 @@ public class SqrlNutTokenUtil {
 			if (requesterIpAddress instanceof Inet4Address) {
 				return SqrlNutTokenUtil.pack(requesterIpAddress.getAddress());
 			} else if (requesterIpAddress instanceof Inet6Address) {
-				return packInet6Address((Inet6Address) requesterIpAddress, sqrlConfig);
+				return packInet6Address((Inet6Address) requesterIpAddress, config);
 			} else {
 				throw new SqrlException("Unknown InetAddress type of " + requesterIpAddress.getClass());
 			}
@@ -55,7 +55,7 @@ public class SqrlNutTokenUtil {
 	}
 
 	static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt,
-			final SqrlConfig sqrlConfig)
+			final SqrlConfig config)
 			throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
@@ -75,7 +75,7 @@ public class SqrlNutTokenUtil {
 				throw new SqrlException("Got UnknownHostException for inet " + inetInt, e);
 			}
 		} else if (requesterIpAddress instanceof Inet6Address) {
-			final int currentIpPacked = packInet6Address((Inet6Address) requesterIpAddress, sqrlConfig);
+			final int currentIpPacked = packInet6Address((Inet6Address) requesterIpAddress, config);
 			return currentIpPacked == inetInt;
 		} else {
 			throw new SqrlException("Unknown InetAddress type of " + requesterIpAddress.getClass());
@@ -147,7 +147,7 @@ public class SqrlNutTokenUtil {
 		return nutToken.getIssuedTimestamp() + nutValidityMillis;
 	}
 
-	private static int packInet6Address(final Inet6Address requesterIpAddress, final SqrlConfig sqrlConfig)
+	private static int packInet6Address(final Inet6Address requesterIpAddress, final SqrlConfig config)
 			throws SqrlException {
 		// Compress per https://www.grc.com/sqrl/server.htm
 		// IPv6 addresses can be safely compressed to 32 bits by hashing the full IPv6 IP with a secret salt and
@@ -155,7 +155,7 @@ public class SqrlNutTokenUtil {
 		try {
 			final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 			// salt with aes key bytes
-			messageDigest.update(sqrlConfig.getAESKeyBytes());
+			messageDigest.update(config.getAESKeyBytes());
 			final byte[] result = messageDigest.digest(requesterIpAddress.getAddress());
 			// Get the least significant 32 bits of the hash result
 			final byte[] toPack = new byte[IPV6_TO_PACK_BYTES];

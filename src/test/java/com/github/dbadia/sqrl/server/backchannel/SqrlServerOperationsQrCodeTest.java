@@ -47,10 +47,10 @@ public class SqrlServerOperationsQrCodeTest {
 
 		// Data from a real transaction with a long expiry
 		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
-		sqrlConfig.setNutValidityInSeconds(Integer.MAX_VALUE);
-		sqrlConfig.setBackchannelServletPath(configBackchannelPath);
+		config.setNutValidityInSeconds(Integer.MAX_VALUE);
+		config.setBackchannelServletPath(configBackchannelPath);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, sqrlConfig);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 
 		// Emulate the login page generation
 		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);
@@ -60,11 +60,11 @@ public class SqrlServerOperationsQrCodeTest {
 		assertNotNull(authPageData.getQrCodeOutputStream());
 	}
 
-	private final SqrlConfig sqrlConfig;
+	private final SqrlConfig config;
 
 	public SqrlServerOperationsQrCodeTest(final ImageFormat imageFormat) {
 		super();
-		sqrlConfig = TCUtil.buildValidSqrlConfig();
-		sqrlConfig.setQrCodeFileType(imageFormat);
+		config = TCUtil.buildValidSqrlConfig();
+		config.setQrCodeFileType(imageFormat);
 	}
 }

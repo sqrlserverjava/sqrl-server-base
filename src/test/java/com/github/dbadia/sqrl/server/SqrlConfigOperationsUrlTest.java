@@ -39,10 +39,10 @@ public class SqrlConfigOperationsUrlTest {
 	@Test
 	public void testBuildReturnPaths() throws Throwable {
 		// Data from a real transaction with a long expiry
-		final SqrlConfig sqrlConfig = TCUtil.buildValidSqrlConfig();
-		sqrlConfig.setBackchannelServletPath(configBackchannelPath);
+		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		config.setBackchannelServletPath(configBackchannelPath);
 
-		final SqrlConfigOperations ops = new SqrlConfigOperations(sqrlConfig);
+		final SqrlConfigOperations ops = new SqrlConfigOperations(config);
 
 		// Execute
 		final MockHttpServletRequest loginServletRequest = TCUtil.buildMockRequest(loginRequestUrl);

@@ -34,7 +34,7 @@ public class SqrlConfigOperations {
 		FULL_URL, FULL_PATH, PARTIAL_PATH
 	}
 
-	private final SqrlConfig sqrlConfig;
+	private final SqrlConfig config;
 
 	private final Key aesKey;
 	private final BackchannelSettingType backchannelSettingType;
@@ -45,14 +45,14 @@ public class SqrlConfigOperations {
 	/**
 	 * Internal use only.
 	 * 
-	 * @param sqrlConfig
+	 * @param config
 	 *            the SQRL config object
 	 */
-	public SqrlConfigOperations(final SqrlConfig sqrlConfig) {
-		this.sqrlConfig = sqrlConfig;
+	public SqrlConfigOperations(final SqrlConfig config) {
+		this.config = config;
 
 		// SecureRandom init
-		SecureRandom secureRandom = sqrlConfig.getSecureRandom();
+		SecureRandom secureRandom = config.getSecureRandom();
 		if(secureRandom == null) {
 			logger.warn("No SecureRandom set, initializing");
 			try {
@@ -75,7 +75,7 @@ public class SqrlConfigOperations {
 		// Server Friendly Name - not required, we can compute from server name if necessary
 
 		// AES key init
-		byte[] aesKeyBytes = sqrlConfig.getAESKeyBytes();
+		byte[] aesKeyBytes = config.getAESKeyBytes();
 		if (aesKeyBytes == null || aesKeyBytes.length == 0) {
 			logger.warn("No AES key set, generating new one");
 			aesKeyBytes = new byte[SqrlConstants.AES_KEY_LENGTH];
@@ -86,7 +86,7 @@ public class SqrlConfigOperations {
 		aesKey = new SecretKeySpec(aesKeyBytes, 0, aesKeyBytes.length, "AES");
 
 		// backchannelServletPath
-		final String backchannelServletPathSetting = sqrlConfig.getBackchannelServletPath();
+		final String backchannelServletPathSetting = config.getBackchannelServletPath();
 		backchannelSettingType = validateBackchannelSetting(backchannelServletPathSetting);
 	}
 
@@ -112,7 +112,7 @@ public class SqrlConfigOperations {
 				// Chop off the URI, then add our path
 				final String baseUrl = requestUrl.substring(0,
 						requestUrl.length() - loginPageRequest.getRequestURI().length());
-				backchannelRequestString = baseUrl + sqrlConfig.getBackchannelServletPath();
+				backchannelRequestString = baseUrl + config.getBackchannelServletPath();
 			} else if(backchannelSettingType == BackchannelSettingType.PARTIAL_PATH) {
 				// Replace the last path with ours
 				String workingCopy = requestUrl;
@@ -121,9 +121,9 @@ public class SqrlConfigOperations {
 				}
 				final int lastIndex = workingCopy.lastIndexOf('/');
 				workingCopy = workingCopy.substring(0, lastIndex + 1);
-				backchannelRequestString = workingCopy + sqrlConfig.getBackchannelServletPath();
+				backchannelRequestString = workingCopy + config.getBackchannelServletPath();
 			} else if(backchannelSettingType == BackchannelSettingType.FULL_URL) {
-				backchannelRequestString = sqrlConfig.getBackchannelServletPath();
+				backchannelRequestString = config.getBackchannelServletPath();
 			} else {
 				throw new SqrlException("Don't know how to handle BackchannelSettingType: " + backchannelSettingType);
 			}
