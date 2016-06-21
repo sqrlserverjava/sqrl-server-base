@@ -16,7 +16,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 
 @RunWith(Parameterized.class)
 public class TifTest {
-	@Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
+	@Parameters(name = "{index}: ipmatch=({0}) expected=({1}) tifArray=({2}) )")
 	public static Collection<Object[]> data() {
 		// @formatter:off
 		return Arrays.asList(new Object[][] { 
@@ -31,7 +31,7 @@ public class TifTest {
 		final TifBuilder builder = new TifBuilder(ipsMatched);
 		final List<Integer> absentTifList = SqrlTif.getAllTifs();
 		if(ipsMatched) {
-			absentTifList.remove(SqrlTif.TIF_IPS_MATCHED);
+			absentTifList.remove(Integer.valueOf(SqrlTif.TIF_IPS_MATCHED));
 		}
 		for (final int tif : tifList) {
 			builder.addFlag(tif);
@@ -48,7 +48,10 @@ public class TifTest {
 		}
 		assertEquals(expectedValue, tif.getTifInt());
 
-		// TODO: test with absent
+		for(final int shouldBeAbsent : absentTifList) {
+			assertTrue("Found " + shouldBeAbsent + " in tif " + tif + " but shouldn't have",
+					isTifAbsent(tif, shouldBeAbsent));
+		}
 	}
 
 
