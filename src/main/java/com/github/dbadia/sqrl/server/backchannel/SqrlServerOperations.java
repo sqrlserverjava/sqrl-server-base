@@ -193,6 +193,9 @@ public class SqrlServerOperations {
 					logger.error(
 							SqrlLoggingUtil.getLogHeader() + "General exception processing SQRL request: " + e.getMessage(), e);
 				}
+				// The SQRL spec is unclear about HTTP return codes. It mentions returning a 404 for an invalid request
+				// but 404 is for page not found. We leave the use of 404 for an actual page not found condition and use
+				// 500 here
 				servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 			// We have processed the request, success or failure. Now transmit the reply
@@ -250,7 +253,8 @@ public class SqrlServerOperations {
 			logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
 			sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
 		} else {
-			// TODO: COMMAND_ENABLE and friends
+			tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
+			tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Unsupported client command " + command, null);
 		}
 		return idkExistsInDataStore;
