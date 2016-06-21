@@ -264,7 +264,7 @@ public class SqrlServerOperations {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());
 
 			// Nut is one time use, so generate a new one for the reply
-			final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest));
+			final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest, config));
 
 			final Map<String, String> additionalDataTable = new TreeMap<>();
 			if (sqrlRequest != null) {
@@ -302,10 +302,22 @@ public class SqrlServerOperations {
 		}
 	}
 
-	private InetAddress determineClientIpAddress(final HttpServletRequest servletRequest) throws SqrlException {
-		// TODO: header support
+	static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config) throws SqrlException {
+		final String[] headersToCheck = config.getIpForwardedForHeaders();
+		String ipToParse = null;
+		if(headersToCheck != null) {
+			for (final String headerToFind : headersToCheck) {
+				ipToParse = servletRequest.getHeader(headerToFind);
+				if (SqrlUtil.isNotBlank(ipToParse)) {
+					break;
+				}
+			}
+		}
+		if (SqrlUtil.isBlank(ipToParse)) {
+			ipToParse = servletRequest.getRemoteAddr();
+		}
 		try {
-			return InetAddress.getByName(servletRequest.getRemoteAddr());
+			return InetAddress.getByName(ipToParse);
 		} catch (final UnknownHostException e) {
 			throw new SqrlException("Caught exception trying to determine clients IP address", e);
 		} 

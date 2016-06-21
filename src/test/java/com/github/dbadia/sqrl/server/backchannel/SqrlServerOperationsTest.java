@@ -1,4 +1,5 @@
 package com.github.dbadia.sqrl.server.backchannel;
+
 import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.TCUtil;

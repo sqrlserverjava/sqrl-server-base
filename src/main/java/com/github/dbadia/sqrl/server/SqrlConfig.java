@@ -43,6 +43,7 @@ public class SqrlConfig {
 
 	@XmlElement
 	private ImageFormat qrCodeFileType = ImageFormat.PNG;
+
 	/**
 	 * The path (full URL or partial URI) of the backchannel servlet which the SQRL client will call
 	 */
@@ -50,7 +51,7 @@ public class SqrlConfig {
 	private String backchannelServletPath;
 
 	/**
-	 * The Server Friendly Name
+	 * The SQRL Server Friendly Name; optional, if not provided will be set the hostname of the site
 	 */
 	@XmlElement
 	private String serverFriendlyName;
@@ -61,6 +62,20 @@ public class SqrlConfig {
 	@XmlElement
 	private byte[] aesKeyBytes;
 
+	/**
+	 * A list of one or more headers (X-Forwarded-For, etc) from which to get the users real IP. SQRL requires the users
+	 * real IP to respond to the client correctly.
+	 */
+	@XmlElement
+	private String[] ipForwardedForHeaders;
+
+	public String[] getIpForwardedForHeaders() {
+		return ipForwardedForHeaders;
+	}
+
+	public void setIpForwardedForHeaders(String[] ipForwardedForHeaders) {
+		this.ipForwardedForHeaders = ipForwardedForHeaders;
+	}
 
 	public int getNutValidityInSeconds() {
 		return nutValidityInSeconds;
