@@ -2,9 +2,7 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,18 +28,6 @@ import com.github.dbadia.sqrl.server.SqrlUtil;
 public class SqrlRequest {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlRequest.class);
 
-	private static final String KEY_TYPE_IDENTITY = "idk";
-	private static final String KEY_TYPE_SUC = "suk";
-	private static final String KEY_TYPE_VUK = "vuk";
-	private static final String KEY_TYPE_PREVIOUS_IDENTITY = "pidk";
-	private static final List<String> ALL_KEY_TYPES = Arrays
-			.asList(new String[] { KEY_TYPE_IDENTITY, KEY_TYPE_SUC, KEY_TYPE_VUK, KEY_TYPE_PREVIOUS_IDENTITY });
-
-	private static final String CLIENT_PARAM_VER = "ver";
-	private static final String CLIENT_PARAM_CMD = "cmd";
-	private static final String CLIENT_PARAM_OPT = "opt";
-
-	private static final List<String> KEY_IDS = new ArrayList<>();
 	private static final String NUT_EQUALS = "nut=";
 
 	private final String sqrlProtocolVersion;
@@ -51,13 +37,18 @@ public class SqrlRequest {
 	private final Map<String, String> clientKeysBsse64 = new ConcurrentHashMap<>();
 	private final List<SqrlClientOpt> optList = new ArrayList();
 
+	private final HttpServletRequest servletRequest;
+	private final String clientParam;
 	private final String serverParam;
 	private final String correlator;
 
+
 	SqrlRequest(final HttpServletRequest servletRequest, final SqrlPersistence persistence,
 			final SqrlConfigOperations configOps) throws SqrlException {
-		final String clientParam = getRequiredParameter(servletRequest, "client");
+		this.servletRequest = servletRequest;
+		clientParam = getRequiredParameter(servletRequest, "client");
 		serverParam = getRequiredParameter(servletRequest, "server");
+		nut = new SqrlNutToken(configOps, extractFromServerString(NUT_EQUALS));
 		final String decoded = SqrlUtil.base64UrlDecodeToString(clientParam);
 		// parse server - not a name value pair, just the query string we gave
 		final String serverParamDecoded = SqrlUtil.base64UrlDecodeToString(serverParam);
@@ -65,13 +56,13 @@ public class SqrlRequest {
 
 		// parse client
 		final Map<String, String> clientNameValuePairTable = parseLinesToNameValueMap(decoded);
-		sqrlProtocolVersion = clientNameValuePairTable.get(CLIENT_PARAM_VER);
+		sqrlProtocolVersion = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_VER);
 		if (!"1".equals(sqrlProtocolVersion)) {
 			throw new SqrlInvalidRequestException("Unsupported SQRL Client version " + sqrlProtocolVersion, null);
 		}
 
 		// parse opt
-		final String optListString = clientNameValuePairTable.get(CLIENT_PARAM_OPT);
+		final String optListString = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_OPT);
 		if(SqrlUtil.isNotBlank(optListString)) {
 			for (final String optString : optListString.split("~")) {
 				final SqrlClientOpt clientOpt = SqrlClientOpt.valueOf(optString);
@@ -85,7 +76,7 @@ public class SqrlRequest {
 
 		// parse keys
 		for (final Map.Entry<String, String> entry : parseLinesToNameValueMap(decoded).entrySet()) {
-			if (ALL_KEY_TYPES.contains(entry.getKey())) {
+			if (SqrlConstants.getAllKeyTypes().contains(entry.getKey())) {
 				final byte[] keyBytes = SqrlUtil.base64UrlDecode(entry.getValue());
 				clientKeys.put(entry.getKey(), keyBytes);
 				clientKeysBsse64.put(entry.getKey(), entry.getValue());
@@ -104,30 +95,39 @@ public class SqrlRequest {
 			throw new SqrlException("Server parrot mismatch, possible tampering");
 		}
 
-		nut = new SqrlNutToken(configOps, extractFromServerString(NUT_EQUALS));
-
-		final String idsParam = servletRequest.getParameter("ids");
-		final byte[] signatureFromMessage = SqrlUtil.base64UrlDecode(idsParam);
-
 		// Validate the signatures
-		// TODO: check other signatures
+		for (final String aSignatureType : SqrlConstants.getAllSignatureTypes()) {
+			final String signatureParamValue = servletRequest.getParameter(aSignatureType);
+			if (SqrlUtil.isNotBlank(signatureParamValue)) {
+				// Validate the signature
+				validateSignature(SqrlConstants.getSignatureToKeyParamTable().get(aSignatureType), signatureParamValue);
+			}
+		}
+
+		clientCommand = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_CMD);
+	}
+
+	private void validateSignature(final String keyName, final String signatureParamValue) throws SqrlException {
+		final byte[] signatureFromMessage = SqrlUtil.base64UrlDecode(signatureParamValue);
+
 		try {
-			final byte[] publicKey = clientKeys.get(KEY_TYPE_IDENTITY);
+			final byte[] publicKey = clientKeys.get(keyName);
 			if (publicKey == null) {
-				throw new GeneralSecurityException(KEY_TYPE_IDENTITY + " not found in client param: " + clientParam);
+				throw new SqrlInvalidRequestException(
+						SqrlLoggingUtil.getLogHeader() + keyName + " not found in client param: " + clientParam);
 			}
 			final byte[] messageBytes = (clientParam + serverParam).getBytes();
 			final boolean isSignatureValid = SqrlUtil.verifyED25519(signatureFromMessage, messageBytes, publicKey);
 			if (!isSignatureValid) {
-				throw new SqrlException("Signature invalid for request with nut " + nut.asSqBase64EncryptedNut(), null);
+				throw new SqrlInvalidRequestException(
+						SqrlLoggingUtil.getLogHeader() + "Signature for " + keyName + " was invalid");
 			}
 		} catch (final SqrlException e) {
 			throw e;
 		} catch (final Exception e) {
-			throw new SqrlException("Error computing signature", e);
+			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Error computing signature for " + keyName, e);
 		}
 
-		clientCommand = clientNameValuePairTable.get(CLIENT_PARAM_CMD);
 	}
 
 	String extractFromServerString(final String variableToFind) throws SqrlException {
@@ -196,21 +196,21 @@ public class SqrlRequest {
 
 	Map<String, String> getKeysToBeStored() {
 		final Map<String, String> toBeStored = new ConcurrentHashMap<>(clientKeysBsse64);
-		toBeStored.remove(KEY_TYPE_IDENTITY);
-		toBeStored.remove(KEY_TYPE_PREVIOUS_IDENTITY);
+		toBeStored.remove(SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
+		toBeStored.remove(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 		return toBeStored;
 	}
 
 	String getIdk() {
-		return clientKeysBsse64.get(KEY_TYPE_IDENTITY);
+		return clientKeysBsse64.get(SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
 	}
 
 	boolean hasPidk() {
-		return clientKeysBsse64.containsKey(KEY_TYPE_PREVIOUS_IDENTITY);
+		return clientKeysBsse64.containsKey(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 	}
 
 	String getPidk() {
-		return clientKeysBsse64.get(KEY_TYPE_PREVIOUS_IDENTITY);
+		return clientKeysBsse64.get(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 	}
 
 	List<SqrlClientOpt> getOptList() {
@@ -223,5 +223,12 @@ public class SqrlRequest {
 
 	public String getCorrelator() {
 		return correlator;
+	}
+
+	/**
+	 * @return true if the request contained a valid urs signature
+	 */
+	public boolean containsUrs() {
+		return SqrlUtil.isNotBlank(servletRequest.getParameter(SqrlConstants.SQRL_SIGNATURE_URS));
 	}
 }

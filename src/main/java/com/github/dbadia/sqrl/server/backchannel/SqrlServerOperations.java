@@ -233,25 +233,45 @@ public class SqrlServerOperations {
 		// Now process the command
 		if (COMMAND_QUERY.equals(command)) {
 			// Nothing else to do
-		} else if (COMMAND_IDENT.equals(command)) {
-			final Map<String, String> keysToBeStored = request.getKeysToBeStored();
-			sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
-			idkExistsInDataStore = true;
-			// Sanity check that the keys were actually stored
-			for (final Map.Entry<String, String> entry : keysToBeStored.entrySet()) {
-				final String value = sqrlPersistence.fetchSqrlIdentityDataItem(idk, entry.getKey());
-				if (SqrlUtil.isBlank(value)) {
-					throw new SqrlPersistenceException(
-							SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey()
-							+ " was null or empty");
-				} else if (!entry.getValue().equals(value)) {
-					throw new SqrlPersistenceException(
-							SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was corrupt");
+		} else if (COMMAND_ENABLE.equals(command)) {
+			if (sqrlPersistence.getSqrlAuthState(idk) == SqrlAuthState.DISABLE) {
+				if (request.containsUrs()) {
+					sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.ENABLE);
+				} else {
+					throw new SqrlInvalidRequestException(
+							SqrlLoggingUtil.getLogHeader()
+							+ "Request was to enable SQRL but didn't contain urs signature");
 				}
 			}
-			// Now that we know the data is stored, show the user as authenticated
-			logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
-			sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
+		} else if (COMMAND_REMOVE.equals(command)) {
+			sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.DELETE);
+		} else if (COMMAND_DISABLE.equals(command)) {
+			sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.DISABLE);
+		} else if (COMMAND_IDENT.equals(command)) {
+			if (sqrlPersistence.getSqrlAuthState(idk) == SqrlAuthState.DISABLE) {
+				tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
+				tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
+				throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user", null);
+			} else {
+				final Map<String, String> keysToBeStored = request.getKeysToBeStored();
+				sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
+				idkExistsInDataStore = true;
+				// Sanity check that the keys were actually stored
+				for (final Map.Entry<String, String> entry : keysToBeStored.entrySet()) {
+					final String value = sqrlPersistence.fetchSqrlIdentityDataItem(idk, entry.getKey());
+					if (SqrlUtil.isBlank(value)) {
+						throw new SqrlPersistenceException(
+								SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey()
+								+ " was null or empty");
+					} else if (!entry.getValue().equals(value)) {
+						throw new SqrlPersistenceException(
+								SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was corrupt");
+					}
+				}
+				// Now that we know the data is stored, show the user as authenticated
+				logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
+				sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
+			}
 		} else {
 			tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
 			tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);

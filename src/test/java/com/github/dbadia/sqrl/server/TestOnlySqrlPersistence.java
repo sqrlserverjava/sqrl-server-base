@@ -1,11 +1,11 @@
 package com.github.dbadia.sqrl.server;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.github.dbadia.sqrl.server.backchannel.SqrlAuthState;
 
 /**
  * An in memory {@link SqrlPersistence} implementation that is only suitable for test case use
@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TestOnlySqrlPersistence implements SqrlPersistence {
 
-	private final List<String> knownUsers = new ArrayList<>();
+	private final Map<String, SqrlAuthState> knownSqrlUserToStateTable = new ConcurrentHashMap<>();
 	private final Map<String, String> authenticatedUsers = new ConcurrentHashMap<>();
 	private final Map<String, Long> usedTokens = new ConcurrentHashMap<>();
 
@@ -25,13 +25,13 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 
 	@Override
 	public boolean doesSqrlIdentityExistByIdk(final String sqrlIdk) throws SqrlPersistenceException {
-		return knownUsers.contains(sqrlIdk);
+		return knownSqrlUserToStateTable.containsKey(sqrlIdk);
 	}
 
 	@Override
 	public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore)
 			throws SqrlPersistenceException {
-		knownUsers.add(sqrlIdk);
+		knownSqrlUserToStateTable.put(sqrlIdk, SqrlAuthState.ENABLE);
 		Map<String, String> sqrlDataForIdentity = sqrlIdentityDataTable.get(sqrlIdk);
 		if (sqrlDataForIdentity == null) {
 			sqrlDataForIdentity = new ConcurrentHashMap<>();
@@ -60,8 +60,8 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 
 	@Override
 	public void updateIdkForSqrlIdentity(final String previousIdk, final String newIdk) {
-		knownUsers.remove(previousIdk);
-		knownUsers.add(newIdk);
+		knownSqrlUserToStateTable.remove(previousIdk);
+		knownSqrlUserToStateTable.put(newIdk, SqrlAuthState.ENABLE);
 	}
 
 	public String isUserAuthenticated(final String correlator) {
@@ -99,5 +99,15 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 			}
 		}
 		throw new SqrlException("Transient auth data not found for " + name + " with correlator " + correlator);
+	}
+
+	@Override
+	public void setSqrlAuthState(final String sqrlIdk, final SqrlAuthState state) {
+		knownSqrlUserToStateTable.put(sqrlIdk, state);
+	}
+
+	@Override
+	public SqrlAuthState getSqrlAuthState(final String sqrlIdk) {
+		return knownSqrlUserToStateTable.get(sqrlIdk);
 	}
 }

@@ -57,7 +57,6 @@ public class SqrlTif {
 	 * succeed. The “0x40” “Command failed” bit (shown next) will also be set since the client's command will not have
 	 * been processed.
 	 */
-	// TODO: send transient error on nut replayed
 	public static final int TIF_TRANSIENT_ERROR = 0x20;
 	/**
 	 * Command failed: When set, this bit indicates that the web server has encountered a problem successfully
