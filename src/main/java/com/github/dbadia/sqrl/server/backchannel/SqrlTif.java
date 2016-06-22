@@ -122,7 +122,7 @@ public class SqrlTif {
 	}
 
 	static final List<Integer> getAllTifs() {
-		return new ArrayList(ALL_TIF_LIST);
+		return new ArrayList<Integer>(ALL_TIF_LIST);
 	}
 
 	public int getTifInt() {
