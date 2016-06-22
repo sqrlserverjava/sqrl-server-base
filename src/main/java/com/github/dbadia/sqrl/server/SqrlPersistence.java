@@ -153,8 +153,10 @@ public interface SqrlPersistence {
 	 *            the SQRL ID which represents the user.
 	 * @param state
 	 *            the auth state to set for this SQRL user
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
 	 */
-	public void setSqrlAuthState(String sqrlIdk, SqrlAuthState state);
+	public void setSqrlAuthState(String sqrlIdk, SqrlAuthState state) throws SqrlPersistenceException;
 
 	/**
 	 * Called to determine if SQRL auth is enabled for a user
@@ -162,7 +164,9 @@ public interface SqrlPersistence {
 	 * @param sqrlIdk
 	 *            the SQRL ID which represents the user.
 	 * @return the auth state of the SQRL user
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
 	 */
-	public SqrlAuthState getSqrlAuthState(String sqrlIdk);
+	public SqrlAuthState getSqrlAuthState(String sqrlIdk) throws SqrlPersistenceException;
 
 }
