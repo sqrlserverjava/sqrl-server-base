@@ -405,4 +405,9 @@ public class SqrlServerOperations {
 			throw new SqrlException("Caught exception during QR code generation", e);
 		}
 	}
+
+	public long determineNutExpiry(final String sqBase64EncryptedNut) throws SqrlException {
+		final SqrlNutToken token = new SqrlNutToken(configOperations, sqBase64EncryptedNut);
+		return SqrlNutTokenUtil.computeNutExpiresAt(token, config);
+	}
 }
