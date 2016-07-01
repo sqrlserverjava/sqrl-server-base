@@ -203,6 +203,11 @@ public class SqrlServerOperations {
 			try {
 				serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tifBuilder.createTif(),
 						correlator);
+				// Store the serverReplyString in the server parrot value so we can validate it on the clients next
+				// request
+				sqrlPersistence.storeTransientAuthenticationData(correlator,
+						SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT, serverReplyString,
+						LocalDateTime.now().plusSeconds(config.getNutValidityInSeconds()));
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
 			} catch (final SqrlException e) {
 				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,

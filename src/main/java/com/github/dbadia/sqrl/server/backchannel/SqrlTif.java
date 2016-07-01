@@ -125,12 +125,16 @@ public class SqrlTif {
 		return new ArrayList<Integer>(ALL_TIF_LIST);
 	}
 
-	public int getTifInt() {
+	protected int toInt() {
 		return tifInt;
 	}
 
+	protected int toHexInt() {
+		return Integer.valueOf(Integer.toString(tifInt), 16);
+	}
+
 	public static class TifBuilder {
-		private byte builderTifByte;
+		private int builderTifInt;
 
 		public TifBuilder(final boolean ipsMatched) {
 			if (ipsMatched) {
@@ -142,7 +146,7 @@ public class SqrlTif {
 		}
 
 		public TifBuilder addFlag(final int tifFlag) {
-			builderTifByte |= tifFlag;
+			builderTifInt |= tifFlag;
 			return this;
 		}
 
@@ -150,12 +154,12 @@ public class SqrlTif {
 		 * Removes all flags that are set
 		 */
 		public TifBuilder clearAllFlags() {
-			builderTifByte = 0;
+			builderTifInt = 0;
 			return this;
 		}
 
 		public SqrlTif createTif() {
-			return new SqrlTif(builderTifByte);
+			return new SqrlTif(builderTifInt);
 		}
 	}
 

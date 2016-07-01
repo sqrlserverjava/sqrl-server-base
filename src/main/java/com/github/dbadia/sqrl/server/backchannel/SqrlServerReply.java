@@ -38,7 +38,7 @@ public class SqrlServerReply {
 			final Map<String, String> additionalDataTable) {
 		super();
 		this.nut = nut;
-		this.tifInt = tif.getTifInt();
+		this.tifInt = tif.toHexInt();
 		this.queryWithoutNut = queryWithoutNut;
 		this.correlator = correlator;
 		this.additionalDataTable = additionalDataTable;

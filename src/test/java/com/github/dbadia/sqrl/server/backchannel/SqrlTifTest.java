@@ -15,13 +15,13 @@ import org.junit.runners.Parameterized.Parameters;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 
 @RunWith(Parameterized.class)
-public class TifTest {
+public class SqrlTifTest {
 	@Parameters(name = "{index}: ipmatch=({0}) expected=({1}) tifArray=({2}) )")
 	public static Collection<Object[]> data() {
 		// @formatter:off
 		return Arrays.asList(new Object[][] { 
 			{ true, 5, new int[]{SqrlTif.TIF_CURRENT_ID_MATCH }},
-			{ true, -60, new int[]{SqrlTif.TIF_COMMAND_FAILED, SqrlTif.TIF_CLIENT_FAILURE} },
+			{ true, 196, new int[]{SqrlTif.TIF_COMMAND_FAILED, SqrlTif.TIF_CLIENT_FAILURE} },
 		});
 	}
 	// @formatter:on
@@ -44,13 +44,13 @@ public class TifTest {
 			assertTrue(isTifPresent(tif, SqrlTif.TIF_IPS_MATCHED));
 		}
 		for (final int expectedTif : tifList) {
-			assertTrue(isTifPresent(tif, expectedTif));
+			assertTrue(expectedTif + " not found in int" + tif, isTifPresent(tif, expectedTif));
 		}
-		assertEquals(expectedValue, tif.getTifInt());
+		assertEquals(expectedValue, tif.toInt());
 
 		for(final int shouldBeAbsent : absentTifList) {
-			// TODO: assertTrue("Found " + shouldBeAbsent + " in tif " + tif + " but shouldn't have",
-			// isTifAbsent(tif, shouldBeAbsent));
+			assertTrue("Found " + shouldBeAbsent + " in tif " + tif + " but shouldn't have",
+					isTifAbsent(tif, shouldBeAbsent));
 		}
 	}
 
@@ -83,7 +83,7 @@ public class TifTest {
 	}
 
 	static final boolean isTifPresent(final SqrlTif tif, final int tifToLookFor) {
-		return (tif.getTifInt() & tifToLookFor) == tifToLookFor;
+		return (tif.toInt() & tifToLookFor) == tifToLookFor;
 	}
 
 	static final boolean isTifAbsent(final SqrlTif tif, final int tifToLookFor) {
@@ -95,7 +95,7 @@ public class TifTest {
 	private final int expectedValue;
 	private final int[] tifList;
 
-	public TifTest(final boolean ipsMatched, final int expectedValue, final int... tifList) {
+	public SqrlTifTest(final boolean ipsMatched, final int expectedValue, final int... tifList) {
 		super();
 		this.ipsMatched = ipsMatched;
 		this.expectedValue = expectedValue;
