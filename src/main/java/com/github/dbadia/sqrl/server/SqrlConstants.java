@@ -33,6 +33,9 @@ public class SqrlConstants {
 	public static final String KEY_TYPE_VUK = "vuk";
 	public static final String KEY_TYPE_PREVIOUS_IDENTITY = "pidk";
 
+	public static final String SIGNATURE_TYPE_IDS = "ids";
+	public static final String SIGNATURE_TYPE_URS = "urs";
+
 	public static final String CLIENT_PARAM_VER = "ver";
 	public static final String CLIENT_PARAM_CMD = "cmd";
 	public static final String CLIENT_PARAM_OPT = "opt";
@@ -49,8 +52,8 @@ public class SqrlConstants {
 	private static final Map<String, String> SIGNATURE_TO_KEY_PARAM_TABLE = new ConcurrentHashMap<>();
 
 	static {
-		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put("ids", SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
-		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put("urs", SqrlConstants.KEY_TYPE_SUC);
+		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put(SIGNATURE_TYPE_IDS, SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
+		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put(SIGNATURE_TYPE_URS, SqrlConstants.KEY_TYPE_SUC);
 		// SIGNATURE_TO_KEY_PARAM_TABLE.put(KEY_TYPE_VUK, "urs"); TODO
 		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put("pids", SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 		SqrlConstants.ALL_KEY_TYPES.addAll(SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.values());

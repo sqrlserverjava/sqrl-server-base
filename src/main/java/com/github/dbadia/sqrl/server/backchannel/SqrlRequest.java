@@ -20,7 +20,7 @@ import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 
 /**
- * Encapsulates a request received from a SQRL client
+ * Parses a SQRL client request and validates all signatures
  * 
  * @author Dave Badia
  *
@@ -51,7 +51,6 @@ public class SqrlRequest {
 		nut = new SqrlNutToken(configOps, extractFromServerString(NUT_EQUALS));
 		final String decoded = SqrlUtil.base64UrlDecodeToString(clientParam);
 		// parse server - not a name value pair, just the query string we gave
-		final String serverParamDecoded = SqrlUtil.base64UrlDecodeToString(serverParam);
 		correlator = extractFromServerString(SqrlConstants.CLIENT_PARAM_CORRELATOR);
 
 		// parse client
@@ -96,12 +95,22 @@ public class SqrlRequest {
 		}
 
 		// Validate the signatures
+		boolean idsFound = false;
 		for (final String aSignatureType : SqrlConstants.getAllSignatureTypes()) {
 			final String signatureParamValue = servletRequest.getParameter(aSignatureType);
 			if (SqrlUtil.isNotBlank(signatureParamValue)) {
 				// Validate the signature
 				validateSignature(SqrlConstants.getSignatureToKeyParamTable().get(aSignatureType), signatureParamValue);
+				if (aSignatureType.equals(SqrlConstants.SIGNATURE_TYPE_IDS)) {
+					idsFound = true;
+				}
 			}
+		}
+
+		// All requests must have the ids signature
+		if (!idsFound) {
+			throw new SqrlInvalidRequestException(
+					"ids was missing in SQRL client request: " + clientNameValuePairTable);
 		}
 
 		clientCommand = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_CMD);
