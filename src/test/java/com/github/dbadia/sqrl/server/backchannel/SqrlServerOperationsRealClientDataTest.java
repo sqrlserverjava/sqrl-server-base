@@ -25,7 +25,13 @@ import com.github.dbadia.sqrl.server.TCUtil;
 import junit.framework.TestCase;
 import junitx.framework.StringAssert;
 
-public class SqrlServerOperationsClientTest {
+/**
+ * Uses real data captured from the SQRL reference client
+ * 
+ * @author Dave Badia
+ *
+ */
+public class SqrlServerOperationsRealClientDataTest {
 
 	@Test
 	public void testFirstTime_SqrlIdentity() throws Throwable {
