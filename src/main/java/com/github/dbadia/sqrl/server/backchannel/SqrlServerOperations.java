@@ -238,6 +238,7 @@ public class SqrlServerOperations {
 				tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
 			}
 		}
+		processNonSukOptions(request, tifBuilder, logHeader);
 		// Now process the command
 		if (COMMAND_QUERY.equals(command)) {
 			// Nothing else to do
@@ -294,6 +295,30 @@ public class SqrlServerOperations {
 		return idkExistsInDataStore;
 	}
 
+	private void processNonSukOptions(final SqrlRequest sqrlRequest, final TifBuilder tifBuilder,
+			final String logHeader) {
+		for (final SqrlClientOpt clientOption : sqrlRequest.getOptList()) {
+			switch (clientOption) {
+			case suk:
+				// Nothing to do, handled in buildReply
+				break;
+			case cps:
+			case hardlock:
+			case sqrlonly:
+				logger.warn("{}The SQRL client option {} is not yet supported", logHeader, clientOption);
+				// Some flags are to be ignored on query commands, check for that case here
+				if (!clientOption.isNonQueryOnly() || !COMMAND_QUERY.equals(sqrlRequest.getClientCommand())) {
+					tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
+				}
+				break;
+			default:
+				logger.error("{}Don't know how to reply to SQRL client opt {}", logHeader, clientOption);
+				tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
+				break;
+			}
+		}
+	}
+
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlRequest sqrlRequest,
 			final boolean idkExistsInDataStore, final SqrlTif tif, final String correlator)
 					throws SqrlException {
@@ -311,7 +336,6 @@ public class SqrlServerOperations {
 				for (final SqrlClientOpt clientOption : sqrlRequest.getOptList()) {
 					switch (clientOption) {
 					case suk:
-					case vuk:
 						if (idkExistsInDataStore) { // If the idk doesn't exist then we don't have these yet
 							additionalDataTable.put(clientOption.toString(), sqrlPersistence
 									.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), clientOption.toString()));

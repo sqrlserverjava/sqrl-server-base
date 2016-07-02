@@ -14,9 +14,8 @@ The intent is that additional libraries will be built on top of this for popular
 #### Interoperability
  * This library is fully functional for basic authentication.  Advanced operations such as SQRL identity replacement are not yet implemented
  * As of June 2016, the SQRL protocol has been declared ["done with caveats"](https://www.grc.com/sn/sn-562.txt) by it's creator.  SQRL clients built prior to this may still be using an older version of the protocol and may not be compatible
-* There is a sample application using this library at the urls below.  You <b>must</b> install a SQRL client before authenticating: 
- http://sqrljava.tech/sqrlexample 
- https://sqrljava.tech/sqrlexample 
+* There is a sample application using this library at the url below.  You <b>must</b> install a SQRL client before authenticating:
+ https://sqrljava.tech:20000/sqrlexample
 
 #### Design Goals
  * Make integration as easy as possible - There is only 
@@ -40,7 +39,7 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 * Create a servlet to handle SQRL client requests.  The `doPost` method of this servlet should invoke `SqrlServerOperations.handleSqrlClientRequest(ServletRequest, ServletResponse)`
 * Login Page impact
 	* Decide on one of the two approaches explained in [Browser to SQRL Client Correlation](#browser-to-sqrl-client-correlation) 
-	* When you are ready to display the SQRL QR code, invoke `SqrlServerOperations.buildQrCodeForAuthPage()`.  Use the result to display and anchor tag with the SQRL url which wraps the QR code image.  The expected result in a QR code that can be scanned, clicked, or touched, as seen in  https://sqrljava.tech/sqrlexample   
+	* When you are ready to display the SQRL QR code, invoke `SqrlServerOperations.buildQrCodeForAuthPage()`.  Use the result to display and anchor tag with the SQRL url which wraps the QR code image.  The expected result in a QR code that can be scanned, clicked, or touched, as seen in  https://sqrljava.tech:20000/sqrlexample
 	* Once the SQRL QR code is displayed, the authentication page must periodically poll the server (using ajay long polling, etc) to see if SQRL authentication is in progress or has completed.   Once SQRL authentication completes, the server will redirect the user to whatever page is typically displayed after autheticating
 
 #### License
