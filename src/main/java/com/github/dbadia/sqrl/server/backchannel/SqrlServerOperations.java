@@ -180,8 +180,7 @@ public class SqrlServerOperations {
 				final SqrlNutToken nutToken = request.getNut();
 
 				SqrlNutTokenUtil.validateNut(nutToken, config, sqrlPersistence);
-				idkExistsInDataStore = processClientCommand(request, nutToken, request.getClientCommand(),
-						tifBuilder, correlator);
+				idkExistsInDataStore = processClientCommand(request, nutToken, tifBuilder, correlator);
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
 			} catch (final SqrlException e) {
@@ -201,27 +200,31 @@ public class SqrlServerOperations {
 			// We have processed the request, success or failure. Now transmit the reply
 			String serverReplyString = ""; // for logging
 			try {
-				serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tifBuilder.createTif(),
-						correlator);
+				final SqrlTif tif = tifBuilder.createTif();
+				serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tif, correlator);
 				// Store the serverReplyString in the server parrot value so we can validate it on the clients next
 				// request
 				sqrlPersistence.storeTransientAuthenticationData(correlator,
 						SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT, serverReplyString,
 						LocalDateTime.now().plusSeconds(config.getNutValidityInSeconds()));
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
+				logger.info("{}Processed sqrl client request replying with tif {}", logHeader,
+						tif);
 			} catch (final SqrlException e) {
 				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
 						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString), e);
-				logger.info("{}Request {}, responded with   B64: {}", logHeader, requestState, serverReplyString);
+				logger.debug("{}Request {}, responded with   B64: {}", logHeader, requestState, serverReplyString);
 			}
 		} finally {
 			SqrlLoggingUtil.clearLogHeader();
 		}
 	}
 
-	private boolean processClientCommand(final SqrlRequest request, final SqrlNutToken nutToken, final String command,
+	// protected to ease unit testing
+	protected boolean processClientCommand(final SqrlRequest request, final SqrlNutToken nutToken,
 			final TifBuilder tifBuilder, final String correlator) throws SqrlException {
 		final String logHeader = SqrlLoggingUtil.getLogHeader();
+		final String command = request.getClientCommand();
 		logger.debug("{}Processing {} command for nut {}", logHeader, command, nutToken);
 		final String idk = request.getIdk();
 		boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
@@ -239,17 +242,24 @@ public class SqrlServerOperations {
 		if (COMMAND_QUERY.equals(command)) {
 			// Nothing else to do
 		} else if (COMMAND_ENABLE.equals(command)) {
-			if (sqrlPersistence.getSqrlAuthState(idk) == SqrlAuthState.DISABLE) {
+			final SqrlAuthState currentState = sqrlPersistence.getSqrlAuthState(idk);
+			if (currentState == SqrlAuthState.DISABLE) {
 				if (request.containsUrs()) {
 					sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.ENABLE);
 				} else {
-					throw new SqrlInvalidRequestException(
-							SqrlLoggingUtil.getLogHeader()
+					throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader()
 							+ "Request was to enable SQRL but didn't contain urs signature");
 				}
+			} else {
+				logger.warn("{}Received request to DISABLE but current state is {}");
 			}
 		} else if (COMMAND_REMOVE.equals(command)) {
-			sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.DELETE);
+			if (request.containsUrs()) {
+				sqrlPersistence.deleteSqrlIdentity(idk);
+			} else {
+				throw new SqrlInvalidRequestException(
+						SqrlLoggingUtil.getLogHeader() + "Request was to enable SQRL but didn't contain urs signature");
+			}
 		} else if (COMMAND_DISABLE.equals(command)) {
 			sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.DISABLE);
 		} else if (COMMAND_IDENT.equals(command)) {
@@ -265,9 +275,8 @@ public class SqrlServerOperations {
 				for (final Map.Entry<String, String> entry : keysToBeStored.entrySet()) {
 					final String value = sqrlPersistence.fetchSqrlIdentityDataItem(idk, entry.getKey());
 					if (SqrlUtil.isBlank(value)) {
-						throw new SqrlPersistenceException(
-								SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey()
-								+ " was null or empty");
+						throw new SqrlPersistenceException(SqrlLoggingUtil.getLogHeader() + "Stored value for "
+								+ entry.getKey() + " was null or empty");
 					} else if (!entry.getValue().equals(value)) {
 						throw new SqrlPersistenceException(
 								SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was corrupt");

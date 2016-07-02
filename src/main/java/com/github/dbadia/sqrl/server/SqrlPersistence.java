@@ -159,14 +159,24 @@ public interface SqrlPersistence {
 	public void setSqrlAuthState(String sqrlIdk, SqrlAuthState state) throws SqrlPersistenceException;
 
 	/**
-	 * Called to determine if SQRL auth is enabled for a user
+	 * Invoked to determine if SQRL auth is enabled for a user
 	 * 
 	 * @param sqrlIdk
 	 *            the SQRL ID which represents the user.
-	 * @return the auth state of the SQRL user
+	 * @return the auth state of the SQRL user or {@link SqrlAuthState#NOT_EXIST} if there is none
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
 	public SqrlAuthState getSqrlAuthState(String sqrlIdk) throws SqrlPersistenceException;
+
+	/**
+	 * Invoked when the user chooses to remove SQRL authentication for this site
+	 * 
+	 * @param sqrlIdk
+	 *            the SQRL ID which represents the user.
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
+	 */
+	public void deleteSqrlIdentity(String sqrlIdk) throws SqrlPersistenceException;
 
 }

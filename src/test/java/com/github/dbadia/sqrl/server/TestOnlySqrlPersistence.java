@@ -108,6 +108,16 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 
 	@Override
 	public SqrlAuthState getSqrlAuthState(final String sqrlIdk) {
-		return knownSqrlUserToStateTable.get(sqrlIdk);
+		final SqrlAuthState authState = knownSqrlUserToStateTable.get(sqrlIdk);
+		if (authState == null) {
+			return SqrlAuthState.NOT_EXIST;
+		} else {
+			return authState;
+		}
+	}
+
+	@Override
+	public void deleteSqrlIdentity(final String sqrlIdk) {
+		knownSqrlUserToStateTable.remove(sqrlIdk);
 	}
 }

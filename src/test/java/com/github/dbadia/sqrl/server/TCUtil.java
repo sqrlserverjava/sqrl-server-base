@@ -81,7 +81,6 @@ public class TCUtil {
 		return nut;
 	}
 
-
 	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config, final LocalDateTime nutIssuedAt)
 			throws SqrlException {
 		final long timestamp = nutIssuedAt.toEpochSecond(ZoneOffset.UTC);
