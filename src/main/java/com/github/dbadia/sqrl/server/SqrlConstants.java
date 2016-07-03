@@ -22,7 +22,8 @@ public class SqrlConstants {
 	public static final String FORWARD_SLASH = "/";
 
 	public static final CharSequence FORWARD_SLASH_X2_LOCALHOST = "//localhost";
-	public static final CharSequence FORWARD_SLASH_X2_127_0_0_1 = "//127.0.0.1"; // NOSONAR
+	@SuppressWarnings("CERT:MSC03-J") 
+	public static final CharSequence FORWARD_SLASH_X2_127_0_0_1 = "//127.0.0.1";
 	public static final int AES_KEY_LENGTH = 16;
 	public static final String CLIENT_PARAM_CORRELATOR = "cor";
 
@@ -41,20 +42,18 @@ public class SqrlConstants {
 	public static final String CLIENT_PARAM_OPT = "opt";
 
 
-	private static final List<String> KEY_IDS = new ArrayList<>();
 	private static final List<String> ALL_KEY_TYPES = new ArrayList<>();
 	private static final List<String> ALL_SIGNATURE_TYPES = new ArrayList<>();
+	private static final Map<String, String> SIGNATURE_TO_KEY_PARAM_TABLE = new ConcurrentHashMap<>();
+	public static final String TRANSIENT_NAME_SERVER_PARROT = "lastServerParam";
 
 	private SqrlConstants() {
 		// Constants class
 	}
 
-	private static final Map<String, String> SIGNATURE_TO_KEY_PARAM_TABLE = new ConcurrentHashMap<>();
-
 	static {
 		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put(SIGNATURE_TYPE_IDS, SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
 		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put(SIGNATURE_TYPE_URS, SqrlConstants.KEY_TYPE_SUC);
-		// SIGNATURE_TO_KEY_PARAM_TABLE.put(KEY_TYPE_VUK, "urs"); TODO
 		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put("pids", SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 		SqrlConstants.ALL_KEY_TYPES.addAll(SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.values());
 		SqrlConstants.ALL_SIGNATURE_TYPES.addAll(SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.keySet());

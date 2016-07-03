@@ -1,10 +1,4 @@
 package com.github.dbadia.sqrl.server;
-import static com.github.dbadia.sqrl.server.SqrlConstants.SCHEME_HTTP;
-import static com.github.dbadia.sqrl.server.SqrlConstants.SCHEME_HTTPS;
-import static com.github.dbadia.sqrl.server.SqrlConstants.SCHEME_HTTPS_COLON;
-import static com.github.dbadia.sqrl.server.SqrlConstants.SCHEME_QRL;
-import static com.github.dbadia.sqrl.server.SqrlConstants.SCHEME_SQRL;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -147,10 +141,11 @@ public class SqrlConfigOperations {
 	private static URI changeToSqrlScheme(final String fullBackChannelUrl) throws SqrlException {
 		// Compute the proper protocol
 		StringBuilder urlBuf = null; // NOSONAR: false positive dead store
-		if (fullBackChannelUrl.startsWith(SCHEME_HTTPS_COLON)) {
-			urlBuf = new StringBuilder(fullBackChannelUrl.replace(SCHEME_HTTPS, SCHEME_SQRL));
+		if (fullBackChannelUrl.startsWith(SqrlConstants.SCHEME_HTTPS_COLON)) {
+			urlBuf = new StringBuilder(
+					fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTPS, SqrlConstants.SCHEME_SQRL));
 		} else if (fullBackChannelUrl.startsWith("http:")) {
-			urlBuf = new StringBuilder(fullBackChannelUrl.replace(SCHEME_HTTP, SCHEME_QRL));
+			urlBuf = new StringBuilder(fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTP, SqrlConstants.SCHEME_QRL));
 		} else {
 			throw new SqrlException(
 					"Don't know how to handle protocol of config.getBackChannelUrl(): " + fullBackChannelUrl);
@@ -197,6 +192,8 @@ public class SqrlConfigOperations {
 		} else if (backchannelServletPath.contains(".")) {
 			// Must be a full url, validate it
 			try {
+				//				@SuppressWarnings("bug:unused") // This is for validation
+				// @SuppressWarnings("CERT:MSC03-J")
 				new URL(backchannelServletPath);
 				type = BackchannelSettingType.FULL_URL;
 			} catch (final MalformedURLException e) {

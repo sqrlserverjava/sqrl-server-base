@@ -90,7 +90,7 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 
 	@Override
 	public String fetchTransientAuthData(final String correlator, final String name)
-			throws SqrlPersistenceException, SqrlException {
+			throws SqrlPersistenceException {
 		final Map<String, String> table = sqrlTransientAuthDataTable.get(correlator);
 		if (table != null) {
 			final String value = table.get(name);
@@ -98,7 +98,7 @@ public class TestOnlySqrlPersistence implements SqrlPersistence {
 				return value;
 			}
 		}
-		throw new SqrlException("Transient auth data not found for " + name + " with correlator " + correlator);
+		return null;
 	}
 
 	@Override

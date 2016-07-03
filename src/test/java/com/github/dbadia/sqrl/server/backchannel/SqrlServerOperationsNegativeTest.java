@@ -12,6 +12,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
+import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
 
@@ -34,12 +35,15 @@ public class SqrlServerOperationsNegativeTest {
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		// final String sqrlIdk = "CW6EXEMdclZc3JEJky_KwMF_DhMbkV15E6Q14pyqMNY";
-
+		final String serverValue = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
-				+ "&server=cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
+				+ "&server=" + serverValue
+				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
 		// Emulate the login page generation
 		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
+		sqrlPersistence.storeTransientAuthenticationData(CLIENT_DATA_1_CORRELATOR,
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverValue, LocalDateTime.now().plusDays(1));
 
 		sqrlServerOps.handleSqrlClientRequest(queryRequest, servletResponse);
 		servletResponse = new MockHttpServletResponse();
@@ -67,10 +71,13 @@ public class SqrlServerOperationsNegativeTest {
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
-
+		final String serverValue = "ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
-				+ "&server=ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw"
-				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
+				+ "&server=" + serverValue
+				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1cqvBg";
+
+		sqrlPersistence.storeTransientAuthenticationData(CLIENT_DATA_1_CORRELATOR,
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverValue, LocalDateTime.now().plusDays(1));
 		// Emulate the login page generation
 		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		final MockHttpServletResponse servletResponse = new MockHttpServletResponse();
@@ -87,7 +94,8 @@ public class SqrlServerOperationsNegativeTest {
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
 		// 100 hex
-		assertEquals("100", responseDataTable.get("tif"));
+		// TODO: is 402 right?
+		assertEquals("402", responseDataTable.get("tif"));
 	}
 
 	@Test
@@ -98,7 +106,7 @@ public class SqrlServerOperationsNegativeTest {
 		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
 		// Store the lastServerParam but with a bad value
 		sqrlPersistence.storeTransientAuthenticationData(CLIENT_DATA_1_CORRELATOR,
-				SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT,
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
 				// Change the first letter of server so it won't match
 				"ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw",
 				LocalDateTime.now().plusMinutes(1));

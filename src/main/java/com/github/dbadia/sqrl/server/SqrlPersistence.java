@@ -16,8 +16,6 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
  */
 public interface SqrlPersistence {
 
-	String TRANSIENT_NAME_SERVER_PARROT = "lastServerParam";
-
 	/**
 	 * Check persistence to see if a user exists with the given sqrlIdk
 	 * 
@@ -137,14 +135,14 @@ public interface SqrlPersistence {
 	 *            correlator to which this data belongs
 	 * @param name
 	 *            the name of the item to be fetched
-	 * @return the value for the correlator and name
+	 * @return the value for the correlator and name or null if it does not exist
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 * @throws SqrlException
-	 *             if the data did not exist
+	 *             if there was an error accessing the persistence store
 	 */
 	public String fetchTransientAuthData(String correlator, String transientNameServerParrot)
-			throws SqrlPersistenceException, SqrlException;
+			throws SqrlPersistenceException;
 
 	/**
 	 * Invoked when the user chooses to temporarily disable SQRL authentication for this site

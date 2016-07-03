@@ -85,7 +85,7 @@ public class SqrlRequest {
 		// Per the SQRL spec, since the server response is not signed, we must check the value that comes
 		// back to ensure it wasn't tampered with
 		final String expectedServerValue = persistence.fetchTransientAuthData(correlator,
-				SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT);
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT);
 		if (!expectedServerValue.equals(serverParam)) {
 			if (logger.isInfoEnabled()) {
 				logger.info("Server parrot mismatch, possible tampering.  Expected={}, Received={}",

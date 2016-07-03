@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
+import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.TCUtil;
@@ -50,7 +51,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		String serverParam = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 		// Store the server parrot
 		sqrlPersistence.storeTransientAuthenticationData(correlatorFromServerParam,
-				SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=" + serverParam
@@ -80,7 +81,7 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&ids=SFEHcCzTb_cnaMaInR3nFt-L_fguMGEEXHVRATq3naTlCJ6TCTfarjjYRH8HR-tua-k4HLiSVtvdLRKqM6KFDg";
 		// Store the server parrot so request validation will pass
 		sqrlPersistence.storeTransientAuthenticationData(correlatorFromServerParam,
-				SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
 
 		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
 		servletResponse = new MockHttpServletResponse();
@@ -119,7 +120,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		String serverParam = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 		// Store the server parrot
 		sqrlPersistence.storeTransientAuthenticationData(correlatorFromServerParam,
-				SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=" + serverParam
@@ -149,7 +150,7 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&ids=SFEHcCzTb_cnaMaInR3nFt-L_fguMGEEXHVRATq3naTlCJ6TCTfarjjYRH8HR-tua-k4HLiSVtvdLRKqM6KFDg";
 		// Store the server parrot so request validation will pass
 		sqrlPersistence.storeTransientAuthenticationData(correlatorFromServerParam,
-				SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
+				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam, LocalDateTime.MAX);
 
 		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
 		servletResponse = new MockHttpServletResponse();

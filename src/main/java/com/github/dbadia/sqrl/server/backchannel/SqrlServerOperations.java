@@ -129,7 +129,7 @@ public class SqrlServerOperations {
 			final String url = urlBuf.toString();
 			final ByteArrayOutputStream qrBaos = generateQrCode(config, url, qrCodeSizeInPixels);
 			// Store the url in the server parrot value so it will be there when the SQRL client makes the request
-			sqrlPersistence.storeTransientAuthenticationData(correlator, SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT,
+			sqrlPersistence.storeTransientAuthenticationData(correlator, SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
 					SqrlUtil.sqrlBase64UrlEncode(url),
 					LocalDateTime.now().plusSeconds(config.getNutValidityInSeconds()));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
@@ -205,7 +205,7 @@ public class SqrlServerOperations {
 				// Store the serverReplyString in the server parrot value so we can validate it on the clients next
 				// request
 				sqrlPersistence.storeTransientAuthenticationData(correlator,
-						SqrlPersistence.TRANSIENT_NAME_SERVER_PARROT, serverReplyString,
+						SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverReplyString,
 						LocalDateTime.now().plusSeconds(config.getNutValidityInSeconds()));
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
 				logger.info("{}Processed sqrl client request replying with tif {}", logHeader,
@@ -333,17 +333,11 @@ public class SqrlServerOperations {
 			if (sqrlRequest != null) {
 				// Add any additional data to the response based on the options the client requested
 				// Keep additionalDataTable in order as SQRL client will ignore everything after an unrecognized option
-				for (final SqrlClientOpt clientOption : sqrlRequest.getOptList()) {
-					switch (clientOption) {
-					case suk:
-						if (idkExistsInDataStore) { // If the idk doesn't exist then we don't have these yet
-							additionalDataTable.put(clientOption.toString(), sqrlPersistence
-									.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), clientOption.toString()));
-						}
-						break;
-					default:
-						logger.error("{}Don't know how to reply to SQRL client opt {}", logHeader, clientOption);
-						break;
+				if (sqrlRequest.getOptList().contains(SqrlClientOpt.suk)) {
+					final String sukSring = SqrlClientOpt.suk.toString();
+					if (idkExistsInDataStore) { // If the idk doesn't exist then we don't have these yet
+						additionalDataTable.put(sukSring,
+								sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), sukSring));
 					}
 				}
 			}
