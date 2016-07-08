@@ -12,7 +12,8 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,8 +31,8 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
+import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.SqrlPersistenceException;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.google.zxing.BarcodeFormat;
@@ -129,9 +130,10 @@ public class SqrlServerOperations {
 			final String url = urlBuf.toString();
 			final ByteArrayOutputStream qrBaos = generateQrCode(config, url, qrCodeSizeInPixels);
 			// Store the url in the server parrot value so it will be there when the SQRL client makes the request
+			final Date expiryTime = new Date(System.currentTimeMillis() + (1000 * config.getNutValidityInSeconds()));
+			sqrlPersistence.createAuthenticationProgress(correlator, expiryTime);
 			sqrlPersistence.storeTransientAuthenticationData(correlator, SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
-					SqrlUtil.sqrlBase64UrlEncode(url),
-					LocalDateTime.now().plusSeconds(config.getNutValidityInSeconds()));
+					SqrlUtil.sqrlBase64UrlEncode(url), expiryTime);
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
@@ -158,6 +160,7 @@ public class SqrlServerOperations {
 	 */
 	public void handleSqrlClientRequest(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse)
 			throws IOException {
+		sqrlPersistence.startTransaction();
 		SqrlLoggingUtil.initLoggingHeader(servletRequest);
 		if (logger.isInfoEnabled()) {
 			logger.info("Processing SQRL client request: {}", SqrlUtil.buildRequestParamList(servletRequest));
@@ -183,7 +186,9 @@ public class SqrlServerOperations {
 				idkExistsInDataStore = processClientCommand(request, nutToken, tifBuilder, correlator);
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
+				sqrlPersistence.commitTransaction();
 			} catch (final SqrlException e) {
+				sqrlPersistence.rollbackTransaction();
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
 				if(e instanceof SqrlInvalidRequestException) {
 					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
@@ -204,9 +209,10 @@ public class SqrlServerOperations {
 				serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tif, correlator);
 				// Store the serverReplyString in the server parrot value so we can validate it on the clients next
 				// request
-				sqrlPersistence.storeTransientAuthenticationData(correlator,
-						SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverReplyString,
-						LocalDateTime.now().plusSeconds(config.getNutValidityInSeconds()));
+				final Date expireDate = new Date(
+						System.currentTimeMillis() + (1000 * config.getNutValidityInSeconds()));
+				sqrlPersistence.storeTransientAuthenticationData(correlator, SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
+						serverReplyString, expireDate);
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
 				logger.info("{}Processed sqrl client request replying with tif {}", logHeader,
 						tif);
@@ -243,10 +249,11 @@ public class SqrlServerOperations {
 		if (COMMAND_QUERY.equals(command)) {
 			// Nothing else to do
 		} else if (COMMAND_ENABLE.equals(command)) {
-			final SqrlAuthState currentState = sqrlPersistence.getSqrlAuthState(idk);
-			if (currentState == SqrlAuthState.DISABLE) {
+			final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(idk,
+					SqrlFlag.SQRL_AUTH_ENABLED);
+			if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
 				if (request.containsUrs()) {
-					sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.ENABLE);
+					sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, true);
 				} else {
 					throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader()
 							+ "Request was to enable SQRL but didn't contain urs signature");
@@ -262,30 +269,24 @@ public class SqrlServerOperations {
 						SqrlLoggingUtil.getLogHeader() + "Request was to enable SQRL but didn't contain urs signature");
 			}
 		} else if (COMMAND_DISABLE.equals(command)) {
-			sqrlPersistence.setSqrlAuthState(idk, SqrlAuthState.DISABLE);
+			sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
 		} else if (COMMAND_IDENT.equals(command)) {
-			if (sqrlPersistence.getSqrlAuthState(idk) == SqrlAuthState.DISABLE) {
-				tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
-				tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
-				throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user", null);
-			} else {
+			if (!idkExistsInDataStore) {
+				// First time seeing this SQRL identity, store it and enable it
+				sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
+			}
+			final boolean sqrlEnabledForIdentity = Boolean.TRUE
+					.equals(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+			if (!idkExistsInDataStore || sqrlEnabledForIdentity) {
 				final Map<String, String> keysToBeStored = request.getKeysToBeStored();
 				sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
 				idkExistsInDataStore = true;
-				// Sanity check that the keys were actually stored
-				for (final Map.Entry<String, String> entry : keysToBeStored.entrySet()) {
-					final String value = sqrlPersistence.fetchSqrlIdentityDataItem(idk, entry.getKey());
-					if (SqrlUtil.isBlank(value)) {
-						throw new SqrlPersistenceException(SqrlLoggingUtil.getLogHeader() + "Stored value for "
-								+ entry.getKey() + " was null or empty");
-					} else if (!entry.getValue().equals(value)) {
-						throw new SqrlPersistenceException(
-								SqrlLoggingUtil.getLogHeader() + "Stored value for " + entry.getKey() + " was corrupt");
-					}
-				}
-				// Now that we know the data is stored, show the user as authenticated
 				logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
 				sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
+			} else { // sqrl disabled for identity
+				tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
+				tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
+				throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user", null);
 			}
 		} else {
 			tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);

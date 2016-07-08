@@ -1,11 +1,11 @@
 package com.github.dbadia.sqrl.server;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlAuthState;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.data.SqrlAuthenticationProgress;
+import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 
 /**
  * The application wanting to provide SQRL authentication must implement this interface to give the SQRL library access
@@ -15,6 +15,9 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
  *
  */
 public interface SqrlPersistence {
+	/* ***************** SqrlIdentity *********************/
+
+	public void createAndEnableSqrlIdentity(String sqrlIdk, Map<String, String> identityDataTable);
 
 	/**
 	 * Check persistence to see if a user exists with the given sqrlIdk
@@ -23,11 +26,21 @@ public interface SqrlPersistence {
 	 *            the SQRL ID to check for
 	 * @return true if sqrlIdk exists, false otherwise
 	 */
+	// TODO: remove all exceptions, JPAs are unchecked
 	public boolean doesSqrlIdentityExistByIdk(String sqrlIdk) throws SqrlPersistenceException;
 
 	/**
-	 * The user has updated their SQRL ID but this webapp is still using the old one. The webapp must lookup the user by
-	 * previousSqrlIdk, and replace that SQRL ID with nnewSqrlIdk
+	 * Fetch the sqrl identity for the the given app user cross reference id
+	 * 
+	 * @param appUserXref
+	 *            the app user cross reference value to search by
+	 * @return the SQRL identity for this app user
+	 */
+	public SqrlIdentity fetchSqrlIdentityByUserXref(final String appUserXref);
+
+	/**
+	 * The user has updated their SQRL ID but this application is still using the old one. The application must lookup
+	 * the user by previousSqrlIdk, and replace that SQRL ID with nnewSqrlIdk
 	 * 
 	 * @param previousSqrlIdk
 	 *            the old SQRL ID, which is present in persistence
@@ -37,18 +50,14 @@ public interface SqrlPersistence {
 	public void updateIdkForSqrlIdentity(String previousSqrlIdk, String newSqrlIdk) throws SqrlPersistenceException;
 
 	/**
-	 * Indicates that we have received user specific data from the SQRL client that needs to be stored for the user
-	 * <p>
+	 * Invoked when the user chooses to remove SQRL authentication for this site
 	 * 
 	 * @param sqrlIdk
-	 *            the SQRL ID which the user authenticated with.
-	 * @param dataToStore
-	 *            SQRL related data that must be persisted for this user and be retreivable via
-	 *            {@link #fetchSqrlIdentityDataItem(String, String)}
-	 * @return true if this the first time the user has used this sqrlUserId to visit this site, false otherwise
+	 *            the SQRL ID which represents the user.
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
 	 */
-	public void storeSqrlDataForSqrlIdentity(String sqrlIdk, Map<String, String> dataToStore)
-			throws SqrlPersistenceException;
+	public void deleteSqrlIdentity(String sqrlIdk) throws SqrlPersistenceException;
 
 	/**
 	 * Indicates that a user was authenticated successfully via SQRL. The webapp must use the given parameters to:
@@ -70,8 +79,48 @@ public interface SqrlPersistence {
 	 *            {@link #fetchSqrlIdentityDataItem(String, String)}
 	 * @return true if this the first time the user has used this sqrlUserId to visit this site, false otherwise
 	 */
-
 	public void userAuthenticatedViaSqrl(String sqrlIdk, String correlator)
+			throws SqrlPersistenceException;
+
+	/**
+	 * Invoked to determine if SQRL auth is enabled for a user
+	 * 
+	 * @param sqrlIdk
+	 *            the SQRL ID which represents the user.
+	 * @return the auth state of the SQRL user or {@link SqrlEaabledState#NOT_EXIST} if there is none
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
+	 */
+	public Boolean fetchSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToFetch) throws SqrlPersistenceException;
+
+	/**
+	 * Invoked when the user chooses to temporarily disable SQRL authentication for this site
+	 * 
+	 * @param sqrlIdk
+	 *            the SQRL ID which represents the user.
+	 * @param state
+	 *            the auth state to set for this SQRL user
+	 * @throws SqrlPersistenceException
+	 *             if there was an error accessing the persistence store
+	 */
+	public void setSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToSet, boolean valueToSet)
+			throws SqrlPersistenceException;
+
+	/* ***************** SQRL IDENTITY DATA *********************/
+	/**
+	 * Indicates that we have received user specific data from the SQRL client that needs to be stored for the user;
+	 * <b>NOTE<b> this is often the first call made for a new SQRL identity, so if the identity does not currently
+	 * exist, it must be created
+	 * <p>
+	 * 
+	 * @param sqrlIdk
+	 *            the SQRL ID which the user authenticated with.
+	 * @param dataToStore
+	 *            SQRL related data that must be persisted for this user and be retreivable via
+	 *            {@link #fetchSqrlIdentityDataItem(String, String)}
+	 * @return true if this the first time the user has used this sqrlUserId to visit this site, false otherwise
+	 */
+	public void storeSqrlDataForSqrlIdentity(String sqrlIdk, Map<String, String> dataToStore)
 			throws SqrlPersistenceException;
 
 	/**
@@ -87,6 +136,7 @@ public interface SqrlPersistence {
 	 */
 	public String fetchSqrlIdentityDataItem(String sqrlIdk, String toFetch) throws SqrlPersistenceException;
 
+	/* ***************** SQRL USED TOKENS *********************/
 	/**
 	 * Check persistence to see if this token has already been used
 	 * 
@@ -110,6 +160,7 @@ public interface SqrlPersistence {
 	 */
 	public void markTokenAsUsed(final String nutTokenString, Date expiryTime) throws SqrlPersistenceException;
 
+	/* ***************** TRANSIENT AUTH DATA *********************/
 	/**
 	 * Store or replace a short lived name/value for a given correlator; if the correlator/name pair already exists, the
 	 * value and deleteAfter should be updated with the new values
@@ -125,8 +176,8 @@ public interface SqrlPersistence {
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
-	public void storeTransientAuthenticationData(String correlator, String name, String value,
-			LocalDateTime deleteAfter) throws SqrlPersistenceException;
+	public void storeTransientAuthenticationData(final String correlator, final String dataName, final String dataValue,
+			final Date deleteAfter) throws SqrlPersistenceException;
 
 	/**
 	 * Fetch a short lived name/value for a given correlator and name
@@ -144,37 +195,26 @@ public interface SqrlPersistence {
 	public String fetchTransientAuthData(String correlator, String transientNameServerParrot)
 			throws SqrlPersistenceException;
 
+	/* ***************** TRANSACTION START / STOP *********************/
 	/**
-	 * Invoked when the user chooses to temporarily disable SQRL authentication for this site
-	 * 
-	 * @param sqrlIdk
-	 *            the SQRL ID which represents the user.
-	 * @param state
-	 *            the auth state to set for this SQRL user
-	 * @throws SqrlPersistenceException
-	 *             if there was an error accessing the persistence store
+	 * Invoked to start a new persistence transaction. All calls made to this class after this must <b>not</b> be
+	 * committed until {@link #commitTransaction()} is called
 	 */
-	public void setSqrlAuthState(String sqrlIdk, SqrlAuthState state) throws SqrlPersistenceException;
+	public void startTransaction();
 
 	/**
-	 * Invoked to determine if SQRL auth is enabled for a user
-	 * 
-	 * @param sqrlIdk
-	 *            the SQRL ID which represents the user.
-	 * @return the auth state of the SQRL user or {@link SqrlAuthState#NOT_EXIST} if there is none
-	 * @throws SqrlPersistenceException
-	 *             if there was an error accessing the persistence store
+	 * Commit all updates since {@link #startTransaction()} was called
 	 */
-	public SqrlAuthState getSqrlAuthState(String sqrlIdk) throws SqrlPersistenceException;
+	public void commitTransaction();
 
 	/**
-	 * Invoked when the user chooses to remove SQRL authentication for this site
-	 * 
-	 * @param sqrlIdk
-	 *            the SQRL ID which represents the user.
-	 * @throws SqrlPersistenceException
-	 *             if there was an error accessing the persistence store
+	 * Ignore all updates since {@link #startTransaction()} was called
 	 */
-	public void deleteSqrlIdentity(String sqrlIdk) throws SqrlPersistenceException;
+	public void rollbackTransaction();
 
+	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(String correlator);
+
+	public SqrlAuthenticationProgress fetchAuthenticationProgressRequired(final String correlator);
+
+	public void createAuthenticationProgress(final String correlator, final Date expiryTime);
 }

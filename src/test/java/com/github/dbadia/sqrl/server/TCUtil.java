@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceAdapter;
 
 public class TCUtil {
 	static final String DEFAULT_CONFIG_SQRL_BACKCHANNEL_PATH = "http://127.0.0.1:8080/sqrlbc";
@@ -29,7 +30,8 @@ public class TCUtil {
 	}
 
 	public static final SqrlPersistence buildEmptySqrlPersistence() {
-		return new TestOnlySqrlPersistence();
+		return new SqrlJpaPersistenceAdapter();
+		// return new TestOnlySqrlPersistence2();
 	}
 
 	public static MockHttpServletRequest buildMockRequest(final String uriString) throws URISyntaxException {

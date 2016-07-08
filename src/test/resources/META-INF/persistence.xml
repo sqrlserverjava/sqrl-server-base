@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence">
+    <persistence-unit name="javasqrl-persistence"
+        transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.github.dbadia.sqrl.server.data.SqrlIdentity</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlIdentityData</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlTransientAuthData</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlUsedNutToken</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlAuthenticationProgress</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlIdentityFlag</class>
+        <properties>
+            <property name="eclipselink.logging.level" value="FINE" />
+          	<property name="eclipselink.target-database" value="DERBY" />
+          	<property name="eclipselink.ddl-generation" value="create-tables" />
+          	<property name="eclipselink.ddl-generation.output-mode" value="both" />
+            <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:derby:memory:javasqrl;create=true" />
+            <property name="javax.persistence.jdbc.user" value="" />
+            <property name="javax.persistence.jdbc.password" value="" />
+        </properties>
+    </persistence-unit>
+</persistence>

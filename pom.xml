@@ -44,12 +44,14 @@
 		</dependency>
 
 		<!-- PROVIDED -->
+		<!-- 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>6.0</version>
 			<scope>provided</scope>
 		</dependency>
+ -->
 		<!-- TEST -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -109,12 +111,24 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<!--  required by mockito -->
+			<!-- required by mockito -->
 			<groupId>org.objenesis</groupId>
 			<artifactId>objenesis</artifactId>
 			<version>2.1</version>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.glassfish.main.extras</groupId>
+			<artifactId>glassfish-embedded-all</artifactId>
+			<version>3.1.2.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+	        <groupId>org.eclipse.persistence</groupId>
+	        <artifactId>eclipselink</artifactId>
+	        <version>2.6.3</version>
+	        <scope>test</scope>
+	    </dependency>
 	</dependencies>
 
 	<build>

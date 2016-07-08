@@ -4,3 +4,4 @@ target/
 mvn.out
 mynotes.txt
 /bin/
+derby.log

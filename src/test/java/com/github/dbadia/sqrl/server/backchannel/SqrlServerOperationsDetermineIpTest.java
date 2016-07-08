@@ -39,15 +39,6 @@ public class SqrlServerOperationsDetermineIpTest {
 		assertEquals(expectedIp, inetAddress);
 	}
 
-	// @Test
-	// public void testDetermineClientIpAddress() throws Throwable {
-	// final String ip = "127.0.0.1";
-	// final MockHttpServletRequest request = new MockHttpServletRequest();
-	// request.setRemoteAddr(ip);
-	// final InetAddress inetAddress = SqrlServerOperations.determineClientIpAddress(request);
-	// assertEquals(InetAddress.getByName(ip), inetAddress);
-	// }
-
 	// Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
 	private final MockHttpServletRequest request = new MockHttpServletRequest();
 	private final SqrlConfig config = new SqrlConfig();
