@@ -35,7 +35,7 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 
 #### Integration Overview
 1. Select a JPA provider and add the required jars to your classpath.  For example, to use eclipse link you would add: https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink
-2. Add META-INF/persistence.xml to your classpath.  You can start with an in memory database by using [derby](jpa-examples/derby/META-INF/persistence.xml).  When you ready to use a real DB, here is the [ddl](sqrl.ddl) and [mysql](jpa-examples/mysql/META-INF/persistence.xml) persistence.xml.  Other databases can be supported simply by editing persistence.xml accordingly.
+2. Add META-INF/persistence.xml to your classpath.  You can start with an in memory database by using [derby](jpa-examples/derby/META-INF/persistence.xml).  When you ready to use a real DB, here is the [visual db design](jpa-examples/sqrl-db-design.png), [ddl](jpa-examples/sqrl.ddl), and [mysql](jpa-examples/mysql/META-INF/persistence.xml) persistence.xml.  Other databases can be supported simply by editing persistence.xml accordingly.  
 1. Create a `com.github.dbadia.sqrl.server.SQRLConfig` bean and set the required fields accordingly (see javadoc).  This can be done via Spring, JAXB, etc.
 1. In your application code, you can now create a `com.github.dbadia.sqrl.server.SqrlServerOperations` object using the `SqrlConfig` object from the previous step.
 1. Create a servlet to handle SQRL client requests.  The `doPost` method of this servlet should invoke `SqrlServerOperations.handleSqrlClientRequest(ServletRequest, ServletResponse)`
