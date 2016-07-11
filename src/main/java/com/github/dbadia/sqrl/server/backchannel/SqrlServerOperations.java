@@ -36,7 +36,7 @@ import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceAdapter;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -62,9 +62,7 @@ public class SqrlServerOperations {
 	private static final String COMMAND_ENABLE = "enable";
 	private static final String COMMAND_REMOVE = "remove";
 
-
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
-
 
 	private final SqrlPersistence sqrlPersistence;
 	private final SqrlConfigOperations configOperations;
@@ -80,7 +78,7 @@ public class SqrlServerOperations {
 	 * @throws SqrlException
 	 */
 	public SqrlServerOperations(final SqrlConfig config) throws SqrlException {
-		this.sqrlPersistence = new SqrlJpaPersistenceAdapter();
+		this.sqrlPersistence = new SqrlJpaPersistenceProvider();
 		if (config == null) {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}

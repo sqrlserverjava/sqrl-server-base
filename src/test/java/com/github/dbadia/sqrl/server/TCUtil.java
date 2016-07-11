@@ -19,7 +19,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.data.Constants;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceAdapter;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 
 import junitx.util.PrivateAccessor;
 
@@ -82,7 +82,7 @@ public class TCUtil {
 
 	// TODO: change to setup
 	public static final SqrlPersistence buildEmptySqrlPersistence() {
-		final SqrlJpaPersistenceAdapter persistence = new SqrlJpaPersistenceAdapter();
+		final SqrlJpaPersistenceProvider persistence = new SqrlJpaPersistenceProvider();
 		entityManager.getTransaction().begin();
 		entityManager.createQuery("DELETE FROM SqrlCorrelator m").executeUpdate();
 		entityManager.createQuery("DELETE FROM SqrlIdentity m").executeUpdate();

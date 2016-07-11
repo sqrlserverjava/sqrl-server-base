@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceException;
@@ -18,11 +19,12 @@ import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlPersistenceException;
 
-public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlJpaPersistenceAdapter.class);
+public class SqrlJpaPersistenceProvider implements SqrlPersistence {
+	private static final Logger logger = LoggerFactory.getLogger(SqrlJpaPersistenceProvider.class);
 
-	private static final EntityManager entityManager = Persistence
-			.createEntityManagerFactory(Constants.PERSISTENCE_UNIT_NAME).createEntityManager();
+	private static final EntityManagerFactory entityManagerFactory = Persistence
+			.createEntityManagerFactory(Constants.PERSISTENCE_UNIT_NAME);
+	private static final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
 	/**
 	 * Test case use only
@@ -82,6 +84,23 @@ public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
 		final SqrlIdentity sqrlIdentity = fetchRequiredSqrlIdentity(sqrlIdk);
 		sqrlCorrelator.setAuthenticatedIdentity(sqrlIdentity);
 	}
+
+	@Override
+	public void updateNativeUserXref(final SqrlIdentity sqrlIdentity, final String nativeUserXref) {
+		final EntityManager entityManager = entityManagerFactory.createEntityManager();
+		try {
+			entityManager.getTransaction().begin();
+			sqrlIdentity.setNativeUserXref(nativeUserXref);
+			entityManager.getTransaction().commit();
+		} catch (final PersistenceException e) {
+			entityManager.getTransaction().rollback();
+			throw e;
+		} finally {
+			entityManager.close();
+		}
+	}
+
+	/* ************************ Sqrl Correlator methods *****************************/
 
 	private SqrlCorrelator fetchSqrlCorrelator(final String sqrlCorrelatorString) {
 		return (SqrlCorrelator) returnOneOrNull(
@@ -210,4 +229,5 @@ public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
 		entityManager.persist(sqrlCorrelator);
 		return sqrlCorrelator;
 	}
+
 }

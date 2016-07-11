@@ -60,6 +60,17 @@ public interface SqrlPersistence {
 	public void deleteSqrlIdentity(String sqrlIdk) throws SqrlPersistenceException;
 
 	/**
+	 * Called to assign a native user cross reference to the given SQRL identity object so when SQRL authentication
+	 * takes place, the application knows which user has authenticated
+	 * 
+	 * @param sqrlIdentity
+	 *            the SQRL identity to update
+	 * @param nativeUserXref
+	 *            the applications native user id for this user
+	 */
+	public void updateNativeUserXref(final SqrlIdentity sqrlIdentity, final String nativeUserXref);
+
+	/**
 	 * Indicates that a user was authenticated successfully via SQRL. The webapp must use the given parameters to:
 	 * <p>
 	 * <ul>

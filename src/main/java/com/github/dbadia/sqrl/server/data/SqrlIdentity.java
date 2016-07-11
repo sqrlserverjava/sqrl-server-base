@@ -92,7 +92,7 @@ public class SqrlIdentity implements Serializable {
 		return nativeUserXref;
 	}
 
-	public void setNativeUserXref(final String nativeUserXref) {
+	protected void setNativeUserXref(final String nativeUserXref) {
 		this.nativeUserXref = nativeUserXref;
 	}
 

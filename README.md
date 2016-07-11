@@ -38,11 +38,14 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 2. Add META-INF/persistence.xml to your classpath.  You can start with an in memory database by using [derby](jpa-examples/derby/META-INF/persistence.xml).  When you ready to use a real DB, here is the [visual db design](jpa-examples/sqrl-db-design.png), [ddl](jpa-examples/sqrl.ddl), and [mysql](jpa-examples/mysql/META-INF/persistence.xml) persistence.xml.  Other databases can be supported simply by editing persistence.xml accordingly.  
 1. Create a `com.github.dbadia.sqrl.server.SQRLConfig` bean and set the required fields accordingly (see javadoc).  This can be done via Spring, JAXB, etc.
 1. In your application code, you can now create a `com.github.dbadia.sqrl.server.SqrlServerOperations` object using the `SqrlConfig` object from the previous step.
-1. Create a servlet to handle SQRL client requests.  The `doPost` method of this servlet should invoke `SqrlServerOperations.handleSqrlClientRequest(ServletRequest, ServletResponse)`
-1. Login Page impact
+1. Create a servlet (or equivalent endpoint in your framework of choice) to handle SQRL client requests.  The `doPost` method of this servlet should invoke `SqrlServerOperations.handleSqrlClientRequest(ServletRequest, ServletResponse)`
+1. Authentication Page Impact
 	* Decide on one of the two approaches explained in [Browser to SQRL Client Correlation](#browser-to-sqrl-client-correlation) 
 	* When you are ready to display the SQRL QR code, invoke `SqrlServerOperations.buildQrCodeForAuthPage()`.  Use the result to display an anchor tag with the SQRL url that wraps the QR code image.  The expected result in a QR code that can be scanned, clicked, or touched, as seen in  https://sqrljava.tech:20000/sqrlexample
-	* Once the SQRL QR code is displayed, the authentication page must periodically poll the server (using ajay long polling, etc) to see if SQRL authentication is in progress or has completed.   Once SQRL authentication completes, the server will redirect the user to whatever page is typically displayed after autheticating
+	* Once the SQRL QR code is displayed, the authentication page must periodically poll the server (using ajay long polling, etc) to see if SQRL authentication is in progress or has completed.  Completion can be detected by checking `SqrlJpaPersistenceProvider
+.fetchAuthenticationStatusRequired(correlator) == SqrlAuthenticationStatus.AUTH_COMPLETE`  which means that `SqrlCorrelator.getAuthenticatedIdentity` can be used to fetch the `SqrlIdentity` object
+   * If `SqrlIdentity.getNativeUserXref == null` then this is the first time this user has authenticated with SQRL, but the user may have previously authenticated to the site via some other mechinism.  The application should present a one-time account mapping page asking if the user already has an exisitng account (username/password, google auth, etc) and authenticate them.  The application should then call `SqrlJpaPersistenceProvider.updateNativeUserXref(String)` to store the mapping between the SQRL identity and the username (or whatever means the applciation uniquely identifies users).
+   * If `SqrlIdentity.getNativeUserXref != null`, the server should load the users data using the xref value and redirect the user to whatever page is typically displayed after authetication takes place
 
 #### License
 http://www.apache.org/licenses/LICENSE-2.0.html
