@@ -1,5 +1,10 @@
 ## How to contribute to SQRL server lib
 
+#### **IDE Setup**
+* **Eclipse:** It is helpful to enable the JPA facet  when working in eclipse.  This performs extra validation o the JPA components.  After enabling it, you typically see the error "No persistence.xml file found in project".  To fix this:
+   * Add jpa-examples/derby as a **source directory** in the project settings.  Be sure to add the derby directory **not** *derby/META-INF*
+   * Project menu ->  clean.
+
 #### **Did you find a bug?**
 
 * **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/dbadia/sqrl-server-base/issues).
@@ -13,7 +18,6 @@
 
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
 
-* Before submitting, please read the [Contributing to Ruby on Rails](http://edgeguides.rubyonrails.org/contributing_to_ruby_on_rails.html) guide to know more about coding conventions and benchmarks.
 
 
 Thanks!
