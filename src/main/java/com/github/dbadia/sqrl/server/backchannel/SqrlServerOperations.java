@@ -36,6 +36,7 @@ import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceAdapter;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -70,7 +71,26 @@ public class SqrlServerOperations {
 	private final SqrlConfig config;
 
 	/**
-	 * Initializes the operations class with the given persistence and config
+	 * Initializes the operations class with the given config, defaulting to the built in JPA persisentce provider.
+	 * 
+	 * @param sqrlPersistence
+	 *            the persistence to be used for storing and retreiving SQRL data
+	 * @param config
+	 *            the SQRL settings to be used
+	 * @throws SqrlException
+	 */
+	public SqrlServerOperations(final SqrlConfig config) throws SqrlException {
+		this.sqrlPersistence = new SqrlJpaPersistenceAdapter();
+		if (config == null) {
+			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
+		}
+		this.configOperations = new SqrlConfigOperations(config);
+		this.config = config;
+	}
+
+	/**
+	 * Initializes the operations class with the given persistence and config; typically this is only used when the
+	 * application is implementing a custom SqrlPersistence
 	 * 
 	 * @param sqrlPersistence
 	 *            the persistence to be used for storing and retreiving SQRL data
