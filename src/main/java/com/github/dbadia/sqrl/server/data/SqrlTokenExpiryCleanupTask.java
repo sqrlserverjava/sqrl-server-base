@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.data.SqrlUsedNutToken;
 
 /**
  * A helper class that assists with the cleanup of used SQRL "nut" tokens

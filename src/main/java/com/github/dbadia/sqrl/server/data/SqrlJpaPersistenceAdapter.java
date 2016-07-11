@@ -1,6 +1,5 @@
 package com.github.dbadia.sqrl.server.data;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,13 @@ public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
 
 	private static final EntityManager entityManager = Persistence
 			.createEntityManagerFactory(Constants.PERSISTENCE_UNIT_NAME).createEntityManager();
+
+	/**
+	 * Test case use only
+	 */
+	protected static EntityManager getEntityManager() {
+		return entityManager;
+	}
 
 	@Override
 	public boolean doesSqrlIdentityExistByIdk(final String sqrlIdk) {
@@ -64,52 +70,38 @@ public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
 		if (sqrlIdentity == null) {
 			logger.warn("Can't find idk " + sqrlIdk + " to delete");
 		} else {
-			for (final SqrlIdentityData aData : sqrlIdentity.getUserDataList()) {
-				entityManager.remove(aData);
-			}
-			for (final SqrlIdentityFlag flag : sqrlIdentity.getFlagList()) {
-				entityManager.remove(flag);
-			}
-			// TODO: clean up
-			// For some reason cascading delete in JPA isn't working, so delete the children here
-			// entityManager.createQuery("DELETE FROM SqrlIdentityData x WHERE x.identity = :identity")
-			// .setParameter("identity", sqrlIdentity).executeUpdate();
 			entityManager.remove(sqrlIdentity);
 		}
 	}
 
 	@Override
-	public void userAuthenticatedViaSqrl(final String sqrlIdk, final String correlator) {
+	public void userAuthenticatedViaSqrl(final String sqrlIdk, final String correlatorString) {
 		// Find the sqrlIdentity and mark SQRL authentication as occurred
-		final SqrlAuthenticationProgress sqrlAuthenticationProgress = fetchAuthenticationProgressRequired(correlator);
+		final SqrlCorrelator sqrlCorrelator = fetchSqrlCorrelatorRequired(correlatorString);
+		sqrlCorrelator.setAuthenticationStatus(SqrlAuthenticationStatus.AUTH_COMPLETE);
 		final SqrlIdentity sqrlIdentity = fetchRequiredSqrlIdentity(sqrlIdk);
-		if (sqrlAuthenticationProgress == null) {
-			// progress object must have expired and was cleaned up
-			throw new PersistenceException(
-					"SqrlAuthenticationProgress not found for correlator=" + correlator + " and idk=" + sqrlIdk);
-		}
-		sqrlAuthenticationProgress.setAuthenticationComplete(sqrlIdentity);
+		sqrlCorrelator.setAuthenticatedIdentity(sqrlIdentity);
+	}
+
+	private SqrlCorrelator fetchSqrlCorrelator(final String sqrlCorrelatorString) {
+		return (SqrlCorrelator) returnOneOrNull(
+				entityManager.createQuery("SELECT i FROM SqrlCorrelator i WHERE i.value = :correlator")
+				.setParameter("correlator", sqrlCorrelatorString).getResultList());
 	}
 
 	@Override
-	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(final String correlator) {
-		return fetchAuthenticationProgressRequired(correlator).getAuthenticationStatus();
-	}
-
-	@Override
-	public SqrlAuthenticationProgress fetchAuthenticationProgressRequired(final String correlator) {
-		final SqrlAuthenticationProgress sqrlAuthenticationProgress = (SqrlAuthenticationProgress) returnOneOrNull(
-				entityManager.createQuery("SELECT x FROM SqrlAuthenticationProgress x WHERE x.correlator = :correlator")
-				.setParameter("correlator", correlator).getResultList());
-		if (sqrlAuthenticationProgress == null) {
-			throw new PersistenceException("SqrlAuthenticationProgress not found for correlator " + correlator);
+	public SqrlCorrelator fetchSqrlCorrelatorRequired(final String sqrlCorrelatorString) {
+		final SqrlCorrelator sqrlCorrelator = fetchSqrlCorrelator(sqrlCorrelatorString);
+		if (sqrlCorrelator == null) {
+			throw new EntityNotFoundException("SqrlCorrelator does not exist for correlator=" + sqrlCorrelatorString);
 		} else {
-			if (sqrlAuthenticationProgress.getExpiryTime().after(new Date())) {
-				throw new PersistenceException(
-						"SqrlAuthenticationProgress expired at " + sqrlAuthenticationProgress.getExpiryTime());
-			}
+			return sqrlCorrelator;
 		}
-		return sqrlAuthenticationProgress ;
+	}
+
+	@Override
+	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(final String correlatorString) {
+		return fetchSqrlCorrelatorRequired(correlatorString).getAuthenticationStatus();
 	}
 
 	@Override
@@ -118,33 +110,13 @@ public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
 		if (sqrlIdentity == null) {
 			throw new PersistenceException("SqrlIdentity not found for " + sqrlIdk);
 		}
-
+		storeSqrlDataForSqrlIdentity(sqrlIdentity, dataToStore);
 	}
 
 	private void storeSqrlDataForSqrlIdentity(final SqrlIdentity sqrlIdentity, final Map<String, String> dataToStore) {
 		// Update any SQRL specific data we have received from the SQRL client
 		if (!dataToStore.isEmpty()) {
-			final Collection<SqrlIdentityData> sqrlUserDataList = sqrlIdentity.getUserDataList();
-			if (sqrlUserDataList == null) {
-				throw new EntityNotFoundException("sqrlUserDataList not found");
-			}
-			// userSpecificDataToStore could contain vuk, suk, or something else
-			for (final Map.Entry<String, String> entry : dataToStore.entrySet()) {
-				SqrlIdentityData dataBeingUpdated = null;
-				// See if the entry.getKey() already exists in the DB
-				for (final SqrlIdentityData data : sqrlUserDataList) {
-					if (data.getName().equals(entry.getKey())) {
-						dataBeingUpdated = data;
-					}
-				}
-				// update existing or create a new one
-				if (dataBeingUpdated != null) {
-					dataBeingUpdated.setValue(entry.getValue());
-				} else {
-					dataBeingUpdated = new SqrlIdentityData(sqrlIdentity, entry.getKey(), entry.getValue());
-					sqrlUserDataList.add(dataBeingUpdated);
-				}
-			}
+			sqrlIdentity.getIdentityDataTable().putAll(dataToStore);
 		}
 		entityManager.persist(sqrlIdentity);
 	}
@@ -155,63 +127,33 @@ public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
 		if (sqrlIdentity == null) {
 			throw new EntityNotFoundException("Couldn't find SqrlIdentity for idk " + sqrlIdk);
 		} else {
-			for (final SqrlIdentityData aData : sqrlIdentity.getUserDataList()) {
-				if (toFetch.equals(aData.getName())) {
-					return aData.getValue();
-				}
-			}
+			return sqrlIdentity.getIdentityDataTable().get(toFetch);
 		}
-		return null;
-	}
-
-	private SqrlUsedNutToken fetchSqrlUsedNutToken(final String nutTokenString) {
-		return (SqrlUsedNutToken) returnOneOrNull(
-				entityManager.createQuery("SELECT t FROM SqrlUsedNutToken t WHERE t.token = :token")
-				.setParameter("token", nutTokenString).getResultList());
 	}
 
 	@Override
 	public boolean hasTokenBeenUsed(final String nutTokenString) {
-		return fetchSqrlUsedNutToken(nutTokenString) != null;
+		final SqrlCorrelator sqrlCorrelator = (SqrlCorrelator) returnOneOrNull(
+				entityManager
+				.createQuery(
+						"SELECT i FROM SqrlCorrelator i WHERE :nutTokenString MEMBER OF  i.usedNutTokenList")
+				.setParameter("nutTokenString", nutTokenString).getResultList());
+		return sqrlCorrelator != null;
 	}
 
 	@Override
-	public void markTokenAsUsed(final String nutTokenString, final Date expiryTime) {
-		SqrlUsedNutToken usedToken = fetchSqrlUsedNutToken(nutTokenString);
-		if (usedToken == null) {
-			usedToken = new SqrlUsedNutToken(nutTokenString, new Date());
-			entityManager.persist(usedToken);
-		}
-	}
-
-	@Override
-	public void storeTransientAuthenticationData(final String correlator, final String dataName, final String dataValue,
-			final Date deleteAfter) {
-		SqrlTransientAuthData transientAuthData = fetchTransientAuthDataRaw(correlator, dataName);
-		if (transientAuthData == null) {
-			transientAuthData = new SqrlTransientAuthData(correlator, dataName, dataValue, deleteAfter);
-			entityManager.persist(transientAuthData);
-		} else {
-			transientAuthData.setValue(dataValue);
-			transientAuthData.setDeleteAfter(deleteAfter);
+	public void markTokenAsUsed(final String correlatorString, final String nutTokenString, final Date expiryTime) {
+		final SqrlCorrelator sqrlCorrelator = fetchSqrlCorrelator(correlatorString);
+		sqrlCorrelator.getUsedNutTokenList().add(nutTokenString);
+		if (sqrlCorrelator.getExpiryTime() == null || sqrlCorrelator.getExpiryTime().before(expiryTime)) {
+			sqrlCorrelator.setExpiryTime(expiryTime);
 		}
 	}
 
 	@Override
 	public String fetchTransientAuthData(final String correlator, final String dataName) {
-		final SqrlTransientAuthData transientAuthData = fetchTransientAuthDataRaw(correlator, dataName);
-		if (transientAuthData == null) {
-			return null;
-		} else {
-			return transientAuthData.getValue();
-		}
-	}
-
-	private SqrlTransientAuthData fetchTransientAuthDataRaw(final String correlator, final String dataName) {
-		return (SqrlTransientAuthData) returnOneOrNull(entityManager
-				.createQuery(
-						"SELECT t FROM SqrlTransientAuthData t WHERE t.correlator = :correlator AND t.name = :name")
-				.setParameter("correlator", correlator).setParameter("name", dataName).getResultList());
+		final SqrlCorrelator correlatorObject = fetchSqrlCorrelatorRequired(correlator);
+		return correlatorObject.getTransientAuthDataTable().get(dataName);
 	}
 
 	private Object returnOneOrNull(@SuppressWarnings("rawtypes") final List resultList) {
@@ -243,45 +185,29 @@ public class SqrlJpaPersistenceAdapter implements SqrlPersistence {
 	@Override
 	public Boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch)
 			throws SqrlPersistenceException {
-		final SqrlIdentityFlag flagData = (SqrlIdentityFlag) returnOneOrNull(
-				entityManager.createQuery("SELECT x FROM SqrlIdentityFlag x WHERE x.flagName = :flag")
-				.setParameter("flag", flagToFetch).getResultList());
-		if (flagData == null) {
-			return null;
-		} else {
-			return flagData.getFlagValue();
-		}
+		return fetchRequiredSqrlIdentity(sqrlIdk).getFlagTable().get(flagToFetch);
 	}
 
 	@Override
 	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToSet, final boolean valueToSet)
 			throws SqrlPersistenceException {
 		final SqrlIdentity sqrlIdentity = fetchRequiredSqrlIdentity(sqrlIdk);
-		final SqrlIdentityFlag flagData = (SqrlIdentityFlag) returnOneOrNull(
-				entityManager.createQuery("SELECT x FROM SqrlIdentityFlag x WHERE x.flagName = :flagToSet")
-				.setParameter("flagToSet", flagToSet).getResultList());
-		if (flagData == null) {
-			final SqrlIdentityFlag newflagData = new SqrlIdentityFlag(sqrlIdentity, flagToSet, valueToSet);
-			entityManager.persist(newflagData);
-		} else {
-			flagData.setValue(valueToSet);
-		}
+		sqrlIdentity.getFlagTable().put(flagToSet, valueToSet);
+		entityManager.persist(sqrlIdentity);
 	}
 
 	@Override
 	public void createAndEnableSqrlIdentity(final String sqrlIdk, final Map<String, String> identityDataTable) {
 		final SqrlIdentity sqrlIdentity = new SqrlIdentity(sqrlIdk);
-		final SqrlIdentityFlag newflagData = new SqrlIdentityFlag(sqrlIdentity, SqrlFlag.SQRL_AUTH_ENABLED, true);
-		sqrlIdentity.getFlagList().add(newflagData);
+		sqrlIdentity.getFlagTable().put(SqrlFlag.SQRL_AUTH_ENABLED, true);
+		sqrlIdentity.getIdentityDataTable().putAll(identityDataTable);
 		entityManager.persist(sqrlIdentity);
-		storeSqrlDataForSqrlIdentity(sqrlIdentity, identityDataTable);
-		// Transaction hasnn't been commited yet, so use our existing sqrlIdentity
 	}
 
 	@Override
-	public void createAuthenticationProgress(final String correlator, final Date expiryTime) {
-		final SqrlAuthenticationProgress authenticationProgress = new SqrlAuthenticationProgress(correlator,
-				expiryTime);
-		entityManager.persist(authenticationProgress);
+	public SqrlCorrelator createCorrelator(final String correlatorString, final Date expiryTime) {
+		final SqrlCorrelator sqrlCorrelator = new SqrlCorrelator(correlatorString, expiryTime);
+		entityManager.persist(sqrlCorrelator);
+		return sqrlCorrelator;
 	}
 }

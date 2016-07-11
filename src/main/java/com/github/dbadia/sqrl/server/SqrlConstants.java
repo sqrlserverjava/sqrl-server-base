@@ -30,7 +30,7 @@ public class SqrlConstants {
 	public static final String SQRL_SIGNATURE_URS = "urs";
 
 	public static final String SQRL_KEY_TYPE_IDENTITY = "idk";
-	public static final String KEY_TYPE_SUC = "suk";
+	public static final String KEY_TYPE_SUK = "suk";
 	public static final String KEY_TYPE_VUK = "vuk";
 	public static final String KEY_TYPE_PREVIOUS_IDENTITY = "pidk";
 
@@ -46,6 +46,7 @@ public class SqrlConstants {
 	private static final List<String> ALL_SIGNATURE_TYPES = new ArrayList<>();
 	private static final Map<String, String> SIGNATURE_TO_KEY_PARAM_TABLE = new ConcurrentHashMap<>();
 	public static final String TRANSIENT_NAME_SERVER_PARROT = "lastServerParam";
+	public static final String ERROR = "error";
 
 	private SqrlConstants() {
 		// Constants class
@@ -53,7 +54,7 @@ public class SqrlConstants {
 
 	static {
 		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put(SIGNATURE_TYPE_IDS, SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
-		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put(SIGNATURE_TYPE_URS, SqrlConstants.KEY_TYPE_SUC);
+		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put(SIGNATURE_TYPE_URS, SqrlConstants.KEY_TYPE_SUK);
 		SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.put("pids", SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 		SqrlConstants.ALL_KEY_TYPES.addAll(SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.values());
 		SqrlConstants.ALL_SIGNATURE_TYPES.addAll(SqrlConstants.SIGNATURE_TO_KEY_PARAM_TABLE.keySet());

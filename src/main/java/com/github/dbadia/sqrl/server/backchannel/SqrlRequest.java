@@ -48,10 +48,10 @@ public class SqrlRequest {
 		this.servletRequest = servletRequest;
 		clientParam = getRequiredParameter(servletRequest, "client");
 		serverParam = getRequiredParameter(servletRequest, "server");
-		nut = new SqrlNutToken(configOps, extractFromServerString(NUT_EQUALS));
+		nut = new SqrlNutToken(configOps, extractFromSqrlCsvString(serverParam, NUT_EQUALS));
 		final String decoded = SqrlUtil.base64UrlDecodeToString(clientParam);
 		// parse server - not a name value pair, just the query string we gave
-		correlator = extractFromServerString(SqrlConstants.CLIENT_PARAM_CORRELATOR);
+		correlator = extractFromSqrlCsvString(serverParam, SqrlConstants.CLIENT_PARAM_CORRELATOR);
 
 		// parse client
 		final Map<String, String> clientNameValuePairTable = parseLinesToNameValueMap(decoded);
@@ -84,13 +84,21 @@ public class SqrlRequest {
 
 		// Per the SQRL spec, since the server response is not signed, we must check the value that comes
 		// back to ensure it wasn't tampered with
+		// TODO: add fetchTransientAuthDataOrException
 		final String expectedServerValue = persistence.fetchTransientAuthData(correlator,
 				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT);
 		if (!expectedServerValue.equals(serverParam)) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Server parrot mismatch, possible tampering.  Nut compare: Expected={}, Received={}",
+						new SqrlNutToken(configOps,
+								SqrlRequest.extractFromSqrlCsvString(expectedServerValue, NUT_EQUALS)),
+						new SqrlNutToken(configOps, SqrlRequest.extractFromSqrlCsvString(serverParam, NUT_EQUALS)));
+			}
 			if (logger.isInfoEnabled()) {
 				logger.info("Server parrot mismatch, possible tampering.  Expected={}, Received={}",
 						expectedServerValue, serverParam);
 			}
+			// TODO: re-enable
 			throw new SqrlException("Server parrot mismatch, possible tampering");
 		}
 
@@ -139,7 +147,7 @@ public class SqrlRequest {
 
 	}
 
-	String extractFromServerString(final String variableToFind) throws SqrlException {
+	static String extractFromSqrlCsvString(final String serverParam, final String variableToFind) throws SqrlException {
 		final String toSearch = SqrlUtil.base64UrlDecodeToString(serverParam);
 		String toFind = variableToFind;
 		if (!variableToFind.endsWith("=")) {

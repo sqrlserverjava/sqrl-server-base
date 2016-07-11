@@ -1,7 +1,6 @@
 package com.github.dbadia.sqrl.server;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.PersistenceException;
 
-import com.github.dbadia.sqrl.server.data.SqrlAuthenticationProgress;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
-import com.github.dbadia.sqrl.server.data.SqrlIdentityData;
 
 /**
  * An in memory {@link SqrlPersistence} implementation that is only suitable for test case use
@@ -19,7 +16,6 @@ import com.github.dbadia.sqrl.server.data.SqrlIdentityData;
  */
 public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 	private final Map<String, SqrlIdentity> sqrlIdentityTable = new ConcurrentHashMap<>();
-	private final Map<String, SqrlAuthenticationProgress> authenticatedProgressTable = new ConcurrentHashMap<>();
 	private final List<String> usedTokens = new ArrayList<>();
 	private final Map<String, Map<String, String>> sqrlTransientAuthDataTable = new ConcurrentHashMap<>();
 	private final Map<String, Map<SqrlFlag, Boolean>> sqrlIdentityFlagTable = new ConcurrentHashMap<>();
@@ -50,34 +46,34 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 	}
 
 
-	public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore)
-			throws SqrlPersistenceException {
-		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
-		if (sqrlIdentity == null) {
-			throw new PersistenceException("SQRL identity not found for " + sqrlIdk);
-		}
-		// TODO: rename to IdentityDataList
-		Collection<SqrlIdentityData> sqrlDataForIdentity = sqrlIdentity.getUserDataList();
-		if (sqrlDataForIdentity == null) {
-			sqrlDataForIdentity = new ArrayList<>();
-			sqrlIdentity.setUserDataList(sqrlDataForIdentity);
-		}
-		for (final Map.Entry<String, String> entry : dataToStore.entrySet()) {
-			final SqrlIdentityData aData = new SqrlIdentityData(sqrlIdentity, entry.getKey(), entry.getValue());
-			sqrlDataForIdentity.add(aData);
-		}
-	}
+	// public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore)
+	// throws SqrlPersistenceException {
+	// final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
+	// if (sqrlIdentity == null) {
+	// throw new PersistenceException("SQRL identity not found for " + sqrlIdk);
+	// }
+	// // TODO: rename to IdentityDataList
+	// Collection<SqrlIdentityData> sqrlDataForIdentity = sqrlIdentity.getUserDataList();
+	// if (sqrlDataForIdentity == null) {
+	// sqrlDataForIdentity = new ArrayList<>();
+	// sqrlIdentity.setUserDataList(sqrlDataForIdentity);
+	// }
+	// for (final Map.Entry<String, String> entry : dataToStore.entrySet()) {
+	// final SqrlIdentityData aData = new SqrlIdentityData(sqrlIdentity, entry.getKey(), entry.getValue());
+	// sqrlDataForIdentity.add(aData);
+	// }
+	// }
 
 
-	public void userAuthenticatedViaSqrl(final String sqrlIdk, final String correlator)
-			throws SqrlPersistenceException {
-		// Normally we would associate some sort of timestamp with when this occurred (otherwise the user will appear to
-		// be authenticated forever) but since this is short lived for test cases we don't need to worry about it
-		final SqrlAuthenticationProgress authProgress = new SqrlAuthenticationProgress();
-		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
-		authProgress.setAuthenticationComplete(sqrlIdentity);
-		authenticatedProgressTable.put(correlator, authProgress);
-	}
+	// public void userAuthenticatedViaSqrl(final String sqrlIdk, final String correlator)
+	// throws SqrlPersistenceException {
+	// // Normally we would associate some sort of timestamp with when this occurred (otherwise the user will appear to
+	// // be authenticated forever) but since this is short lived for test cases we don't need to worry about it
+	// final SqrlAuthenticationProgress authProgress = new SqrlAuthenticationProgress();
+	// final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
+	// authProgress.setAuthenticationComplete(sqrlIdentity);
+	// authenticatedProgressTable.put(correlator, authProgress);
+	// }
 
 
 	public SqrlIdentity fetchSqrlIdentityByUserXref(final String appUserXref) {
@@ -107,15 +103,16 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 	}
 
 
-	public String fetchSqrlIdentityDataItem(final String sqrlIdk, final String toFetch) throws SqrlPersistenceException {
-		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
-		for (final SqrlIdentityData aData : sqrlIdentity.getUserDataList()) {
-			if (toFetch.equals(aData.getName())) {
-				return aData.getValue();
-			}
-		}
-		return null;
-	}
+	// public String fetchSqrlIdentityDataItem(final String sqrlIdk, final String toFetch) throws
+	// SqrlPersistenceException {
+	// final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
+	// for (final SqrlIdentityData aData : sqrlIdentity.getUserDataList()) {
+	// if (toFetch.equals(aData.getName())) {
+	// return aData.getValue();
+	// }
+	// }
+	// return null;
+	// }
 
 
 	public void storeTransientAuthenticationData(final String correlator, final String name, final String value,
@@ -181,19 +178,4 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 		flagTable.put(flagToSet, valueToSet);
 	}
 
-
-	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(final String correlator) {
-		final SqrlAuthenticationProgress progress = authenticatedProgressTable.get(correlator);
-		SqrlAuthenticationStatus status = progress.getAuthenticationStatus();
-		if (status == null) {
-			status = SqrlAuthenticationStatus.CORRELATOR_ISSUED;
-		}
-		return status;
-	}
-
-
-	public SqrlAuthenticationProgress fetchAuthenticationProgressRequired(final String correlator) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

@@ -5,10 +5,6 @@
         transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>com.github.dbadia.sqrl.server.data.SqrlIdentity</class>
-        <class>com.github.dbadia.sqrl.server.data.SqrlIdentityData</class>
-        <class>com.github.dbadia.sqrl.server.data.SqrlTransientAuthData</class>
-        <class>com.github.dbadia.sqrl.server.data.SqrlUsedNutToken</class>
-        <class>com.github.dbadia.sqrl.server.data.SqrlAuthenticationProgress</class>
-        <class>com.github.dbadia.sqrl.server.data.SqrlIdentityFlag</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlCorrelator</class>
     </persistence-unit>
 </persistence>

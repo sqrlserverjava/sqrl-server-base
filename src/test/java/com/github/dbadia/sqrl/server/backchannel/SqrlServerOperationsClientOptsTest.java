@@ -3,7 +3,6 @@ package com.github.dbadia.sqrl.server.backchannel;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +24,7 @@ public class SqrlServerOperationsClientOptsTest {
 	@Before
 	public void setUp() throws Exception {
 		sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
-		config = TCUtil.buildValidSqrlConfig();
+		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		tifBuilder = new TifBuilder();
@@ -36,9 +35,10 @@ public class SqrlServerOperationsClientOptsTest {
 	public void testOptCps_NotSupported() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, true);
-		final SqrlRequest sqrlRequest = TCBackchennelUtil.buildMockSqrlRequest(idk, "ident", false, SqrlClientOpt.cps);
+		TCUtil.buildEmptySqrlPersistence();
+		TCUtil.setupIdk(idk, correlator, "123");
+
+		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", false, SqrlClientOpt.cps);
 
 		// Execute
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
@@ -47,8 +47,10 @@ public class SqrlServerOperationsClientOptsTest {
 		assertTrue(idkExists);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH, SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
-		// Ensure nothing should get disabled
+		// Ensure nothing got disabled
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
+
+	// TODO: add more
 }

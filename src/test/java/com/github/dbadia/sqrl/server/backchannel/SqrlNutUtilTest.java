@@ -23,12 +23,12 @@ import junitx.framework.ArrayAssert;
 import junitx.framework.ObjectAssert;
 
 public class SqrlNutUtilTest {
-	private SqrlConfig config = TCUtil.buildValidSqrlConfig();
+	private SqrlConfig config = TCUtil.buildTestSqrlConfig();
 	private SqrlPersistence persistence = TCUtil.buildEmptySqrlPersistence();
 
 	@Before
 	public void setup() throws Exception {
-		config = TCUtil.buildValidSqrlConfig();
+		config = TCUtil.buildTestSqrlConfig();
 		persistence = TCUtil.buildEmptySqrlPersistence();
 	}
 
@@ -223,7 +223,7 @@ public class SqrlNutUtilTest {
 		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
 		final SqrlNutToken nutToken = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
 		try {
-			SqrlNutTokenUtil.validateNut(nutToken, config, persistence);
+			SqrlNutTokenUtil.validateNut("123", nutToken, config, persistence);
 			fail("Exceptio expected");
 		} catch (final Exception e) {
 			ObjectAssert.assertInstanceOf(SqrlException.class, e);

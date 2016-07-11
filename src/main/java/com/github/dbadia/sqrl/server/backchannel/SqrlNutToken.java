@@ -147,7 +147,8 @@ public class SqrlNutToken {
 
 	@Override
 	public String toString() {
-		return "Nut [" + base64UrlEncryptedNut + "]";
+		return "SqrlNutToken [inetInt=" + inetInt + ", counter=" + counter + ", issuedTimestamp=" + issuedTimestamp
+				+ ", randomInt=" + randomInt + ", base64UrlEncryptedNut=" + base64UrlEncryptedNut + "]";
 	}
 
 	@Override

@@ -56,7 +56,7 @@ public class SqrlNutTokenUtil {
 
 	static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt,
 			final SqrlConfig config)
-			throws SqrlException {
+					throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
 		// perform a match/no-match comparison to detect same-device phishing attacks. Therefore, any 128-bit IPv6
@@ -103,13 +103,15 @@ public class SqrlNutTokenUtil {
 	 * <li>1. check the timestamp embedded in the Nut has expired
 	 * <li>2. call {@link SqrlPersistence} to see if the Nut has been replayed
 	 * 
+	 * @param correlator
+	 * 
 	 * @param nutToken
 	 *            the Nut to be validated
 	 * @throws SqrlException
 	 *             if any validation fails or if persistence fails
 	 */
-	static void validateNut(final SqrlNutToken nutToken, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
-			throws SqrlException {
+	static void validateNut(final String correlator, final SqrlNutToken nutToken, final SqrlConfig config,
+			final SqrlPersistence sqrlPersistence) throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		final long now = System.currentTimeMillis();
 		if (logger.isDebugEnabled()) {
@@ -130,7 +132,7 @@ public class SqrlNutTokenUtil {
 					SqrlLoggingUtil.getLogHeader() + "Nut token was replayed " + nutToken);
 		}
 		final Date nutExpiry = new Date(nutExpiryMs);
-		sqrlPersistence.markTokenAsUsed(nutTokenString, nutExpiry);
+		sqrlPersistence.markTokenAsUsed(correlator, nutTokenString, nutExpiry);
 	}
 
 	/**

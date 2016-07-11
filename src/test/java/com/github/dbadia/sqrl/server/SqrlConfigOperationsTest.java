@@ -12,7 +12,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigGivesFullInvalidUrl() {
-		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setBackchannelServletPath("www.yahoo.com/sqrl");
 		try {
 			new SqrlConfigOperations(config);
@@ -29,7 +29,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigAesKeyTooBig() {
-		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		final int badLength = SqrlConstants.AES_KEY_LENGTH + 5;
 		config.setAESKeyBytes(new byte[badLength]);
 		try {
@@ -45,7 +45,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigAesKeyTooSmall() {
-		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		final int badLength = SqrlConstants.AES_KEY_LENGTH - 5;
 		config.setAESKeyBytes(new byte[badLength]);
 		try {
@@ -61,7 +61,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigGivesUrlWithoutSceme() {
-		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setBackchannelServletPath("www.yahoo.com");
 		try {
 			new SqrlConfigOperations(config);

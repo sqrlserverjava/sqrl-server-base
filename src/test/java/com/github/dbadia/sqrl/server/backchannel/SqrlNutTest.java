@@ -2,6 +2,8 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,11 +13,11 @@ import com.github.dbadia.sqrl.server.TCUtil;
 
 
 public class SqrlNutTest {
-	private SqrlConfig config = TCUtil.buildValidSqrlConfig();
+	private SqrlConfig config = TCUtil.buildTestSqrlConfig();
 
 	@Before
 	public void setup() throws Exception {
-		config = TCUtil.buildValidSqrlConfig();
+		config = TCUtil.buildTestSqrlConfig();
 	}
 
 	@Test
@@ -35,6 +37,12 @@ public class SqrlNutTest {
 		assertEquals(counter, nut.getCounter());
 		assertEquals(22, nut.asSqBase64EncryptedNut().length());
 		assertEquals("QwJJFrvH1jBXakjOh_vVqg", nut.asSqBase64EncryptedNut());
+	}
+
+	@Test
+	public void testIt() {
+		final byte[] bytes = SqrlNutTokenUtil.unpack(1431904222);
+		System.out.println(Arrays.toString(bytes));
 	}
 
 	@Test

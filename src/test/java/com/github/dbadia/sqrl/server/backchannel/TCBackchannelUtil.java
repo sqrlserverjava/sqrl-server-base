@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.mockito.Mockito;
 
-public class TCBackchennelUtil {
+public class TCBackchannelUtil {
 
 	public static SqrlRequest buildMockSqrlRequest(final String idk, final String command,
 			final boolean hasUrsSignature, final SqrlClientOpt... optArray) {

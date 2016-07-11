@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
-import com.github.dbadia.sqrl.server.data.SqrlAuthenticationProgress;
+import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 
 /**
@@ -158,26 +158,7 @@ public interface SqrlPersistence {
 	 *            the time at which this token can safely be deleted from persistence since it will fail timestamp
 	 *            validation
 	 */
-	public void markTokenAsUsed(final String nutTokenString, Date expiryTime) throws SqrlPersistenceException;
-
-	/* ***************** TRANSIENT AUTH DATA *********************/
-	/**
-	 * Store or replace a short lived name/value for a given correlator; if the correlator/name pair already exists, the
-	 * value and deleteAfter should be updated with the new values
-	 * 
-	 * @param correlator
-	 *            correlator to which this data belongs
-	 * @param name
-	 *            the name of the item
-	 * @param value
-	 *            the value of the item
-	 * @param deleteAfter
-	 *            the time at which this data can be safely deleted
-	 * @throws SqrlPersistenceException
-	 *             if there was an error accessing the persistence store
-	 */
-	public void storeTransientAuthenticationData(final String correlator, final String dataName, final String dataValue,
-			final Date deleteAfter) throws SqrlPersistenceException;
+	public void markTokenAsUsed(final String correlatorString, final String nutTokenString, final Date expiryTime);
 
 	/**
 	 * Fetch a short lived name/value for a given correlator and name
@@ -214,7 +195,7 @@ public interface SqrlPersistence {
 
 	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(String correlator);
 
-	public SqrlAuthenticationProgress fetchAuthenticationProgressRequired(final String correlator);
+	public SqrlCorrelator createCorrelator(String correlatorString, Date expiryTime);
 
-	public void createAuthenticationProgress(final String correlator, final Date expiryTime);
+	public SqrlCorrelator fetchSqrlCorrelatorRequired(String correlator);
 }

@@ -46,7 +46,8 @@ public class SqrlServerOperationsQrCodeTest {
 		final String loginRequestUrl = "http://127.0.0.1:8080/sqrlexample/login";
 
 		// Data from a real transaction with a long expiry
-		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
+		final String correlatorString = "rICpjtfQWssr2TQ6XPNJE0Fh7tFxEnC1zfMGoJp5S9Y";
+		final SqrlPersistence sqrlPersistence = TCUtil.buildSqrlPersistence(correlatorString, null);
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		config.setBackchannelServletPath(configBackchannelPath);
 
@@ -64,7 +65,7 @@ public class SqrlServerOperationsQrCodeTest {
 
 	public SqrlServerOperationsQrCodeTest(final ImageFormat imageFormat) {
 		super();
-		config = TCUtil.buildValidSqrlConfig();
+		config = TCUtil.buildTestSqrlConfig();
 		config.setQrCodeFileType(imageFormat);
 	}
 }

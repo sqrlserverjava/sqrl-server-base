@@ -73,7 +73,7 @@ public class SqrlConfig {
 		return ipForwardedForHeaders;
 	}
 
-	public void setIpForwardedForHeaders(String[] ipForwardedForHeaders) {
+	public void setIpForwardedForHeaders(final String[] ipForwardedForHeaders) {
 		this.ipForwardedForHeaders = ipForwardedForHeaders;
 	}
 
@@ -159,5 +159,9 @@ public class SqrlConfig {
 
 	public void setServerFriendlyName(final String serverFriendlyName) {
 		this.serverFriendlyName = serverFriendlyName;
+	}
+
+	public long getCurrentTimeMs() {
+		return System.currentTimeMillis();
 	}
 }

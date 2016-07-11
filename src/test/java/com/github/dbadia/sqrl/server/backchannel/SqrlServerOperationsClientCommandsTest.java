@@ -20,6 +20,7 @@ import junitx.framework.ObjectAssert;
 import junitx.framework.StringAssert;
 
 public class SqrlServerOperationsClientCommandsTest {
+
 	final String correlator = "abc";
 	private SqrlConfig config;
 	private SqrlPersistence sqrlPersistence;
@@ -29,9 +30,9 @@ public class SqrlServerOperationsClientCommandsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
-		config = TCUtil.buildValidSqrlConfig();
+		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
+		sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
 		sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		tifBuilder = new TifBuilder();
 		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
@@ -41,12 +42,15 @@ public class SqrlServerOperationsClientCommandsTest {
 	public void testCmdEnable_SqrlIdentityExists() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
+		sqrlPersistence.startTransaction();
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
-		final SqrlRequest sqrlRequest = TCBackchennelUtil.buildMockSqrlRequest(idk, "enable", true);
+		sqrlPersistence.commitTransaction();
+		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", true);
 
-		// Execute
+		// Execute - call start/commit since it is usually done by the caller
+		sqrlPersistence.startTransaction();
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
+		sqrlPersistence.commitTransaction();
 
 		// Validate
 		assertTrue(idkExists);
@@ -60,14 +64,27 @@ public class SqrlServerOperationsClientCommandsTest {
 	public void testCmdEnable_UrsMissing() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
+
+		sqrlPersistence.startTransaction();
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		final SqrlRequest sqrlRequest = TCBackchennelUtil.buildMockSqrlRequest(idk, "enable", false); // No urs
+		sqrlPersistence.commitTransaction();
+
+		sqrlPersistence.startTransaction();
+		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
+		sqrlPersistence.commitTransaction();
+
+		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", false); // No urs
 
 		// Execute
 		try {
+			// Execute - call start/commit since it is usually done by the caller
+			sqrlPersistence.startTransaction();
 			sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
+			sqrlPersistence.commitTransaction();
 			fail("Exception expected");
 		} catch (final Exception e) {
+			sqrlPersistence.rollbackTransaction();
+			e.printStackTrace();
 			ObjectAssert.assertInstanceOf(SqrlInvalidRequestException.class, e);
 			StringAssert.assertContains("urs", e.getMessage());
 		}
@@ -82,10 +99,10 @@ public class SqrlServerOperationsClientCommandsTest {
 		sqrlPersistence.startTransaction();
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		final SqrlRequest sqrlRequest = TCBackchennelUtil.buildMockSqrlRequest(idk, "remove", true);
+		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", true);
 		sqrlPersistence.commitTransaction();
 
-		// Execute -c all start/commit manually since it is usually done by the caller
+		// Execute all start/commit manually since it is usually done by the caller
 		sqrlPersistence.startTransaction();
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
 		sqrlPersistence.commitTransaction();
@@ -101,7 +118,7 @@ public class SqrlServerOperationsClientCommandsTest {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		final SqrlRequest sqrlRequest = TCBackchennelUtil.buildMockSqrlRequest(idk, "remove", false); // No urs
+		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", false); // No urs
 
 		// Execute
 		try {
@@ -117,13 +134,14 @@ public class SqrlServerOperationsClientCommandsTest {
 	public void testCmdDisable_SqrlIdentityExists() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, true);
-		final SqrlRequest sqrlRequest = TCBackchennelUtil.buildMockSqrlRequest(idk, "disable", true);
+		TCUtil.setupIdk(idk, correlator, "123");
+		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "disable", true);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 
-		// Execute
+		// Execute - call start/commit since it is usually done by the caller
+		sqrlPersistence.startTransaction();
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
+		sqrlPersistence.commitTransaction();
 
 		// Validate
 		assertTrue(idkExists);

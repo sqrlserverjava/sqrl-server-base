@@ -1,9 +1,0 @@
-ALTER TABLE sqrl_identity_data DROP CONSTRAINT sqrldnttydtaDNTTYD
-ALTER TABLE sqrl_auth_progress DROP CONSTRAINT sqrlthprSQRLDNTTYD
-ALTER TABLE sqrl_identity_flags DROP CONSTRAINT sqrldnttyflgDNTTYD
-DROP TABLE sqrl_identities
-DROP TABLE sqrl_identity_data
-DROP TABLE sqrl_transient_auth_data
-DROP TABLE sqrl_used_tokens
-DROP TABLE sqrl_auth_progress
-DROP TABLE sqrl_identity_flags

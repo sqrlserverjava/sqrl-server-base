@@ -35,6 +35,7 @@ import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -131,9 +132,9 @@ public class SqrlServerOperations {
 			final ByteArrayOutputStream qrBaos = generateQrCode(config, url, qrCodeSizeInPixels);
 			// Store the url in the server parrot value so it will be there when the SQRL client makes the request
 			final Date expiryTime = new Date(System.currentTimeMillis() + (1000 * config.getNutValidityInSeconds()));
-			sqrlPersistence.createAuthenticationProgress(correlator, expiryTime);
-			sqrlPersistence.storeTransientAuthenticationData(correlator, SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
-					SqrlUtil.sqrlBase64UrlEncode(url), expiryTime);
+			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlator, expiryTime);
+			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
+					SqrlUtil.sqrlBase64UrlEncode(url));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
@@ -143,7 +144,7 @@ public class SqrlServerOperations {
 	private SqrlNutToken buildNut(final URI backchannelUri, final InetAddress userInetAddress) throws SqrlException {
 		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(backchannelUri, userInetAddress, config);
 		final int randomInt = config.getSecureRandom().nextInt();
-		final long timestamp = System.currentTimeMillis();
+		final long timestamp = config.getCurrentTimeMs();
 		return new SqrlNutToken(inetInt, configOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
 	}
 
@@ -169,6 +170,7 @@ public class SqrlServerOperations {
 		final TifBuilder tifBuilder = new TifBuilder();
 		boolean idkExistsInDataStore = false;
 		String requestState = "invalid";
+		boolean isInErrorState = false;
 		try {
 			String logHeader = "";
 			SqrlRequest request = null;
@@ -182,13 +184,14 @@ public class SqrlServerOperations {
 				}
 				final SqrlNutToken nutToken = request.getNut();
 
-				SqrlNutTokenUtil.validateNut(nutToken, config, sqrlPersistence);
+				SqrlNutTokenUtil.validateNut(correlator, nutToken, config, sqrlPersistence);
 				idkExistsInDataStore = processClientCommand(request, nutToken, tifBuilder, correlator);
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
 				sqrlPersistence.commitTransaction();
 			} catch (final SqrlException e) {
 				sqrlPersistence.rollbackTransaction();
+				isInErrorState = true;
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
 				if(e instanceof SqrlInvalidRequestException) {
 					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
@@ -202,17 +205,23 @@ public class SqrlServerOperations {
 				// 500 here
 				servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
-			// We have processed the request, success or failure. Now transmit the reply
+
+
+			// We have processed the request, success or failure. Now prep and transmit the reply
 			String serverReplyString = ""; // for logging
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
-				serverReplyString = buildReply(servletRequest, request, idkExistsInDataStore, tif, correlator);
-				// Store the serverReplyString in the server parrot value so we can validate it on the clients next
-				// request
-				final Date expireDate = new Date(
-						System.currentTimeMillis() + (1000 * config.getNutValidityInSeconds()));
-				sqrlPersistence.storeTransientAuthenticationData(correlator, SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
-						serverReplyString, expireDate);
+				serverReplyString = buildReply(isInErrorState, servletRequest, request, idkExistsInDataStore, tif,
+						correlator);
+				if (!isInErrorState) {
+					// Store the serverReplyString in the server parrot value so we can validate it on the clients next
+					// request
+					final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
+					sqrlPersistence.startTransaction();
+					sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
+							serverReplyString);
+					sqrlPersistence.commitTransaction();
+				}
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
 				logger.info("{}Processed sqrl client request replying with tif {}", logHeader,
 						tif);
@@ -259,7 +268,7 @@ public class SqrlServerOperations {
 							+ "Request was to enable SQRL but didn't contain urs signature");
 				}
 			} else {
-				logger.warn("{}Received request to DISABLE but current state is {}");
+				logger.warn("{}Received request to ENABLE but it already is");
 			}
 		} else if (COMMAND_REMOVE.equals(command)) {
 			if (request.containsUrs()) {
@@ -320,34 +329,46 @@ public class SqrlServerOperations {
 		}
 	}
 
-	private String buildReply(final HttpServletRequest servletRequest, final SqrlRequest sqrlRequest,
+	private String buildReply(final boolean isInErrorState, final HttpServletRequest servletRequest,
+			final SqrlRequest sqrlRequest,
 			final boolean idkExistsInDataStore, final SqrlTif tif, final String correlator)
 					throws SqrlException {
 		final String logHeader = SqrlLoggingUtil.getLogHeader();
 		try {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());
+			final String subsequentRequestPath = configOperations.getSubsequentRequestPath(servletRequest);
+			SqrlServerReply reply = null;
+			if (isInErrorState) {
+				// Send the error flag as nut and correlator, so if the client mistakenly sends a followup request it be
+				// obvious to us
+				reply = new SqrlServerReply(SqrlConstants.ERROR, tif, subsequentRequestPath, SqrlConstants.ERROR,
+						Collections.emptyMap());
+			} else {
+				// Nut is one time use, so generate a new one for the reply
+				final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest, config));
 
-			// Nut is one time use, so generate a new one for the reply
-			final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest, config));
-
-			final Map<String, String> additionalDataTable = new TreeMap<>();
-			if (sqrlRequest != null) {
-				// Add any additional data to the response based on the options the client requested
-				// Keep additionalDataTable in order as SQRL client will ignore everything after an unrecognized option
-				if (sqrlRequest.getOptList().contains(SqrlClientOpt.suk)) {
-					final String sukSring = SqrlClientOpt.suk.toString();
-					if (idkExistsInDataStore) { // If the idk doesn't exist then we don't have these yet
-						additionalDataTable.put(sukSring,
-								sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), sukSring));
+				final Map<String, String> additionalDataTable = new TreeMap<>();
+				if (sqrlRequest != null) {
+					// Add any additional data to the response based on the options the client requested
+					// Keep additionalDataTable in order as SQRL client will ignore everything after an unrecognized
+					// option
+					if (sqrlRequest.getOptList().contains(SqrlClientOpt.suk)) {
+						final String sukSring = SqrlClientOpt.suk.toString();
+						if (idkExistsInDataStore) {
+							final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(),
+									sukSring);
+							if (sukValue != null) {
+								additionalDataTable.put(sukSring, sukValue);
+							}
+						}
 					}
 				}
+				// Build the final reply object
+				reply = new SqrlServerReply(replyNut.asSqBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
+						additionalDataTable);
 			}
 
-			// Build the final reply object
-			final String subsequentRequestPath = configOperations.getSubsequentRequestPath(servletRequest);
 
-			final SqrlServerReply reply = new SqrlServerReply(replyNut.asSqBase64EncryptedNut(), tif,
-					subsequentRequestPath, correlator, additionalDataTable);
 			final String serverReplyString = reply.toBase64();
 			logger.debug("{}Build serverReplyString: {}", logHeader, serverReplyString);
 			return serverReplyString;

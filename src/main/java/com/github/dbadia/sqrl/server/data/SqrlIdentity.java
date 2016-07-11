@@ -1,17 +1,24 @@
 package com.github.dbadia.sqrl.server.data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.MapKeyEnumerated;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
+
+import com.github.dbadia.sqrl.server.SqrlFlag;
 
 
 /**
@@ -21,40 +28,46 @@ import javax.persistence.Table;
  *
  */
 @Entity
-@Table(name = "sqrl_identities")
+@Table(name = "sqrl_identity")
 public class SqrlIdentity implements Serializable {
 	private static final long serialVersionUID = 2278524035284028525L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@TableGenerator(name = "identity_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value", allocationSize = 1)
+	@GeneratedValue(generator = "identity_gen")
+	@Column(name = "id")
 	private long id;
 
-	@Column(nullable = false)
+	@Column(name = "idk", nullable = false)
 	private String idk;
 
-	@Column(nullable = true)
+	@Column(name = "native_user_xref", nullable = true)
 	// nullable since we have to store the SQRL identity before the app presents the "existing user" screen
 	private String nativeUserXref;
 
-	@Column(nullable = false)
-	private boolean sqrlEnabled;
+	@ElementCollection(fetch = FetchType.LAZY)
+	@CollectionTable(name = "sqrl_identity_data", joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
+	@MapKeyColumn(name = "name")
+	@Column(name = "value")
+	private final Map<String, String> identityDataTable = new HashMap<>();
 
-	@OneToMany(mappedBy = "identity", cascade = CascadeType.ALL)
-	private Collection<SqrlIdentityData> userDataList = new ArrayList<>();
+	@ElementCollection(fetch = FetchType.EAGER)
+	@CollectionTable(name = "sqrl_identity_flag", joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
+	@MapKeyColumn(name = "name")
+	@MapKeyEnumerated(EnumType.STRING )
+	@Column(name = "value")
+	private final Map<SqrlFlag, Boolean> flagTable = new HashMap<>();
 
-	@OneToMany(mappedBy = "identity", cascade = CascadeType.ALL)
-	private final Collection<SqrlIdentityFlag> flagList = new ArrayList<>();
+	public Map<SqrlFlag, Boolean> getFlagTable() {
+		return flagTable;
+	}
 
 	public SqrlIdentity() {
 		// Required by JPA
 	}
 
-	public Collection<SqrlIdentityFlag> getFlagList() {
-		return flagList;
-	}
 
 	public SqrlIdentity(final String sqrlIdk) {
-		this.sqrlEnabled = true;
 		this.idk = sqrlIdk;
 	}
 
@@ -75,10 +88,6 @@ public class SqrlIdentity implements Serializable {
 		this.idk = idk;
 	}
 
-	public boolean isSqrlEnabled() {
-		return sqrlEnabled;
-	}
-
 	public String getNativeUserXref() {
 		return nativeUserXref;
 	}
@@ -87,15 +96,8 @@ public class SqrlIdentity implements Serializable {
 		this.nativeUserXref = nativeUserXref;
 	}
 
-	public void setSqrlEnabled(final boolean sqrlEnabled) {
-		this.sqrlEnabled = sqrlEnabled;
+	public Map<String, String> getIdentityDataTable() {
+		return identityDataTable;
 	}
 
-	public void setUserDataList(final Collection<SqrlIdentityData> userDataList) {
-		this.userDataList = userDataList;
-	}
-
-	public Collection<SqrlIdentityData> getUserDataList() { // TODO: rename to identity data
-		return userDataList;
-	}
 }

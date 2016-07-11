@@ -12,8 +12,17 @@ import java.util.Arrays;
  * @deprecated Test case data use ONLY
  */
 @Deprecated class TestSecureRandom extends SecureRandom {
+	private final byte[] bytesToReturn;
+
+	public TestSecureRandom(final byte[] bytesToReturn) {
+		this.bytesToReturn = bytesToReturn;
+	}
 	@Override
 	synchronized public void nextBytes(final byte[] bytes) {
-		Arrays.fill(bytes, (byte) 0);
+		if (bytesToReturn == null) {
+			Arrays.fill(bytes, (byte) 0);
+		} else {
+			System.arraycopy(bytesToReturn, 0, bytes, 0, bytes.length);
+		}
 	}
 }

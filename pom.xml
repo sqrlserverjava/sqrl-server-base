@@ -44,14 +44,8 @@
 		</dependency>
 
 		<!-- PROVIDED -->
-		<!-- 
-		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-api</artifactId>
-			<version>6.0</version>
-			<scope>provided</scope>
-		</dependency>
- -->
+		<!-- <dependency> <groupId>javax</groupId> <artifactId>javaee-api</artifactId> 
+			<version>6.0</version> <scope>provided</scope> </dependency> -->
 		<!-- TEST -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -124,11 +118,17 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-	        <groupId>org.eclipse.persistence</groupId>
-	        <artifactId>eclipselink</artifactId>
-	        <version>2.6.3</version>
-	        <scope>test</scope>
-	    </dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>6.0.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>eclipselink</artifactId>
+			<version>2.6.3</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

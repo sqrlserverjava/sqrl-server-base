@@ -2,7 +2,6 @@ package com.github.dbadia.sqrl.server.backchannel;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 
-import java.util.Date;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -15,36 +14,33 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 
 import junitx.framework.StringAssert;
 
 public class SqrlServerOperationsNegativeTest {
-	private static final Date AWHILE_FROM_NOW = new Date(System.currentTimeMillis() + 1000000);
 	private static final String CLIENT_DATA_1_CORRELATOR = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
 
 	@Test
 	public void testNutReplayed() throws Throwable {
 		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
-
-		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
-
-		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
-		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		// config.setBackchannelServletPath(configBackchannelPath);
-
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
-		// final String sqrlIdk = "CW6EXEMdclZc3JEJky_KwMF_DhMbkV15E6Q14pyqMNY";
 		final String serverValue = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=" + serverValue
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
+
+		final SqrlPersistence sqrlPersistence = TCUtil.buildSqrlPersistence(CLIENT_DATA_1_CORRELATOR, serverValue);
+
+		// Data from a real transaction with a long expiry
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		config.setNutValidityInSeconds(Integer.MAX_VALUE);
+		// config.setBackchannelServletPath(configBackchannelPath);
+
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		// Emulate the login page generation
 		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
-		sqrlPersistence.storeTransientAuthenticationData(CLIENT_DATA_1_CORRELATOR,
-				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverValue, AWHILE_FROM_NOW);
 
 		sqrlServerOps.handleSqrlClientRequest(queryRequest, servletResponse);
 		servletResponse = new MockHttpServletResponse();
@@ -68,7 +64,7 @@ public class SqrlServerOperationsNegativeTest {
 		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
@@ -77,8 +73,12 @@ public class SqrlServerOperationsNegativeTest {
 				+ "&server=" + serverValue
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1cqvBg";
 
-		sqrlPersistence.storeTransientAuthenticationData(CLIENT_DATA_1_CORRELATOR,
-				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverValue, AWHILE_FROM_NOW);
+		sqrlPersistence.startTransaction();
+		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(CLIENT_DATA_1_CORRELATOR,
+				TCUtil.AWHILE_FROM_NOW);
+		sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverValue);
+		sqrlPersistence.commitTransaction();
+
 		// Emulate the login page generation
 		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		final MockHttpServletResponse servletResponse = new MockHttpServletResponse();
@@ -106,14 +106,16 @@ public class SqrlServerOperationsNegativeTest {
 
 		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
 		// Store the lastServerParam but with a bad value
-		sqrlPersistence.storeTransientAuthenticationData(CLIENT_DATA_1_CORRELATOR,
-				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
+		sqrlPersistence.startTransaction();
+		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(CLIENT_DATA_1_CORRELATOR,
+				TCUtil.AWHILE_FROM_NOW);
+		sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, 
 				// Change the first letter of server so it won't match
-				"ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw",
-				AWHILE_FROM_NOW);
+				"ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw");
+		sqrlPersistence.commitTransaction();
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildValidSqrlConfig();
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);

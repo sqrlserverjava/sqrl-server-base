@@ -21,7 +21,7 @@ public class SqrlServerOperationsTest {
 	@Test
 	public void testValidateSqrlConfig_persistenceIsNull() {
 		try {
-			new SqrlServerOperations(null, TCUtil.buildValidSqrlConfig());
+			new SqrlServerOperations(null, TCUtil.buildTestSqrlConfig());
 			TestCase.fail("Exception expected");
 		} catch (final Exception e) {
 			TestCase.assertTrue(e.getMessage().contains("sqrlPersistence"));

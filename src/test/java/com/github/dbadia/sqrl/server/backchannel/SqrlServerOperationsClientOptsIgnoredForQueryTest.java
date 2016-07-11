@@ -5,7 +5,6 @@ import static junit.framework.TestCase.assertTrue;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -29,7 +28,7 @@ import junit.framework.TestCase;
  *
  */
 @RunWith(Parameterized.class)
-public class SqrlServerOperationsClientOptsIgoredForQueryTest {
+public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 
 
 	@Parameters(name = "{index}: SqrlClientOpt=({0})")
@@ -50,9 +49,9 @@ public class SqrlServerOperationsClientOptsIgoredForQueryTest {
 	public void testIt() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, true);
-		final SqrlRequest sqrlRequest = TCBackchennelUtil.buildMockSqrlRequest(idk, "query", false, opt);
+		TCUtil.buildEmptySqrlPersistence();
+		TCUtil.setupIdk(idk, "abc", "123");
+		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", false, opt);
 
 		// Execute
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
@@ -74,11 +73,11 @@ public class SqrlServerOperationsClientOptsIgoredForQueryTest {
 	private final SqrlNutToken nutToken;
 	private final SqrlClientOpt opt;
 
-	public SqrlServerOperationsClientOptsIgoredForQueryTest(final SqrlClientOpt opt) throws SqrlException {
+	public SqrlServerOperationsClientOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws SqrlException {
 		super();
 		this.opt = opt;
 		sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
-		config = TCUtil.buildValidSqrlConfig();
+		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
 		tifBuilder = new TifBuilder();
