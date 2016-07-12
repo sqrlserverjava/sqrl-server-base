@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.PersistenceException;
 
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
+import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 
 /**
  * An in memory {@link SqrlPersistence} implementation that is only suitable for test case use
@@ -26,7 +27,7 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 	/* ***************** SQRL IDENTITY *********************/
 
 
-	public boolean doesSqrlIdentityExistByIdk(final String sqrlIdk) throws SqrlPersistenceException {
+	public boolean doesSqrlIdentityExistByIdk(final String sqrlIdk) {
 		return fetchSqrlIdentity(sqrlIdk) != null;
 	}
 
@@ -47,7 +48,7 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 
 
 	// public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore)
-	// throws SqrlPersistenceException {
+	// {
 	// final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
 	// if (sqrlIdentity == null) {
 	// throw new PersistenceException("SQRL identity not found for " + sqrlIdk);
@@ -66,7 +67,7 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 
 
 	// public void userAuthenticatedViaSqrl(final String sqrlIdk, final String correlator)
-	// throws SqrlPersistenceException {
+	// {
 	// // Normally we would associate some sort of timestamp with when this occurred (otherwise the user will appear to
 	// // be authenticated forever) but since this is short lived for test cases we don't need to worry about it
 	// final SqrlAuthenticationProgress authProgress = new SqrlAuthenticationProgress();
@@ -86,12 +87,12 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 	}
 
 
-	public boolean hasTokenBeenUsed(final String nutTokenString) throws SqrlPersistenceException {
+	public boolean hasTokenBeenUsed(final String nutTokenString) {
 		return usedTokens.contains(nutTokenString);
 	}
 
 
-	public void markTokenAsUsed(final String nutTokenString, final Date expiryTime) throws SqrlPersistenceException {
+	public void markTokenAsUsed(final String nutTokenString, final Date expiryTime) {
 		// No need to track expiryTime.getTime() in the test cases
 		usedTokens.add(nutTokenString);
 	}
@@ -127,7 +128,7 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 
 
 	public String fetchTransientAuthData(final String correlator, final String name)
-			throws SqrlPersistenceException {
+			{
 		final Map<String, String> table = sqrlTransientAuthDataTable.get(correlator);
 		if (table != null) {
 			final String value = table.get(name);
@@ -160,7 +161,7 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 
 
 	public Boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch)
-			throws SqrlPersistenceException {
+			{
 		final Map<SqrlFlag, Boolean> flagTable = sqrlIdentityFlagTable.get(sqrlIdk);
 		if (flagTable == null) {
 			return null;

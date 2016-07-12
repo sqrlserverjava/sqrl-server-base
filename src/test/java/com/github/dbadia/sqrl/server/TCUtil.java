@@ -18,13 +18,14 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.data.Constants;
+import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 
 import junitx.util.PrivateAccessor;
 
 public class TCUtil {
-	private static final EntityManager entityManager = Persistence
+	private static final EntityManager tcEntityManager = Persistence
 			.createEntityManagerFactory(Constants.PERSISTENCE_UNIT_NAME).createEntityManager();
 
 	public static final Date AWHILE_FROM_NOW = new Date(System.currentTimeMillis() + 1000000);
@@ -80,37 +81,39 @@ public class TCUtil {
 		return config;
 	}
 
-	// TODO: change to setup
-	public static final SqrlPersistence buildEmptySqrlPersistence() {
-		final SqrlJpaPersistenceProvider persistence = new SqrlJpaPersistenceProvider();
-		entityManager.getTransaction().begin();
-		entityManager.createQuery("DELETE FROM SqrlCorrelator m").executeUpdate();
-		entityManager.createQuery("DELETE FROM SqrlIdentity m").executeUpdate();
-		entityManager.getTransaction().commit();
-		return persistence;
-		// return new TestOnlySqrlPersistence2();
-	}
+	// public static final SqrlPersistence buildEmptySqrlPersistence() {
+	// final SqrlJpaPersistenceProvider persistence = new SqrlJpaPersistenceProvider();
+	// tcEntityManager.getTransaction().begin();
+	// tcEntityManager.createQuery("DELETE FROM SqrlCorrelator m").executeUpdate();
+	// tcEntityManager.createQuery("DELETE FROM SqrlIdentity m").executeUpdate();
+	// tcEntityManager.getTransaction().commit();
+	// // Have to return a new one since
+	// return new SqrlJpaPersistenceProvider();
+	// // return new TestOnlySqrlPersistence2();
+	// }
 
 	// TODO: change to setup
 	public static SqrlPersistence buildSqrlPersistence(final String correlatorFromServerParam,
-			final String serverParam) {
-		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
-		sqrlPersistence.startTransaction();
+			final String serverParam) throws Throwable {
+		final SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlatorFromServerParam,
 				TCUtil.AWHILE_FROM_NOW);
 		if (serverParam != null) {
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		}
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 		return sqrlPersistence;
 	}
 
 	public static SqrlPersistence setupIdk(final String idk, final String correlator, final String serverParam) {
-		final SqrlPersistence persistence = buildSqrlPersistence(correlator, serverParam);
-		persistence.startTransaction();
+		final SqrlPersistence persistence = new SqrlJpaPersistenceProvider();
+		final SqrlCorrelator sqrlCorrelator = persistence.createCorrelator(correlator, TCUtil.AWHILE_FROM_NOW);
+		if (serverParam != null) {
+			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
+		}
 		persistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		persistence.commitTransaction();
-		return persistence;
+		persistence.closeCommit();
+		return new SqrlJpaPersistenceProvider();
 	}
 
 	public static MockHttpServletRequest buildMockRequest(final String uriString) throws URISyntaxException {
@@ -173,5 +176,25 @@ public class TCUtil {
 		return nut;
 	}
 
+	public static SqrlPersistence createEmptySqrlPersistence() throws NoSuchFieldException {
+		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
+		final EntityManager entityManager = (EntityManager) PrivateAccessor.getField(sqrlPersistence, "entityManager");
+		// entityManager.createQuery("DELETE FROM SqrlCorrelator m").executeUpdate();
+		// entityManager.createQuery("DELETE FROM SqrlIdentity m").executeUpdate();
+		for (final Object object : entityManager.createQuery("SELECT e FROM SqrlCorrelator e")
+				.getResultList()) {
+			entityManager.remove(object);
+		}
+		for (final Object object : entityManager.createQuery("SELECT e FROM SqrlIdentity e").getResultList()) {
+			entityManager.remove(object);
+		}
+		sqrlPersistence.closeCommit();
+		return new SqrlAutoCloseablePersistence(createSqrlPersistence());
+	}
+
+	public static SqrlPersistence createSqrlPersistence() {
+		return new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()).getSqrlPersistenceFactory()
+				.createSqrlPersistence();
+	}
 
 }

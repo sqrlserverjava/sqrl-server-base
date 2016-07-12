@@ -13,7 +13,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
@@ -49,7 +48,7 @@ public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 	public void testIt() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		TCUtil.buildEmptySqrlPersistence();
+		TCUtil.createEmptySqrlPersistence();
 		TCUtil.setupIdk(idk, "abc", "123");
 		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", false, opt);
 
@@ -73,13 +72,13 @@ public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 	private final SqrlNutToken nutToken;
 	private final SqrlClientOpt opt;
 
-	public SqrlServerOperationsClientOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws SqrlException {
+	public SqrlServerOperationsClientOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws Exception {
 		super();
 		this.opt = opt;
-		sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
+		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		sqrlServerOps = new SqrlServerOperations(config);
 		tifBuilder = new TifBuilder();
 		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}

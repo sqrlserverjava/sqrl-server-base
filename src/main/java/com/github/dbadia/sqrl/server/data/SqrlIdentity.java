@@ -30,7 +30,7 @@ import com.github.dbadia.sqrl.server.SqrlFlag;
 @Entity
 @Table(name = "sqrl_identity")
 public class SqrlIdentity implements Serializable {
-	private static final long serialVersionUID = 2278524035284028525L;
+	private static final long serialVersionUID = 8253431723090135998L;
 
 	@Id
 	@TableGenerator(name = "identity_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value", allocationSize = 1)
@@ -98,6 +98,73 @@ public class SqrlIdentity implements Serializable {
 
 	public Map<String, String> getIdentityDataTable() {
 		return identityDataTable;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("SqrlIdentity [id=").append(id).append(", idk=").append(idk).append(", nativeUserXref=")
+		.append(nativeUserXref).append(", identityDataTable=").append(identityDataTable).append(", flagTable=")
+		.append(flagTable).append("]");
+		return builder.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((flagTable == null) ? 0 : flagTable.hashCode());
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((identityDataTable == null) ? 0 : identityDataTable.hashCode());
+		result = prime * result + ((idk == null) ? 0 : idk.hashCode());
+		result = prime * result + ((nativeUserXref == null) ? 0 : nativeUserXref.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final SqrlIdentity other = (SqrlIdentity) obj;
+		if (flagTable == null) {
+			if (other.flagTable != null) {
+				return false;
+			}
+		} else if (!flagTable.equals(other.flagTable)) {
+			return false;
+		}
+		if (id != other.id) {
+			return false;
+		}
+		if (identityDataTable == null) {
+			if (other.identityDataTable != null) {
+				return false;
+			}
+		} else if (!identityDataTable.equals(other.identityDataTable)) {
+			return false;
+		}
+		if (idk == null) {
+			if (other.idk != null) {
+				return false;
+			}
+		} else if (!idk.equals(other.idk)) {
+			return false;
+		}
+		if (nativeUserXref == null) {
+			if (other.nativeUserXref != null) {
+				return false;
+			}
+		} else if (!nativeUserXref.equals(other.nativeUserXref)) {
+			return false;
+		}
+		return true;
 	}
 
 }

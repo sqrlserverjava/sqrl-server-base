@@ -51,7 +51,7 @@ public class SqrlServerOperationsQrCodeTest {
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		config.setBackchannelServletPath(configBackchannelPath);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 
 		// Emulate the login page generation
 		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);

@@ -7,10 +7,14 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Enumeration;
+import java.util.List;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,5 +213,46 @@ public class SqrlUtil {
 			buf.append(paramName).append("=").append(servletRequest.getParameter(paramName)).append("  ");
 		}
 		return buf.toString();
+	}
+
+	public static Cookie createCookie(final HttpServletRequest request, final HttpServletResponse response,
+			final String name, final String value) {
+		final Cookie cookie = new Cookie(name, value);
+		cookie.setHttpOnly(true);
+		if (SqrlConstants.SCHEME_HTTPS.equals(request.getScheme())) {
+			cookie.setSecure(true);
+		}
+		cookie.setMaxAge(-1);
+		return cookie;
+	}
+
+	public static String getCookieValue(final HttpServletRequest request, final String toFind) {
+		if (request.getCookies() == null) {
+			return null;
+		}
+		for (final Cookie cookie : request.getCookies()) {
+			if (toFind.equals(cookie.getName())) {
+				return cookie.getValue();
+			}
+		}
+		return null;
+	}
+
+	public static void deleteAllCookies(final HttpServletRequest request, final HttpServletResponse response) {
+		for (final Cookie cookie : request.getCookies()) {
+			cookie.setMaxAge(0);
+			response.addCookie(cookie);
+		}
+	}
+
+	public static void deleteCookies(final HttpServletRequest request, final HttpServletResponse response,
+			final String... cookiesToDelete) {
+		final List<String> cookieToDeleteList = Arrays.asList(cookiesToDelete);
+		for (final Cookie cookie : request.getCookies()) {
+			if (cookieToDeleteList.contains(cookie.getName())) {
+				cookie.setMaxAge(0);
+				response.addCookie(cookie);
+			}
+		}
 	}
 }

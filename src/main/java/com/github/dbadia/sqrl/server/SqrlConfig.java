@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+
 // @formatter:off
 /**
  * Bean which stores our server-side SQRL configuration settings. 
@@ -35,8 +37,9 @@ public class SqrlConfig {
 	 * The amount of time the SQRL "Nut" will be valid for. That is the maximum amount of time that can pass between us
 	 * (server) generating the QR code and us receiving the clients response
 	 * 
-	 * It is strongly recommended that this value be set to 15 minutes ore more as this is a new protocol. The user may
-	 * use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it works etc.
+	 * It is strongly recommended that this value be set to 15 minutes (default) or more as this is a new protocol. The
+	 * user may use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it
+	 * works etc.
 	 */
 	@XmlElement
 	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toMillis(15);
@@ -45,7 +48,7 @@ public class SqrlConfig {
 	private ImageFormat qrCodeFileType = ImageFormat.PNG;
 
 	/**
-	 * The path (full URL or partial URI) of the backchannel servlet which the SQRL client will call
+	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL client will call
 	 */
 	@XmlElement
 	private String backchannelServletPath;
@@ -59,15 +62,33 @@ public class SqrlConfig {
 	@XmlTransient
 	private SecureRandom secureRandom;
 
+	/**
+	 * REQUIRED: The 16 byte AES key used to encrypt {@link SqrlNutToken}
+	 */
 	@XmlElement
 	private byte[] aesKeyBytes;
 
 	/**
 	 * A list of one or more headers (X-Forwarded-For, etc) from which to get the users real IP. SQRL requires the users
-	 * real IP to respond to the client correctly.
+	 * real IP to respond to the client correctly. The headers will be checked in the order given.
 	 */
 	@XmlElement
 	private String[] ipForwardedForHeaders;
+
+	@XmlElement
+	private String sqrlPersistenceFactoryClass = "com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory";
+
+	/**
+	 * The cookie name to use for the SQRL correlator during authentication
+	 */
+	@XmlElement
+	private String correlatorCookieName = "sqrlcorrelator";
+
+	/**
+	 * The cookie name to use for the SQRL first nut during authentication
+	 */
+	@XmlElement
+	private String firstNutCookieName = "sqrlfirstnut";
 
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;
@@ -163,5 +184,37 @@ public class SqrlConfig {
 
 	public long getCurrentTimeMs() {
 		return System.currentTimeMillis();
+	}
+
+	public byte[] getAesKeyBytes() {
+		return aesKeyBytes;
+	}
+
+	public void setAesKeyBytes(final byte[] aesKeyBytes) {
+		this.aesKeyBytes = aesKeyBytes;
+	}
+
+	public String getSqrlPersistenceFactoryClass() {
+		return sqrlPersistenceFactoryClass;
+	}
+
+	public String getCorrelatorCookieName() {
+		return correlatorCookieName;
+	}
+
+	public String getFirstNutCookieName() {
+		return firstNutCookieName;
+	}
+
+	public void setFirstNutCookieName(final String firstNutCookieName) {
+		this.firstNutCookieName = firstNutCookieName;
+	}
+
+	public void setSqrlPersistenceFactoryClass(final String sqrlPersistenceFactoryClass) {
+		this.sqrlPersistenceFactoryClass = sqrlPersistenceFactoryClass;
+	}
+
+	public void setCorrelatorCookieName(final String correlatorCookieName) {
+		this.correlatorCookieName = correlatorCookieName;
 	}
 }

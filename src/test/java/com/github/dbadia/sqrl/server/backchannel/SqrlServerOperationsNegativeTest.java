@@ -15,6 +15,7 @@ import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 
 import junitx.framework.StringAssert;
 
@@ -37,7 +38,7 @@ public class SqrlServerOperationsNegativeTest {
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		// config.setBackchannelServletPath(configBackchannelPath);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 		// Emulate the login page generation
 		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
@@ -61,23 +62,22 @@ public class SqrlServerOperationsNegativeTest {
 		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 
-		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
+		final SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 
 		// Data from a real transaction with a long expiry
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 		final String serverValue = "ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=" + serverValue
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1cqvBg";
 
-		sqrlPersistence.startTransaction();
 		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(CLIENT_DATA_1_CORRELATOR,
 				TCUtil.AWHILE_FROM_NOW);
 		sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverValue);
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		// Emulate the login page generation
 		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
@@ -104,21 +104,21 @@ public class SqrlServerOperationsNegativeTest {
 		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 
-		final SqrlPersistence sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
+		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		// Store the lastServerParam but with a bad value
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(CLIENT_DATA_1_CORRELATOR,
 				TCUtil.AWHILE_FROM_NOW);
 		sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, 
 				// Change the first letter of server so it won't match
 				"ZXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw");
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		// Data from a real transaction with a long expiry
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw"

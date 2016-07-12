@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
  * @author Dave Badia
  *
  */
-public class SqrlTokenExpiryCleanupTask {
-	private final Logger logger = LoggerFactory.getLogger(SqrlTokenExpiryCleanupTask.class);
-	private static final SqrlTokenExpiryCleanupTask INSTANCE = new SqrlTokenExpiryCleanupTask();
+public class SqrlPersistenceCleanupTask {
+	private final Logger logger = LoggerFactory.getLogger(SqrlPersistenceCleanupTask.class);
+	private static final SqrlPersistenceCleanupTask INSTANCE = new SqrlPersistenceCleanupTask();
 
 	private final ScheduledExecutorService sqrlTokenExpiryCleanupScheduler;
 
@@ -26,7 +26,7 @@ public class SqrlTokenExpiryCleanupTask {
 		// Nothing to do, loading this class with kick off the scheduler
 	}
 
-	private SqrlTokenExpiryCleanupTask() {
+	private SqrlPersistenceCleanupTask() {
 		sqrlTokenExpiryCleanupScheduler = Executors.newScheduledThreadPool(1);
 		logger.info("SqrlTokenExpiryCleanupTask scheduled in background");
 		sqrlTokenExpiryCleanupScheduler.scheduleAtFixedRate(new Runnable() {

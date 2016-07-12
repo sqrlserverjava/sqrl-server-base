@@ -34,7 +34,7 @@ import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 @Entity
 @Table(name = "sqrl_correlator")
 public class SqrlCorrelator implements Serializable {
-	private static final long serialVersionUID = 6724800159628367708L;
+	private static final long serialVersionUID = -670589151677266808L;
 
 	@Id
 	@TableGenerator(name = "correlator_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value", allocationSize = 1)
@@ -93,11 +93,21 @@ public class SqrlCorrelator implements Serializable {
 		return transientAuthDataTable;
 	}
 
+	/**
+	 * TODO: make protected
+	 * 
+	 * @deprecated do not use this method to add items
+	 */
+	@Deprecated
 	public Set<String> getUsedNutTokenList() {
 		return usedNutTokenList;
 	}
 
 	public SqrlIdentity getAuthenticatedIdentity() {
+		if (getAuthenticationStatus() != SqrlAuthenticationStatus.AUTH_COMPLETE) {
+			throw new SqrlPersistenceException(
+					"getAuthenticatedIdentity() can only be called when getAuthenticationStatus() == SqrlAuthenticationStatus.AUTH_COMPLETE");
+		}
 		return authenticatedIdentity;
 	}
 
@@ -109,5 +119,89 @@ public class SqrlCorrelator implements Serializable {
 		return authenticationStatus;
 	}
 
+	public String getCorrelatorString() {
+		return value;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder();
+		builder.append("SqrlCorrelator [id=").append(id).append(", value=").append(value)
+		.append(", authenticationStatus=").append(authenticationStatus).append(", expiryTime=")
+		.append(expiryTime).append(", transientAuthDataTable=").append(transientAuthDataTable)
+		.append(", usedNutTokenList=").append(usedNutTokenList).append(", authenticatedIdentity=")
+		.append(authenticatedIdentity).append("]");
+		return builder.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((authenticatedIdentity == null) ? 0 : authenticatedIdentity.hashCode());
+		result = prime * result + ((authenticationStatus == null) ? 0 : authenticationStatus.hashCode());
+		result = prime * result + ((expiryTime == null) ? 0 : expiryTime.hashCode());
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((transientAuthDataTable == null) ? 0 : transientAuthDataTable.hashCode());
+		result = prime * result + ((usedNutTokenList == null) ? 0 : usedNutTokenList.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final SqrlCorrelator other = (SqrlCorrelator) obj;
+		if (authenticatedIdentity == null) {
+			if (other.authenticatedIdentity != null) {
+				return false;
+			}
+		} else if (!authenticatedIdentity.equals(other.authenticatedIdentity)) {
+			return false;
+		}
+		if (authenticationStatus != other.authenticationStatus) {
+			return false;
+		}
+		if (expiryTime == null) {
+			if (other.expiryTime != null) {
+				return false;
+			}
+		} else if (!expiryTime.equals(other.expiryTime)) {
+			return false;
+		}
+		if (id != other.id) {
+			return false;
+		}
+		if (transientAuthDataTable == null) {
+			if (other.transientAuthDataTable != null) {
+				return false;
+			}
+		} else if (!transientAuthDataTable.equals(other.transientAuthDataTable)) {
+			return false;
+		}
+		if (usedNutTokenList == null) {
+			if (other.usedNutTokenList != null) {
+				return false;
+			}
+		} else if (!usedNutTokenList.equals(other.usedNutTokenList)) {
+			return false;
+		}
+		if (value == null) {
+			if (other.value != null) {
+				return false;
+			}
+		} else if (!value.equals(other.value)) {
+			return false;
+		}
+		return true;
+	}
 
 }

@@ -28,6 +28,8 @@ public class SqrlConfigOperations {
 		FULL_URL, FULL_PATH, PARTIAL_PATH
 	}
 
+	// Cache the factory
+	private static SqrlPersistenceFactory sqrlPersistenceFactory = null;
 	private final SqrlConfig config;
 
 	private final Key aesKey;
@@ -208,5 +210,21 @@ public class SqrlConfigOperations {
 		}
 		logger.info("BackchannelSettingType is " + type + " for backchannelServletPath: " + backchannelServletPath);
 		return type;
+	}
+
+	public SqrlPersistenceFactory getSqrlPersistenceFactory() {
+		if (sqrlPersistenceFactory == null) {
+			// Get the factory class name and validate it
+			final String factoryClassName = config.getSqrlPersistenceFactoryClass();
+			try {
+				@SuppressWarnings("rawtypes")
+				final Class clazz = Class.forName(factoryClassName);
+				sqrlPersistenceFactory = (SqrlPersistenceFactory) clazz.newInstance();
+			} catch (final Exception e) {
+				throw new IllegalArgumentException(
+						"Could not create SqrlPersistenceFactory with name '" + factoryClassName + "'", e);
+			}
+		}
+		return sqrlPersistenceFactory;
 	}
 }

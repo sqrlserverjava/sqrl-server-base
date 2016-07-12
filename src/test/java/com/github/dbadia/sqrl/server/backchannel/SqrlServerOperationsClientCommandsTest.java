@@ -15,6 +15,7 @@ import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 
 import junitx.framework.ObjectAssert;
 import junitx.framework.StringAssert;
@@ -32,8 +33,8 @@ public class SqrlServerOperationsClientCommandsTest {
 	public void setUp() throws Exception {
 		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		sqrlPersistence = TCUtil.buildEmptySqrlPersistence();
-		sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
+		sqrlServerOps = new SqrlServerOperations(config);
 		tifBuilder = new TifBuilder();
 		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}
@@ -42,15 +43,15 @@ public class SqrlServerOperationsClientCommandsTest {
 	public void testCmdEnable_SqrlIdentityExists() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence.startTransaction();
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", true);
 
 		// Execute - call start/commit since it is usually done by the caller
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 
 		// Validate
 		assertTrue(idkExists);
@@ -65,30 +66,31 @@ public class SqrlServerOperationsClientCommandsTest {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", false); // No urs
 
 		// Execute
 		try {
 			// Execute - call start/commit since it is usually done by the caller
-			sqrlPersistence.startTransaction();
+			sqrlPersistence = new SqrlJpaPersistenceProvider();
 			sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
-			sqrlPersistence.commitTransaction();
+			sqrlPersistence.closeCommit();
 			fail("Exception expected");
 		} catch (final Exception e) {
-			sqrlPersistence.rollbackTransaction();
+			sqrlPersistence.closeRollback();
 			e.printStackTrace();
 			ObjectAssert.assertInstanceOf(SqrlInvalidRequestException.class, e);
 			StringAssert.assertContains("urs", e.getMessage());
 		}
 		// Verify that it's still disabled
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
@@ -96,21 +98,22 @@ public class SqrlServerOperationsClientCommandsTest {
 	@Test
 	public void testCmdRemove_SqrlIdentityExists() throws Throwable {
 		// Setup
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
 		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", true);
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		// Execute all start/commit manually since it is usually done by the caller
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		// Validate
 		assertTrue(idkExists);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		assertFalse(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 
@@ -122,6 +125,7 @@ public class SqrlServerOperationsClientCommandsTest {
 
 		// Execute
 		try {
+			sqrlPersistence = new SqrlJpaPersistenceProvider();
 			sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
 			fail("Exception expected");
 		} catch (final Exception e) {
@@ -134,19 +138,21 @@ public class SqrlServerOperationsClientCommandsTest {
 	public void testCmdDisable_SqrlIdentityExists() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		TCUtil.setupIdk(idk, correlator, "123");
 		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "disable", true);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 
 		// Execute - call start/commit since it is usually done by the caller
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		// Validate
 		assertTrue(idkExists);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}

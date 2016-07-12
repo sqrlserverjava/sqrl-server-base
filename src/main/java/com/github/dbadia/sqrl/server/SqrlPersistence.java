@@ -6,6 +6,7 @@ import java.util.Map;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
+import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 
 /**
  * The application wanting to provide SQRL authentication must implement this interface to give the SQRL library access
@@ -63,12 +64,12 @@ public interface SqrlPersistence {
 	 * Called to assign a native user cross reference to the given SQRL identity object so when SQRL authentication
 	 * takes place, the application knows which user has authenticated
 	 * 
-	 * @param sqrlIdentity
+	 * @param sqrlIdentityId
 	 *            the SQRL identity to update
 	 * @param nativeUserXref
 	 *            the applications native user id for this user
 	 */
-	public void updateNativeUserXref(final SqrlIdentity sqrlIdentity, final String nativeUserXref);
+	public void updateNativeUserXref(final long sqrlIdentityId, final String nativeUserXref);
 
 	/**
 	 * Indicates that a user was authenticated successfully via SQRL. The webapp must use the given parameters to:
@@ -187,26 +188,31 @@ public interface SqrlPersistence {
 	public String fetchTransientAuthData(String correlator, String transientNameServerParrot)
 			throws SqrlPersistenceException;
 
-	/* ***************** TRANSACTION START / STOP *********************/
-	/**
-	 * Invoked to start a new persistence transaction. All calls made to this class after this must <b>not</b> be
-	 * committed until {@link #commitTransaction()} is called
-	 */
-	public void startTransaction();
+	/* ***************** SqrlCorrelator *********************/
 
-	/**
-	 * Commit all updates since {@link #startTransaction()} was called
-	 */
-	public void commitTransaction();
-
-	/**
-	 * Ignore all updates since {@link #startTransaction()} was called
-	 */
-	public void rollbackTransaction();
-
+	// TODO:
 	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(String correlator);
 
+	// TODO:
 	public SqrlCorrelator createCorrelator(String correlatorString, Date expiryTime);
 
+	// TODO:
 	public SqrlCorrelator fetchSqrlCorrelatorRequired(String correlator);
+
+	/* ***************** TRANSACTION START / STOP *********************/
+
+	/**
+	 * Commit all updates since {@link #beginServletTransaction()} was called
+	 */
+	public void closeCommit();
+
+	/**
+	 * Ignore all updates since {@link #beginServletTransaction()} was called
+	 */
+	public void closeRollback();
+
+	public boolean isClosed();
+
+	public void cleanUpExpiredEntries();
+
 }

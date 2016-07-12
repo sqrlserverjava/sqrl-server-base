@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +22,7 @@ import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 
 import junit.framework.TestCase;
 import junitx.framework.StringAssert;
@@ -34,11 +34,10 @@ import junitx.framework.StringAssert;
  *
  */
 public class SqrlServerOperationsRealClientDataTest {
-	private static final Date AWHILE_FROM_NOW = new Date(System.currentTimeMillis() + 1000000);
 
 	@Before
-	public void setUp() {
-		TCUtil.buildEmptySqrlPersistence();
+	public void setUp() throws NoSuchFieldException {
+		TCUtil.createEmptySqrlPersistence();
 	}
 
 	@Test
@@ -55,7 +54,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		// final SqrlConfig config = TCUtil.buildTestSqrlConfig("Tf0hUfWzzhpmsxGr5-dh7Q");
 		// config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		//
-		// final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		// final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 		// // Store the server parrot
 		// TCUtil.buildSqrlPersistence(correlatorFromServerParam, serverParam);
 		//
@@ -123,7 +122,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 		// Store the server parrot
 		TCUtil.buildSqrlPersistence(correlatorFromServerParam, serverParam);
 
@@ -183,18 +182,16 @@ public class SqrlServerOperationsRealClientDataTest {
 		final String suk = "xyz";
 
 		String serverParam = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
-		final SqrlPersistence sqrlPersistence = TCUtil.buildSqrlPersistence(correlatorFromServerParam, serverParam);
 
-		TCUtil.setupIdk(idk, correlatorFromServerParam, serverParam);
-		sqrlPersistence.startTransaction();
+		SqrlPersistence sqrlPersistence = TCUtil.setupIdk(idk, correlatorFromServerParam, serverParam);
 		sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, Collections.singletonMap(SqrlConstants.KEY_TYPE_SUK, suk));
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		// Data from a real transaction with a long expiry
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
-		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(sqrlPersistence, config);
+		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=" + serverParam
@@ -223,10 +220,10 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=SFEHcCzTb_cnaMaInR3nFt-L_fguMGEEXHVRATq3naTlCJ6TCTfarjjYRH8HR-tua-k4HLiSVtvdLRKqM6KFDg";
 		// Store the server parrot so request validation will pass
-		sqrlPersistence.startTransaction();
+		sqrlPersistence = new SqrlJpaPersistenceProvider();
 		sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorFromServerParam).getTransientAuthDataTable()
 		.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
-		sqrlPersistence.commitTransaction();
+		sqrlPersistence.closeCommit();
 
 		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
 		servletResponse = new MockHttpServletResponse();

@@ -7,7 +7,7 @@ import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
 
 /**
- * Util methods to be used by other test cases
+ * Util methods to be used by other test cases TODO: move to TCUTil
  * 
  * @author Dave Badia
  *

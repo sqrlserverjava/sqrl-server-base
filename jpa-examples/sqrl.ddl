@@ -6,11 +6,11 @@ CREATE TABLE sqrl_used_nut_token (id BIGINT NOT NULL, value VARCHAR(255) NOT NUL
 CREATE TABLE sqrl_transient_auth_data (id BIGINT NOT NULL, value VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL);
 -- INDEXES
 ALTER TABLE `sqrl_identity` ADD INDEX(`native_user_xref`);
-ALTER TABLE `sqrl_identity` ADD INDEX(`idk`);
-ALTER TABLE `sqrl_correlator` ADD INDEX(`value`);
+ALTER TABLE `sqrl_identity` ADD UNIQUE INDEX(`idk`);
+ALTER TABLE `sqrl_correlator` ADD UNIQUE INDEX(`value`);
 ALTER TABLE `sqrl_identity_flag` ADD INDEX(`name`);
 ALTER TABLE `sqrl_identity_data` ADD INDEX(`name`);
-ALTER TABLE `sqrl_used_nut_token` ADD INDEX(`value`);
+ALTER TABLE `sqrl_used_nut_token` ADD UNIQUE INDEX(`value`);
 ALTER TABLE `sqrl_transient_auth_data` ADD INDEX(`name`);
 -- FOREIGN KEY
 ALTER TABLE sqrl_correlator ADD CONSTRAINT FK_sqrl_correlator_authenticated_identity FOREIGN KEY (authenticated_identity) REFERENCES sqrl_identity (id);

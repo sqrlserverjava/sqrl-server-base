@@ -33,10 +33,14 @@ import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
+import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
 import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
+import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
+import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -64,9 +68,11 @@ public class SqrlServerOperations {
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
-	private final SqrlPersistence sqrlPersistence;
+	private final SqrlPersistenceFactory sqrlPersistenceFactory;
 	private final SqrlConfigOperations configOperations;
 	private final SqrlConfig config;
+	// TODO: add customer SqrlPersistence support with Class for name
+
 
 	/**
 	 * Initializes the operations class with the given config, defaulting to the built in JPA persisentce provider.
@@ -77,35 +83,12 @@ public class SqrlServerOperations {
 	 *            the SQRL settings to be used
 	 * @throws SqrlException
 	 */
-	public SqrlServerOperations(final SqrlConfig config) throws SqrlException {
-		this.sqrlPersistence = new SqrlJpaPersistenceProvider();
+	public SqrlServerOperations(final SqrlConfig config) {
 		if (config == null) {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
 		this.configOperations = new SqrlConfigOperations(config);
-		this.config = config;
-	}
-
-	/**
-	 * Initializes the operations class with the given persistence and config; typically this is only used when the
-	 * application is implementing a custom SqrlPersistence
-	 * 
-	 * @param sqrlPersistence
-	 *            the persistence to be used for storing and retreiving SQRL data
-	 * @param config
-	 *            the SQRL settings to be used
-	 * @throws SqrlException
-	 */
-	public SqrlServerOperations(final SqrlPersistence sqrlPersistence, final SqrlConfig config) throws SqrlException {
-		// SqrlPersistane
-		if (sqrlPersistence == null) {
-			throw new IllegalArgumentException("sqrlPersistence object must not be null", null);
-		}
-		this.sqrlPersistence = sqrlPersistence;
-		if (config == null) {
-			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
-		}
-		this.configOperations = new SqrlConfigOperations(config);
+		this.sqrlPersistenceFactory = configOperations.getSqrlPersistenceFactory();
 		this.config = config;
 	}
 
@@ -138,7 +121,7 @@ public class SqrlServerOperations {
 			config.setServerFriendlyName(sfn);
 		}
 		urlBuf.append("&sfn=").append(SqrlUtil.sqrlBase64UrlEncode(sfn));
-		try {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
 			// Append our correlation id
 			// Need correlation id to be unique to each Nut, so sha-256 the nut
 			final MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -153,6 +136,7 @@ public class SqrlServerOperations {
 			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlator, expiryTime);
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
 					SqrlUtil.sqrlBase64UrlEncode(url));
+			sqrlPersistence.closeCommit();
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
@@ -179,7 +163,6 @@ public class SqrlServerOperations {
 	 */
 	public void handleSqrlClientRequest(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse)
 			throws IOException {
-		sqrlPersistence.startTransaction();
 		SqrlLoggingUtil.initLoggingHeader(servletRequest);
 		if (logger.isInfoEnabled()) {
 			logger.info("Processing SQRL client request: {}", SqrlUtil.buildRequestParamList(servletRequest));
@@ -192,6 +175,7 @@ public class SqrlServerOperations {
 		try {
 			String logHeader = "";
 			SqrlRequest request = null;
+			SqrlPersistence sqrlPersistence = createSqrlPersistence();
 			try {
 				request = new SqrlRequest(servletRequest, sqrlPersistence, configOperations);
 				correlator = request.getCorrelator();
@@ -206,9 +190,9 @@ public class SqrlServerOperations {
 				idkExistsInDataStore = processClientCommand(request, nutToken, tifBuilder, correlator);
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
-				sqrlPersistence.commitTransaction();
+				sqrlPersistence.closeCommit();
 			} catch (final SqrlException e) {
-				sqrlPersistence.rollbackTransaction();
+				sqrlPersistence.closeRollback();
 				isInErrorState = true;
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
 				if(e instanceof SqrlInvalidRequestException) {
@@ -227,6 +211,7 @@ public class SqrlServerOperations {
 
 			// We have processed the request, success or failure. Now prep and transmit the reply
 			String serverReplyString = ""; // for logging
+			sqrlPersistence = new SqrlJpaPersistenceProvider();
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
 				serverReplyString = buildReply(isInErrorState, servletRequest, request, idkExistsInDataStore, tif,
@@ -235,15 +220,15 @@ public class SqrlServerOperations {
 					// Store the serverReplyString in the server parrot value so we can validate it on the clients next
 					// request
 					final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
-					sqrlPersistence.startTransaction();
 					sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
 							serverReplyString);
-					sqrlPersistence.commitTransaction();
 				}
+				sqrlPersistence.closeCommit();
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
 				logger.info("{}Processed sqrl client request replying with tif {}", logHeader,
 						tif);
 			} catch (final SqrlException e) {
+				sqrlPersistence.closeRollback();
 				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
 						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString), e);
 				logger.debug("{}Request {}, responded with   B64: {}", logHeader, requestState, serverReplyString);
@@ -260,67 +245,74 @@ public class SqrlServerOperations {
 		final String command = request.getClientCommand();
 		logger.debug("{}Processing {} command for nut {}", logHeader, command, nutToken);
 		final String idk = request.getIdk();
-		boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
-		// Set IDK /PIDK Tifs
-		if (idkExistsInDataStore) {
-			tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
-		} else if (request.hasPidk()) {
-			final String result = sqrlPersistence.fetchSqrlIdentityDataItem(idk, request.getPidk());
-			if (result == null) {
-				sqrlPersistence.updateIdkForSqrlIdentity(request.getPidk(), idk);
-				tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
+		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
+		try {
+			boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
+			// Set IDK /PIDK Tifs
+			if (idkExistsInDataStore) {
+				tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
+			} else if (request.hasPidk()) {
+				final String result = sqrlPersistence.fetchSqrlIdentityDataItem(idk, request.getPidk());
+				if (result == null) {
+					sqrlPersistence.updateIdkForSqrlIdentity(request.getPidk(), idk);
+					tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
+				}
 			}
-		}
-		processNonSukOptions(request, tifBuilder, logHeader);
-		// Now process the command
-		if (COMMAND_QUERY.equals(command)) {
-			// Nothing else to do
-		} else if (COMMAND_ENABLE.equals(command)) {
-			final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(idk,
-					SqrlFlag.SQRL_AUTH_ENABLED);
-			if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
-				if (request.containsUrs()) {
-					sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, true);
+			processNonSukOptions(request, tifBuilder, logHeader);
+			// Now process the command
+			if (COMMAND_QUERY.equals(command)) {
+				// Nothing else to do
+			} else if (COMMAND_ENABLE.equals(command)) {
+				final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(idk,
+						SqrlFlag.SQRL_AUTH_ENABLED);
+				if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
+					if (request.containsUrs()) {
+						sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, true);
+					} else {
+						throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader()
+								+ "Request was to enable SQRL but didn't contain urs signature");
+					}
 				} else {
-					throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader()
-							+ "Request was to enable SQRL but didn't contain urs signature");
+					logger.warn("{}Received request to ENABLE but it already is");
+				}
+			} else if (COMMAND_REMOVE.equals(command)) {
+				if (request.containsUrs()) {
+					sqrlPersistence.deleteSqrlIdentity(idk);
+				} else {
+					throw new SqrlInvalidRequestException(
+							SqrlLoggingUtil.getLogHeader() + "Request was to enable SQRL but didn't contain urs signature");
+				}
+			} else if (COMMAND_DISABLE.equals(command)) {
+				sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
+			} else if (COMMAND_IDENT.equals(command)) {
+				if (!idkExistsInDataStore) {
+					// First time seeing this SQRL identity, store it and enable it
+					sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
+				}
+				final boolean sqrlEnabledForIdentity = Boolean.TRUE
+						.equals(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+				if (!idkExistsInDataStore || sqrlEnabledForIdentity) {
+					final Map<String, String> keysToBeStored = request.getKeysToBeStored();
+					sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
+					idkExistsInDataStore = true;
+					logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
+					sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
+				} else { // sqrl disabled for identity
+					tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
+					tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
+					throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user", null);
 				}
 			} else {
-				logger.warn("{}Received request to ENABLE but it already is");
-			}
-		} else if (COMMAND_REMOVE.equals(command)) {
-			if (request.containsUrs()) {
-				sqrlPersistence.deleteSqrlIdentity(idk);
-			} else {
-				throw new SqrlInvalidRequestException(
-						SqrlLoggingUtil.getLogHeader() + "Request was to enable SQRL but didn't contain urs signature");
-			}
-		} else if (COMMAND_DISABLE.equals(command)) {
-			sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
-		} else if (COMMAND_IDENT.equals(command)) {
-			if (!idkExistsInDataStore) {
-				// First time seeing this SQRL identity, store it and enable it
-				sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-			}
-			final boolean sqrlEnabledForIdentity = Boolean.TRUE
-					.equals(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
-			if (!idkExistsInDataStore || sqrlEnabledForIdentity) {
-				final Map<String, String> keysToBeStored = request.getKeysToBeStored();
-				sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
-				idkExistsInDataStore = true;
-				logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
-				sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
-			} else { // sqrl disabled for identity
-				tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
+				tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
 				tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
-				throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user", null);
+				throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Unsupported client command " + command, null);
 			}
-		} else {
-			tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
-			tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
-			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Unsupported client command " + command, null);
+			sqrlPersistence.closeCommit();
+			return idkExistsInDataStore;
+		} catch (final SqrlException e) {
+			sqrlPersistence.closeRollback();
+			throw e;
 		}
-		return idkExistsInDataStore;
 	}
 
 	private void processNonSukOptions(final SqrlRequest sqrlRequest, final TifBuilder tifBuilder,
@@ -352,6 +344,7 @@ public class SqrlServerOperations {
 			final boolean idkExistsInDataStore, final SqrlTif tif, final String correlator)
 					throws SqrlException {
 		final String logHeader = SqrlLoggingUtil.getLogHeader();
+		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
 		try {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());
 			final String subsequentRequestPath = configOperations.getSubsequentRequestPath(servletRequest);
@@ -389,8 +382,10 @@ public class SqrlServerOperations {
 
 			final String serverReplyString = reply.toBase64();
 			logger.debug("{}Build serverReplyString: {}", logHeader, serverReplyString);
+			sqrlPersistence.closeCommit();
 			return serverReplyString;
 		} catch (final URISyntaxException e) {
+			sqrlPersistence.closeRollback();
 			throw new SqrlException(
 					SqrlLoggingUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
 							+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
@@ -478,8 +473,56 @@ public class SqrlServerOperations {
 		}
 	}
 
+	private SqrlAutoCloseablePersistence createSqrlPersistence() {
+		final SqrlPersistence sqrlPersistence = sqrlPersistenceFactory.createSqrlPersistence();
+		return new SqrlAutoCloseablePersistence(sqrlPersistence);
+	}
+
+	// TODO: where is this used? should be moved or non-public
 	public long determineNutExpiry(final String sqBase64EncryptedNut) throws SqrlException {
 		final SqrlNutToken token = new SqrlNutToken(configOperations, sqBase64EncryptedNut);
 		return SqrlNutTokenUtil.computeNutExpiresAt(token, config);
+	}
+
+	// @formatter:off
+	/*
+	 * **************** Persistence layer interface ********************** 
+	 * To isolate the web app from the full persistence API and transaction management, we expose the limited subset here
+	 */
+	// @formatter:on
+
+
+	public void updateNativeUserXref(final SqrlIdentity sqrlIdentity, final String nativeUserCrossReference) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
+			sqrlPersistence.updateNativeUserXref(sqrlIdentity.getId(), nativeUserCrossReference);
+			sqrlPersistence.closeCommit();
+		}
+	}
+
+	public SqrlCorrelator fetchSqrlCorrelator(final HttpServletRequest request) {
+		final String correlatorString = SqrlUtil.getCookieValue(request, config.getCorrelatorCookieName());
+		if (SqrlUtil.isBlank(correlatorString)) {
+			throw new SqrlPersistenceException("Correlator cookie not found on request");
+		}
+		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
+			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorString);
+			sqrlPersistence.closeCommit();
+			return sqrlCorrelator;
+		}
+	}
+
+	/**
+	 * Invoked to see if a web app user has a corresponding SQRL identity registered
+	 * 
+	 * @param webAppUserCrossReference
+	 *            the username, customer id, or whatever mechanism is used to uniquely identify users in the web app
+	 * @return the SQRL identity or null if none exists for this web app user
+	 */
+	public SqrlIdentity fetchSqrlIdentityByUserXref(final String webAppUserCrossReference) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
+			final SqrlIdentity sqrlIdentity = sqrlPersistence.fetchSqrlIdentityByUserXref(webAppUserCrossReference);
+			sqrlPersistence.closeCommit();
+			return sqrlIdentity;
+		}
 	}
 }

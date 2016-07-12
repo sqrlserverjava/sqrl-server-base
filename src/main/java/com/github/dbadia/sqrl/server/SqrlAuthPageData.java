@@ -40,4 +40,8 @@ public class SqrlAuthPageData {
 		return correlator;
 	}
 
+	public String getHtmlFileType(final SqrlConfig sqrlConfig) {
+		return sqrlConfig.getQrCodeFileType().toString().toLowerCase();
+	}
+
 }
