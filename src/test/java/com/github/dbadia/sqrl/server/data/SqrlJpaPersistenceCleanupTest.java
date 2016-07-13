@@ -7,7 +7,6 @@ import static junit.framework.TestCase.fail;
 import java.util.Date;
 
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.Persistence;
 
 import org.junit.After;
@@ -32,7 +31,7 @@ public class SqrlJpaPersistenceCleanupTest {
 		EntityManagerFactory entityManagerFactory = (EntityManagerFactory) PrivateAccessor.getField(
 				SqrlJpaPersistenceProvider.class, "entityManagerFactory");
 		entityManagerFactory.close();
-		entityManagerFactory = Persistence.createEntityManagerFactory(Constants.PERSISTENCE_UNIT_NAME);
+		entityManagerFactory = Persistence.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
 		PrivateAccessor.setField(SqrlJpaPersistenceProvider.class, "entityManagerFactory", entityManagerFactory);
 	}
 
@@ -108,7 +107,7 @@ public class SqrlJpaPersistenceCleanupTest {
 			sqrlPersistence.fetchSqrlCorrelatorRequired(deleteCorrelator);
 			fail("Exeption expected");
 		} catch (final Exception e) {
-			ObjectAssert.assertInstanceOf(EntityNotFoundException.class, e);
+			ObjectAssert.assertInstanceOf(SqrlPersistenceException.class, e);
 		}
 	}
 

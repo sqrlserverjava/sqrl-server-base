@@ -6,18 +6,26 @@ import java.util.Map;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 
 /**
- * The application wanting to provide SQRL authentication must implement this interface to give the SQRL library access
- * to a persistence layer (database, etc) to store various data about the users SQRL identity.
+ * Bridge between the SQRL library and the persistence layer (database, etc)
  * 
+ * @see SqrlJpaPersistenceProvider
  * @author Dave Badia
  *
  */
 public interface SqrlPersistence {
 	/* ***************** SqrlIdentity *********************/
-
+	/**
+	 * Create a new {@link SqrlIdentity} and enable SQRL authentication
+	 * 
+	 * @param sqrlIdk
+	 *            the idk of the SQRL identity
+	 * @param identityDataTable
+	 *            auth data for this SQRL identity
+	 */
 	public void createAndEnableSqrlIdentity(String sqrlIdk, Map<String, String> identityDataTable);
 
 	/**
@@ -27,8 +35,7 @@ public interface SqrlPersistence {
 	 *            the SQRL ID to check for
 	 * @return true if sqrlIdk exists, false otherwise
 	 */
-	// TODO: remove all exceptions, JPAs are unchecked
-	public boolean doesSqrlIdentityExistByIdk(String sqrlIdk) throws SqrlPersistenceException;
+	public boolean doesSqrlIdentityExistByIdk(String sqrlIdk);
 
 	/**
 	 * Fetch the sqrl identity for the the given app user cross reference id
@@ -48,7 +55,7 @@ public interface SqrlPersistence {
 	 * @param newSqrlIdk
 	 *            the new SQRL ID, which should replace previousSqrlIdk in persistence
 	 */
-	public void updateIdkForSqrlIdentity(String previousSqrlIdk, String newSqrlIdk) throws SqrlPersistenceException;
+	public void updateIdkForSqrlIdentity(String previousSqrlIdk, String newSqrlIdk);
 
 	/**
 	 * Invoked when the user chooses to remove SQRL authentication for this site
@@ -58,7 +65,7 @@ public interface SqrlPersistence {
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
-	public void deleteSqrlIdentity(String sqrlIdk) throws SqrlPersistenceException;
+	public void deleteSqrlIdentity(String sqrlIdk);
 
 	/**
 	 * Called to assign a native user cross reference to the given SQRL identity object so when SQRL authentication
@@ -91,8 +98,7 @@ public interface SqrlPersistence {
 	 *            {@link #fetchSqrlIdentityDataItem(String, String)}
 	 * @return true if this the first time the user has used this sqrlUserId to visit this site, false otherwise
 	 */
-	public void userAuthenticatedViaSqrl(String sqrlIdk, String correlator)
-			throws SqrlPersistenceException;
+	public void userAuthenticatedViaSqrl(String sqrlIdk, String correlator);
 
 	/**
 	 * Invoked to determine if SQRL auth is enabled for a user
@@ -103,7 +109,7 @@ public interface SqrlPersistence {
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
-	public Boolean fetchSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToFetch) throws SqrlPersistenceException;
+	public Boolean fetchSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToFetch);
 
 	/**
 	 * Invoked when the user chooses to temporarily disable SQRL authentication for this site
@@ -115,8 +121,7 @@ public interface SqrlPersistence {
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
-	public void setSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToSet, boolean valueToSet)
-			throws SqrlPersistenceException;
+	public void setSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToSet, boolean valueToSet);
 
 	/* ***************** SQRL IDENTITY DATA *********************/
 	/**
@@ -132,8 +137,7 @@ public interface SqrlPersistence {
 	 *            {@link #fetchSqrlIdentityDataItem(String, String)}
 	 * @return true if this the first time the user has used this sqrlUserId to visit this site, false otherwise
 	 */
-	public void storeSqrlDataForSqrlIdentity(String sqrlIdk, Map<String, String> dataToStore)
-			throws SqrlPersistenceException;
+	public void storeSqrlDataForSqrlIdentity(String sqrlIdk, Map<String, String> dataToStore);
 
 	/**
 	 * Request to the data store to retrieve user specific SQRL data that was previously stored via
@@ -146,7 +150,7 @@ public interface SqrlPersistence {
 	 *            The name of the SQRL data to be fetched. Was the key in the {@link Map} when
 	 * @return the data or null if it does not exist
 	 */
-	public String fetchSqrlIdentityDataItem(String sqrlIdk, String toFetch) throws SqrlPersistenceException;
+	public String fetchSqrlIdentityDataItem(String sqrlIdk, String toFetch);
 
 	/* ***************** SQRL USED TOKENS *********************/
 	/**
@@ -157,7 +161,7 @@ public interface SqrlPersistence {
 	 *            in the request
 	 * @return true if the token was already used, false if not
 	 */
-	public boolean hasTokenBeenUsed(final String nutTokenString) throws SqrlPersistenceException;
+	public boolean hasTokenBeenUsed(final String nutTokenString);
 
 	/**
 	 * Mark the given token as used in persistence. After this call, any subsequent calls to
@@ -180,39 +184,51 @@ public interface SqrlPersistence {
 	 * @param name
 	 *            the name of the item to be fetched
 	 * @return the value for the correlator and name or null if it does not exist
-	 * @throws SqrlPersistenceException
-	 *             if there was an error accessing the persistence store
-	 * @throws SqrlException
-	 *             if there was an error accessing the persistence store
 	 */
-	public String fetchTransientAuthData(String correlator, String transientNameServerParrot)
-			throws SqrlPersistenceException;
+	public String fetchTransientAuthData(String correlator, String transientNameServerParrot);
 
 	/* ***************** SqrlCorrelator *********************/
 
-	// TODO:
-	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(String correlator);
-
-	// TODO:
+	/**
+	 * Create a new correlator instance in the persistence
+	 * 
+	 * @param correlatorString
+	 *            the correlator value string
+	 * @param expiryTime
+	 *            the time at which this correlator expires
+	 * @return
+	 */
 	public SqrlCorrelator createCorrelator(String correlatorString, Date expiryTime);
 
-	// TODO:
+	/**
+	 * Fetch the correlator object for the given string value
+	 * 
+	 * @param correlator
+	 *            the string value to search for
+	 * @return the non-null correlator object
+	 */
 	public SqrlCorrelator fetchSqrlCorrelatorRequired(String correlator);
 
 	/* ***************** TRANSACTION START / STOP *********************/
 
 	/**
-	 * Commit all updates since {@link #beginServletTransaction()} was called
+	 * Commit all updates since this persistence object was created
 	 */
 	public void closeCommit();
 
 	/**
-	 * Ignore all updates since {@link #beginServletTransaction()} was called
+	 * Ignore all updates since this persistence object was created
 	 */
 	public void closeRollback();
 
+	/**
+	 * @return true if this persistence object has been closed
+	 */
 	public boolean isClosed();
 
+	/**
+	 * Delete any expired objects in the persistence store
+	 */
 	public void cleanUpExpiredEntries();
 
 }

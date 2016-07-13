@@ -15,7 +15,6 @@ import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 
 import junitx.framework.StringAssert;
 
@@ -31,7 +30,7 @@ public class SqrlServerOperationsNegativeTest {
 				+ "&server=" + serverValue
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
 
-		final SqrlPersistence sqrlPersistence = TCUtil.buildSqrlPersistence(CLIENT_DATA_1_CORRELATOR, serverValue);
+		TCUtil.setupSqrlPersistence(CLIENT_DATA_1_CORRELATOR, serverValue);
 
 		// Data from a real transaction with a long expiry
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
@@ -106,7 +105,7 @@ public class SqrlServerOperationsNegativeTest {
 
 		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		// Store the lastServerParam but with a bad value
-		sqrlPersistence = new SqrlJpaPersistenceProvider();
+		sqrlPersistence = TCUtil.createSqrlPersistence();
 		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(CLIENT_DATA_1_CORRELATOR,
 				TCUtil.AWHILE_FROM_NOW);
 		sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, 

@@ -90,13 +90,19 @@ public class SqrlTif {
 	 * that the wrong SQRL identity was used with a nut that was already associated with a different identity.
 	 */
 	public static final int TIF_BAD_ID_ASSOCIATION = 0x100;
+
 	/**
 	 * DEPRECATED NO LONGER DEFINED - DO NOT USE
+	 * 
+	 * @deprecated per SQRL spec: NO LONGER DEFINED - DO NOT USE
 	 */
 	@Deprecated
 	public static final int TIF_DEPRECATED_INVALID_LINK_ORIGIN = 0x200;
+
 	/**
 	 * DEPRECATED NO LONGER DEFINED - DO NOT USE
+	 * 
+	 * @deprecated per SQRL spec: NO LONGER DEFINED - DO NOT USE
 	 */
 	@Deprecated
 	public static final int TIF_DEPRECATED_SUPRESS_SFN_ORIGIN = 0x400;

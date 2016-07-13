@@ -18,6 +18,7 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 
 import junitx.framework.ArrayAssert;
 import junitx.framework.ObjectAssert;
@@ -222,11 +223,13 @@ public class SqrlNutUtilTest {
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
 		final SqrlNutToken nutToken = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
+		final TifBuilder tifBuilder = new TifBuilder();
 		try {
-			SqrlNutTokenUtil.validateNut("123", nutToken, config, persistence);
-			fail("Exceptio expected");
+			SqrlNutTokenUtil.validateNut("123", nutToken, config, persistence, tifBuilder);
+			fail("Exception expected");
 		} catch (final Exception e) {
 			ObjectAssert.assertInstanceOf(SqrlException.class, e);
+			SqrlTifTest.assertTif(tifBuilder.createTif(), SqrlTif.TIF_TRANSIENT_ERROR);
 		}
 	}
 }

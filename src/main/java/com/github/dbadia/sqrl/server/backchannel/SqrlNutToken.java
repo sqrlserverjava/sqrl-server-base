@@ -9,9 +9,6 @@ import java.security.GeneralSecurityException;
 
 import javax.crypto.Cipher;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlException;
@@ -24,7 +21,6 @@ import com.github.dbadia.sqrl.server.SqrlUtil;
  *
  */
 public class SqrlNutToken {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlNutToken.class);
 
 	private final int inetInt;
 	private final int counter;
@@ -66,18 +62,16 @@ public class SqrlNutToken {
 			nutOs.writeInt(counter);
 			// D) 31 bits: pseudo-random noise from system source.
 			nutOs.writeInt(randomInt);
-			// D2) TODO: 1 bit: flag bit to indicate source: QRcode or URL click
+			// D2) FUTURE: 1 bit: flag bit to indicate source: QRcode or URL click
 
 			final byte[] nutBytes = baos.toByteArray();
-			// Encrypt the nut
-			try {
-				final Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
-				cipher.init(Cipher.ENCRYPT_MODE, configOps.getAESKey());
-				final byte[] encrypted = cipher.doFinal(nutBytes);
-				this.base64UrlEncryptedNut = SqrlUtil.sqrlBase64UrlEncode(encrypted);
-			} catch (final GeneralSecurityException e) {
-				throw new SqrlException("Error during nut encryption", e);
-			}
+			// Encrypt and encode the nut
+			final Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+			cipher.init(Cipher.ENCRYPT_MODE, configOps.getAESKey());
+			final byte[] encrypted = cipher.doFinal(nutBytes);
+			this.base64UrlEncryptedNut = SqrlUtil.sqrlBase64UrlEncode(encrypted);
+		} catch (final GeneralSecurityException e) {
+			throw new SqrlException("Error during nut encryption", e);
 		} catch (final IOException e) {
 			throw new SqrlException("IO exception during write", e);
 		}
@@ -105,13 +99,13 @@ public class SqrlNutToken {
 			// This is a 32-bit UNSIGNED int timestamp with second granularity
 			final int temp = nutIs.readInt();
 			// convert the unsigned int to a signed long with to millis granularity
-			this.issuedTimestamp = (Integer.toUnsignedLong(temp) * 1000);
+			this.issuedTimestamp = Integer.toUnsignedLong(temp) * 1000;
 			// C) 32 bits: up-counter incremented once for every SQRL link generated.
 			this.counter = nutIs.readInt();
 			// D) 31 bits: pseudo-random noise from system source.
 			this.randomInt = nutIs.readInt();
 
-			// D2) TODO: 1 bit: flag bit to indicate source: QRcode or URL click
+			// D2) FUTURE: 1 bit: flag bit to indicate source: QRcode or URL click
 		} catch (final IOException e) {
 			throw new SqrlException("IO exception during read", e);
 		}

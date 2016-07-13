@@ -9,19 +9,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.PersistenceException;
 
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
-import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 
 /**
- * An in memory {@link SqrlPersistence} implementation that is only suitable for test case use
+ * A non-JPA memory only {@link SqrlPersistence} implementation that is only suitable for test case use
  * 
  */
-public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
+public class TestOnlySqrlPersistence { // implements SqrlPersistence { TODO
 	private final Map<String, SqrlIdentity> sqrlIdentityTable = new ConcurrentHashMap<>();
 	private final List<String> usedTokens = new ArrayList<>();
 	private final Map<String, Map<String, String>> sqrlTransientAuthDataTable = new ConcurrentHashMap<>();
 	private final Map<String, Map<SqrlFlag, Boolean>> sqrlIdentityFlagTable = new ConcurrentHashMap<>();
 
-	public TestOnlySqrlPersistence2() {
+	public TestOnlySqrlPersistence() {
 	}
 
 	/* ***************** SQRL IDENTITY *********************/
@@ -46,35 +45,6 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 		setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, true);
 	}
 
-
-	// public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore)
-	// {
-	// final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
-	// if (sqrlIdentity == null) {
-	// throw new PersistenceException("SQRL identity not found for " + sqrlIdk);
-	// }
-	// // TODO: rename to IdentityDataList
-	// Collection<SqrlIdentityData> sqrlDataForIdentity = sqrlIdentity.getUserDataList();
-	// if (sqrlDataForIdentity == null) {
-	// sqrlDataForIdentity = new ArrayList<>();
-	// sqrlIdentity.setUserDataList(sqrlDataForIdentity);
-	// }
-	// for (final Map.Entry<String, String> entry : dataToStore.entrySet()) {
-	// final SqrlIdentityData aData = new SqrlIdentityData(sqrlIdentity, entry.getKey(), entry.getValue());
-	// sqrlDataForIdentity.add(aData);
-	// }
-	// }
-
-
-	// public void userAuthenticatedViaSqrl(final String sqrlIdk, final String correlator)
-	// {
-	// // Normally we would associate some sort of timestamp with when this occurred (otherwise the user will appear to
-	// // be authenticated forever) but since this is short lived for test cases we don't need to worry about it
-	// final SqrlAuthenticationProgress authProgress = new SqrlAuthenticationProgress();
-	// final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
-	// authProgress.setAuthenticationComplete(sqrlIdentity);
-	// authenticatedProgressTable.put(correlator, authProgress);
-	// }
 
 
 	public SqrlIdentity fetchSqrlIdentityByUserXref(final String appUserXref) {
@@ -103,19 +73,6 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 		sqrlIdentityTable.put(newIdk, sqrlIdentity);
 	}
 
-
-	// public String fetchSqrlIdentityDataItem(final String sqrlIdk, final String toFetch) throws
-	// SqrlPersistenceException {
-	// final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
-	// for (final SqrlIdentityData aData : sqrlIdentity.getUserDataList()) {
-	// if (toFetch.equals(aData.getName())) {
-	// return aData.getValue();
-	// }
-	// }
-	// return null;
-	// }
-
-
 	public void storeTransientAuthenticationData(final String correlator, final String name, final String value,
 			final Date deleteAfter) {
 		Map<String, String> transientAuthDataForCorrelator = sqrlTransientAuthDataTable.get(correlator);
@@ -128,7 +85,7 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 
 
 	public String fetchTransientAuthData(final String correlator, final String name)
-			{
+	{
 		final Map<String, String> table = sqrlTransientAuthDataTable.get(correlator);
 		if (table != null) {
 			final String value = table.get(name);
@@ -161,7 +118,7 @@ public class TestOnlySqrlPersistence2 { // implements SqrlPersistence { TODO
 
 
 	public Boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch)
-			{
+	{
 		final Map<SqrlFlag, Boolean> flagTable = sqrlIdentityFlagTable.get(sqrlIdk);
 		if (flagTable == null) {
 			return null;

@@ -1,16 +1,18 @@
 package com.github.dbadia.sqrl.server.data;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
-import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.Persistence;
-import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
 
 import org.slf4j.Logger;
@@ -19,16 +21,33 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
+import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
 
+/**
+ * The default implementation of {@link SqrlPersistence} which uses JPA in order to provide SQL and no-SQL connectivity.
+ * <p>
+ * Web apps should not use this class directly, instead {@link SqrlServerOperations} should be used
+ * 
+ * @author Dave Badia
+ *
+ */
 public class SqrlJpaPersistenceProvider implements SqrlPersistence {
+	public static final String PERSISTENCE_UNIT_NAME = "javasqrl-persistence";
 	private static final Logger logger = LoggerFactory.getLogger(SqrlJpaPersistenceProvider.class);
 
 	private static EntityManagerFactory entityManagerFactory = Persistence
-			.createEntityManagerFactory(Constants.PERSISTENCE_UNIT_NAME);
-	// TODO: weak values, cleanup, see http://stackoverflow.com/questions/13413272/hashmap-with-weak-values
-	private static final Map<EntityManager, Long> LAST_USED_MAP = new WeakHashMap<>();
+			.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
+	private static final Map<EntityManager, Long> LAST_USED_TIME_TABLE = new WeakHashMap<>();
+	// Need strong references so we can check that it was closed, will be removed below
+	private static final Map<EntityManager, Exception> CREATED_BY_STACK_TABLE = new ConcurrentHashMap<>();
 
 	private final EntityManager entityManager;
+
+	static {
+		final Timer timer = new Timer(true);
+		final long interval = TimeUnit.MINUTES.toMillis(15);
+		timer.schedule(new EntityManagerMonitorTimerTask(), interval, interval);
+	}
 
 	/**
 	 * @deprecated do not invoke this constructor directly
@@ -37,11 +56,12 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	public SqrlJpaPersistenceProvider() {
 		entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
-		updateLastUsed(entityManager);
+		LAST_USED_TIME_TABLE.put(entityManager, System.currentTimeMillis());
+		CREATED_BY_STACK_TABLE.put(entityManager, new Exception("create SqrlJpaPersistenceProvider trace"));
 	}
 
 	private void updateLastUsed(final EntityManager entityManger) {
-		LAST_USED_MAP.put(entityManger, System.currentTimeMillis());
+		LAST_USED_TIME_TABLE.put(entityManger, System.currentTimeMillis());
 	}
 
 	@Override
@@ -68,7 +88,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
 		if (sqrlIdentity == null) {
-			throw new EntityNotFoundException("SqrlIdentity does not exist for idk=" + sqrlIdk);
+			throw new SqrlPersistenceException("SqrlIdentity does not exist for idk=" + sqrlIdk);
 		} else {
 			return sqrlIdentity;
 		}
@@ -106,19 +126,8 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	@Override
 	public void updateNativeUserXref(final long sqrlIdentityDbId, final String nativeUserXref) {
 		updateLastUsed(entityManager);
-		// Create a new entity manager and commit this immediately
-		final EntityManager ourEntityManager = entityManagerFactory.createEntityManager();
-		try {
-			ourEntityManager.getTransaction().begin();
-			final SqrlIdentity sqrlIdentity = entityManager.find(SqrlIdentity.class, sqrlIdentityDbId);
-			sqrlIdentity.setNativeUserXref(nativeUserXref);
-			ourEntityManager.getTransaction().commit();
-		} catch (final PersistenceException e) {
-			ourEntityManager.getTransaction().rollback();
-			throw e;
-		} finally {
-			ourEntityManager.close();
-		}
+		final SqrlIdentity sqrlIdentity = entityManager.find(SqrlIdentity.class, sqrlIdentityDbId);
+		sqrlIdentity.setNativeUserXref(nativeUserXref);
 	}
 
 	/* ************************ Sqrl Correlator methods *****************************/
@@ -135,16 +144,10 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		final SqrlCorrelator sqrlCorrelator = fetchSqrlCorrelator(sqrlCorrelatorString);
 		if (sqrlCorrelator == null) {
-			throw new EntityNotFoundException("SqrlCorrelator does not exist for correlator=" + sqrlCorrelatorString);
+			throw new SqrlPersistenceException("SqrlCorrelator does not exist for correlator=" + sqrlCorrelatorString);
 		} else {
 			return sqrlCorrelator;
 		}
-	}
-
-	@Override
-	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(final String correlatorString) {
-		updateLastUsed(entityManager);
-		return fetchSqrlCorrelatorRequired(correlatorString).getAuthenticationStatus();
 	}
 
 	@Override
@@ -152,7 +155,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
 		if (sqrlIdentity == null) {
-			throw new PersistenceException("SqrlIdentity not found for " + sqrlIdk);
+			throw new SqrlPersistenceException("SqrlIdentity not found for " + sqrlIdk);
 		}
 		storeSqrlDataForSqrlIdentity(sqrlIdentity, dataToStore);
 	}
@@ -171,7 +174,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
 		if (sqrlIdentity == null) {
-			throw new EntityNotFoundException("Couldn't find SqrlIdentity for idk " + sqrlIdk);
+			throw new SqrlPersistenceException("Couldn't find SqrlIdentity for idk " + sqrlIdk);
 		} else {
 			return sqrlIdentity.getIdentityDataTable().get(toFetch);
 		}
@@ -211,8 +214,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		} else if (resultList.size() == 1) {
 			return resultList.get(0);
 		} else {
-			// TODO: extend and create our own? It's confusing to use the built in JPA exceptions
-			throw new EntityExistsException("Expected one, but found multiple results: " + resultList);
+			throw new SqrlPersistenceException("Expected one, but found multiple results: " + resultList);
 		}
 	}
 
@@ -240,13 +242,13 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	@Override
 	public Boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch)
-			{
+	{
 		return fetchRequiredSqrlIdentity(sqrlIdk).getFlagTable().get(flagToFetch);
 	}
 
 	@Override
 	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToSet, final boolean valueToSet)
-			{
+	{
 		final SqrlIdentity sqrlIdentity = fetchRequiredSqrlIdentity(sqrlIdk);
 		sqrlIdentity.getFlagTable().put(flagToSet, valueToSet);
 		entityManager.persist(sqrlIdentity);
@@ -281,4 +283,49 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		}
 	}
 
+	/**
+	 * A task which periodically checks the state of various {@link EntityManager} instances to ensure they are being
+	 * closed properly by the library
+	 * 
+	 * @author Dave Badia
+	 *
+	 */
+	private static final class EntityManagerMonitorTimerTask extends TimerTask {
+		private static final long ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES = 5;
+		private static final long ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MS = TimeUnit.MINUTES
+				.toMillis(ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES);
+
+		@Override
+		public void run() {
+			try {
+				logger.debug("Running EntityManagerMonitorTimerTask");
+				final Iterator<EntityManager> iter = CREATED_BY_STACK_TABLE.keySet().iterator();
+				while (iter.hasNext()) {
+					@SuppressWarnings("squid:HiddenFieldCheck") // false-positive, this is a static inner class
+					final EntityManager entityManager = iter.next();
+					if (!entityManager.isOpen()) {
+						logger.debug("entityManager closed, removing from monitor table");
+						iter.remove();
+						LAST_USED_TIME_TABLE.remove(entityManager); // May or may not exist, ok
+					} else {
+						final Long lastUsed = LAST_USED_TIME_TABLE.get(entityManager);
+						if (lastUsed == null) {
+							logger.error(
+									"EntityManagerMonitorTask found null lastUsedTime for entityManager which was created at",
+									CREATED_BY_STACK_TABLE.get(entityManager));
+						} else {
+							if (System.currentTimeMillis() - lastUsed > ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MS) {
+								logger.error("Entity Manager is still open and has not been used for "
+										+ ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES + " minutes.  Was created from",
+										CREATED_BY_STACK_TABLE.get(entityManager));
+							}
+						}
+					}
+				}
+			} catch (final RuntimeException e) {
+				// thread
+				logger.error("Error running entity manager monitor check", e);
+			}
+		}
+	}
 }

@@ -16,7 +16,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfig.ImageFormat;
-import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
 
 /**
@@ -41,13 +40,10 @@ public class SqrlServerOperationsQrCodeTest {
 
 	@Test
 	public void testQuery() throws Throwable {
-		// TODO: need valid test data once SQRL client base64 idk bug is fixed
 		final String configBackchannelPath = "/sqrlbc";
 		final String loginRequestUrl = "http://127.0.0.1:8080/sqrlexample/login";
 
 		// Data from a real transaction with a long expiry
-		final String correlatorString = "rICpjtfQWssr2TQ6XPNJE0Fh7tFxEnC1zfMGoJp5S9Y";
-		final SqrlPersistence sqrlPersistence = TCUtil.buildSqrlPersistence(correlatorString, null);
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		config.setBackchannelServletPath(configBackchannelPath);
 

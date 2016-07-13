@@ -93,13 +93,7 @@ public class SqrlCorrelator implements Serializable {
 		return transientAuthDataTable;
 	}
 
-	/**
-	 * TODO: make protected
-	 * 
-	 * @deprecated do not use this method to add items
-	 */
-	@Deprecated
-	public Set<String> getUsedNutTokenList() {
+	protected Set<String> getUsedNutTokenList() {
 		return usedNutTokenList;
 	}
 

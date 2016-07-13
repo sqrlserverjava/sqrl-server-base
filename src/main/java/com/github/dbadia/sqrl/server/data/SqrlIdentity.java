@@ -1,6 +1,7 @@
 package com.github.dbadia.sqrl.server.data;
 
 import java.io.Serializable;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,9 @@ public class SqrlIdentity implements Serializable {
 	private String idk;
 
 	@Column(name = "native_user_xref", nullable = true)
-	// nullable since we have to store the SQRL identity before the app presents the "existing user" screen
+	/**
+	 * nullable since we have to store the SQRL identity before the app presents the "existing user" screen
+	 */
 	private String nativeUserXref;
 
 	@ElementCollection(fetch = FetchType.LAZY)
@@ -56,16 +59,11 @@ public class SqrlIdentity implements Serializable {
 	@MapKeyColumn(name = "name")
 	@MapKeyEnumerated(EnumType.STRING )
 	@Column(name = "value")
-	private final Map<SqrlFlag, Boolean> flagTable = new HashMap<>();
-
-	public Map<SqrlFlag, Boolean> getFlagTable() {
-		return flagTable;
-	}
+	private final Map<SqrlFlag, Boolean> flagTable = new EnumMap<>(SqrlFlag.class);
 
 	public SqrlIdentity() {
 		// Required by JPA
 	}
-
 
 	public SqrlIdentity(final String sqrlIdk) {
 		this.idk = sqrlIdk;
@@ -92,12 +90,16 @@ public class SqrlIdentity implements Serializable {
 		return nativeUserXref;
 	}
 
-	protected void setNativeUserXref(final String nativeUserXref) {
+	public void setNativeUserXref(final String nativeUserXref) {
 		this.nativeUserXref = nativeUserXref;
 	}
 
 	public Map<String, String> getIdentityDataTable() {
 		return identityDataTable;
+	}
+
+	public Map<SqrlFlag, Boolean> getFlagTable() {
+		return flagTable;
 	}
 
 	@Override

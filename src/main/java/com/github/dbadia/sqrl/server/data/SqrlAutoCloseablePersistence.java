@@ -6,15 +6,14 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 
 /**
- * Decorator pattern wrapper for {@link SqrlPersistence} which will call {@link SqrlPersistence#closeRollback()}
- * <b>unless</b> a close method was already called; Users <b>must still call {@link SqrlPersistence#closeCommit()}
- * during the happy path</b> as the java try-with-resources semantics gives us no way of knowing if an exception was
- * thrown or not
+ * Decorator pattern wrapper for {@link SqrlPersistence} which, when auto-closed, will call
+ * {@link SqrlPersistence#closeRollback()} <b>unless</b> a close method was already called; Users <b>must still call
+ * {@link SqrlPersistence#closeCommit()} during the happy path</b> as the java try-with-resources semantics gives us no
+ * way of knowing if an exception was thrown or not
  * <p>
  * While it is an unfortunate tradeoff to have deviate from the standard try-with-resources pattern, this is the only
  * way we can ensure rollback gets called when both checked and unchecked exceptions occur
@@ -86,14 +85,12 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	}
 
 	@Override
-	public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore)
-	{
+	public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore) {
 		sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, dataToStore);
 	}
 
 	@Override
-	public String fetchSqrlIdentityDataItem(final String sqrlIdk, final String toFetch)
-	{
+	public String fetchSqrlIdentityDataItem(final String sqrlIdk, final String toFetch) {
 		return sqrlPersistence.fetchSqrlIdentityDataItem(sqrlIdk, toFetch);
 	}
 
@@ -108,14 +105,8 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	}
 
 	@Override
-	public String fetchTransientAuthData(final String correlator, final String transientNameServerParrot)
-	{
+	public String fetchTransientAuthData(final String correlator, final String transientNameServerParrot) {
 		return sqrlPersistence.fetchTransientAuthData(correlator, transientNameServerParrot);
-	}
-
-	@Override
-	public SqrlAuthenticationStatus fetchAuthenticationStatusRequired(final String correlator) {
-		return sqrlPersistence.fetchAuthenticationStatusRequired(correlator);
 	}
 
 	@Override
@@ -147,5 +138,4 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	public void cleanUpExpiredEntries() {
 		sqrlPersistence.cleanUpExpiredEntries();
 	}
-
 }

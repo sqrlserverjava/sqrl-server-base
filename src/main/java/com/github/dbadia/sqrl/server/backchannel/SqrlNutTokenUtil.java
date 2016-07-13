@@ -17,6 +17,7 @@ import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlNutTokenReplayedException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 
 /**
  * Various util methods for the {@link SqrlNutToken}
@@ -107,11 +108,12 @@ public class SqrlNutTokenUtil {
 	 * 
 	 * @param nutToken
 	 *            the Nut to be validated
+	 * @param tifBuilder
 	 * @throws SqrlException
 	 *             if any validation fails or if persistence fails
 	 */
 	static void validateNut(final String correlator, final SqrlNutToken nutToken, final SqrlConfig config,
-			final SqrlPersistence sqrlPersistence) throws SqrlException {
+			final SqrlPersistence sqrlPersistence, final TifBuilder tifBuilder) throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		final long now = System.currentTimeMillis();
 		if (logger.isDebugEnabled()) {
@@ -119,7 +121,7 @@ public class SqrlNutTokenUtil {
 			logger.debug("{} Now={}, nutExpiry={}", SqrlLoggingUtil.getLogHeader(), new Date(now), nutExpiry);
 		}
 		if (now > nutExpiryMs) {
-			// TODO: set a TIF
+			tifBuilder.addFlag(SqrlTif.TIF_TRANSIENT_ERROR);
 			throw new SqrlInvalidRequestException(
 					SqrlLoggingUtil.getLogHeader() + "Nut expired by " + (nutExpiryMs - now)
 					+ "ms, nut timetamp ms=" + nutToken.getIssuedTimestamp() + ", expiry is set to "

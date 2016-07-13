@@ -90,6 +90,13 @@ public class SqrlConfig {
 	@XmlElement
 	private String firstNutCookieName = "sqrlfirstnut";
 
+	/**
+	 * The frequency with which to execute {@link SqrlPersistence#cleanUpExpiredEntries()} via {@link java.util.Timer};
+	 * set to -1 to disable completely
+	 */
+	@XmlElement
+	private int cleanupTaskExecInMinutes = 15;
+
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;
 	}
@@ -186,14 +193,6 @@ public class SqrlConfig {
 		return System.currentTimeMillis();
 	}
 
-	public byte[] getAesKeyBytes() {
-		return aesKeyBytes;
-	}
-
-	public void setAesKeyBytes(final byte[] aesKeyBytes) {
-		this.aesKeyBytes = aesKeyBytes;
-	}
-
 	public String getSqrlPersistenceFactoryClass() {
 		return sqrlPersistenceFactoryClass;
 	}
@@ -216,5 +215,13 @@ public class SqrlConfig {
 
 	public void setCorrelatorCookieName(final String correlatorCookieName) {
 		this.correlatorCookieName = correlatorCookieName;
+	}
+
+	public int getCleanupTaskExecInMinutes() {
+		return cleanupTaskExecInMinutes;
+	}
+
+	public void setCleanupTaskExecInMinutes(final int cleanupTaskExecInMinutes) {
+		this.cleanupTaskExecInMinutes = cleanupTaskExecInMinutes;
 	}
 }

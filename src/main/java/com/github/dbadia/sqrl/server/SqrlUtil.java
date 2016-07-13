@@ -215,13 +215,10 @@ public class SqrlUtil {
 		return buf.toString();
 	}
 
-	public static Cookie createCookie(final HttpServletRequest request, final HttpServletResponse response,
-			final String name, final String value) {
+	public static Cookie createCookie(final String name, final String value) {
 		final Cookie cookie = new Cookie(name, value);
 		cookie.setHttpOnly(true);
-		if (SqrlConstants.SCHEME_HTTPS.equals(request.getScheme())) {
-			cookie.setSecure(true);
-		}
+		cookie.setSecure(true);
 		cookie.setMaxAge(-1);
 		return cookie;
 	}
@@ -236,13 +233,6 @@ public class SqrlUtil {
 			}
 		}
 		return null;
-	}
-
-	public static void deleteAllCookies(final HttpServletRequest request, final HttpServletResponse response) {
-		for (final Cookie cookie : request.getCookies()) {
-			cookie.setMaxAge(0);
-			response.addCookie(cookie);
-		}
 	}
 
 	public static void deleteCookies(final HttpServletRequest request, final HttpServletResponse response,

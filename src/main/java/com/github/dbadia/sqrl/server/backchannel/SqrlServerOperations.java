@@ -12,14 +12,17 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,7 +42,6 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -71,8 +73,6 @@ public class SqrlServerOperations {
 	private final SqrlPersistenceFactory sqrlPersistenceFactory;
 	private final SqrlConfigOperations configOperations;
 	private final SqrlConfig config;
-	// TODO: add customer SqrlPersistence support with Class for name
-
 
 	/**
 	 * Initializes the operations class with the given config, defaulting to the built in JPA persisentce provider.
@@ -137,7 +137,10 @@ public class SqrlServerOperations {
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
 					SqrlUtil.sqrlBase64UrlEncode(url));
 			sqrlPersistence.closeCommit();
-			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
+			final List<Cookie> cookiesToSet = new ArrayList<>();
+			cookiesToSet.add(SqrlUtil.createCookie(config.getCorrelatorCookieName(), correlator));
+			cookiesToSet.add(SqrlUtil.createCookie(config.getFirstNutCookieName(), nut.asSqBase64EncryptedNut()));
+			return new SqrlAuthPageData(url, qrBaos, nut, correlator, cookiesToSet);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
 		}
@@ -186,7 +189,7 @@ public class SqrlServerOperations {
 				}
 				final SqrlNutToken nutToken = request.getNut();
 
-				SqrlNutTokenUtil.validateNut(correlator, nutToken, config, sqrlPersistence);
+				SqrlNutTokenUtil.validateNut(correlator, nutToken, config, sqrlPersistence, tifBuilder);
 				idkExistsInDataStore = processClientCommand(request, nutToken, tifBuilder, correlator);
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
@@ -195,7 +198,8 @@ public class SqrlServerOperations {
 				sqrlPersistence.closeRollback();
 				isInErrorState = true;
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
-				if(e instanceof SqrlInvalidRequestException) {
+				if (e instanceof SqrlInvalidRequestException) { // NOSONAR: don't want to duplicate all other logic in a
+					// separate try block
 					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
 					logger.error(SqrlLoggingUtil.getLogHeader() + "Recevied invalid SQRL request: " + e.getMessage(), e);
 				} else {
@@ -211,7 +215,7 @@ public class SqrlServerOperations {
 
 			// We have processed the request, success or failure. Now prep and transmit the reply
 			String serverReplyString = ""; // for logging
-			sqrlPersistence = new SqrlJpaPersistenceProvider();
+			sqrlPersistence = sqrlPersistenceFactory.createSqrlPersistence();
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
 				serverReplyString = buildReply(isInErrorState, servletRequest, request, idkExistsInDataStore, tif,
@@ -348,7 +352,7 @@ public class SqrlServerOperations {
 		try {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());
 			final String subsequentRequestPath = configOperations.getSubsequentRequestPath(servletRequest);
-			SqrlServerReply reply = null;
+			SqrlServerReply reply;
 			if (isInErrorState) {
 				// Send the error flag as nut and correlator, so if the client mistakenly sends a followup request it be
 				// obvious to us
@@ -358,27 +362,12 @@ public class SqrlServerOperations {
 				// Nut is one time use, so generate a new one for the reply
 				final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest, config));
 
-				final Map<String, String> additionalDataTable = new TreeMap<>();
-				if (sqrlRequest != null) {
-					// Add any additional data to the response based on the options the client requested
-					// Keep additionalDataTable in order as SQRL client will ignore everything after an unrecognized
-					// option
-					if (sqrlRequest.getOptList().contains(SqrlClientOpt.suk)) {
-						final String sukSring = SqrlClientOpt.suk.toString();
-						if (idkExistsInDataStore) {
-							final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(),
-									sukSring);
-							if (sukValue != null) {
-								additionalDataTable.put(sukSring, sukValue);
-							}
-						}
-					}
-				}
+				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
+						idkExistsInDataStore, sqrlPersistence);
 				// Build the final reply object
 				reply = new SqrlServerReply(replyNut.asSqBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
 						additionalDataTable);
 			}
-
 
 			final String serverReplyString = reply.toBase64();
 			logger.debug("{}Build serverReplyString: {}", logHeader, serverReplyString);
@@ -391,6 +380,24 @@ public class SqrlServerOperations {
 							+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
 							e);
 		}
+	}
+
+	private Map<String, String> buildReplyAdditionalDataTable(final SqrlRequest sqrlRequest,
+			final boolean idkExistsInDataStore, final SqrlPersistence sqrlPersistence) {
+		// TreeMap to keep the items in order. Order is required as as the SQRL client will ignore everything
+		// after an unrecognized option
+		final Map<String, String> additionalDataTable = new TreeMap<>();
+		if (sqrlRequest != null && idkExistsInDataStore
+				&& sqrlRequest.getOptList().contains(SqrlClientOpt.suk)) {
+			// Add any additional data to the response based on the options the client requested
+			final String sukSring = SqrlClientOpt.suk.toString();
+			final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(),
+					sukSring);
+			if (sukValue != null) {
+				additionalDataTable.put(sukSring, sukValue);
+			}
+		}
+		return additionalDataTable;
 	}
 
 	static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config) throws SqrlException {
@@ -460,7 +467,7 @@ public class SqrlServerOperations {
 
 			for (int i = 0; i < crunchifyWidth; i++) {
 				for (int j = 0; j < crunchifyWidth; j++) {
-					if (byteMatrix.get(i, j)) {
+					if (byteMatrix.get(i, j)) { // NOSONAR: if count
 						graphics.fillRect(i, j, 1, 1);
 					}
 				}
@@ -478,9 +485,34 @@ public class SqrlServerOperations {
 		return new SqrlAutoCloseablePersistence(sqrlPersistence);
 	}
 
-	// TODO: where is this used? should be moved or non-public
-	public long determineNutExpiry(final String sqBase64EncryptedNut) throws SqrlException {
-		final SqrlNutToken token = new SqrlNutToken(configOperations, sqBase64EncryptedNut);
+	/**
+	 * Called by the web app once authentication is complete to cleanup any cookies set by the SQRL library
+	 * 
+	 * @param request
+	 *            the HTTP request
+	 * @param response
+	 *            the HTTP response
+	 */
+	public void deleteSqrlAuthCookies(final HttpServletRequest request, final HttpServletResponse response) {
+		SqrlUtil.deleteCookies(request, response, config.getCorrelatorCookieName(), config.getFirstNutCookieName());
+	}
+
+	/**
+	 * Looks for the SQRL first nut cookie and extracts the time at which it expires
+	 * 
+	 * @param request
+	 *            the HTTP request
+	 * @return the timestamp when the nut token expires
+	 * @throws SqrlException
+	 *             if an error occurs
+	 */
+	public long determineNutExpiry(final HttpServletRequest request) throws SqrlException {
+		final String stringValue = SqrlUtil.getCookieValue(request, config.getFirstNutCookieName());
+		if(stringValue == null) {
+			throw new SqrlException(
+					"firstNutCookie with name " + config.getFirstNutCookieName() + " was not found on http request");
+		}
+		final SqrlNutToken token = new SqrlNutToken(configOperations, stringValue);
 		return SqrlNutTokenUtil.computeNutExpiresAt(token, config);
 	}
 

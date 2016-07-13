@@ -7,13 +7,19 @@ import java.net.URL;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory;
 
 /**
  * Helper class to {@link SqrlConfig}
@@ -28,8 +34,7 @@ public class SqrlConfigOperations {
 		FULL_URL, FULL_PATH, PARTIAL_PATH
 	}
 
-	// Cache the factory
-	private static SqrlPersistenceFactory sqrlPersistenceFactory = null;
+	private final SqrlPersistenceFactory sqrlPersistenceFactory;
 	private final SqrlConfig config;
 
 	private final Key aesKey;
@@ -84,6 +89,45 @@ public class SqrlConfigOperations {
 		// backchannelServletPath
 		final String backchannelServletPathSetting = config.getBackchannelServletPath();
 		backchannelSettingType = validateBackchannelSetting(backchannelServletPathSetting);
+
+		// SQRL persistence factory class name
+		final String factoryClassName = config.getSqrlPersistenceFactoryClass();
+		if (SqrlUtil.isBlank(factoryClassName)) {
+			sqrlPersistenceFactory = new SqrlJpaPersistenceFactory();
+		} else {
+			try {
+				@SuppressWarnings("rawtypes")
+				final Class clazz = Class.forName(factoryClassName);
+				sqrlPersistenceFactory = (SqrlPersistenceFactory) clazz.newInstance();
+			} catch (final Exception e) {
+				throw new IllegalArgumentException(
+						"Could not create SqrlPersistenceFactory with name '" + factoryClassName + "'", e);
+			}
+		}
+
+		// Cleanup task
+		final int cleanupValue = config.getCleanupTaskExecInMinutes();
+		if (cleanupValue == -1) {
+			logger.warn("Auto cleanup is disabled since config.getCleanupTaskExecInMinutes() == -1");
+		} else if (cleanupValue <= 0) {
+			throw new IllegalArgumentException("config.getCleanupTaskExecInMinutes() must be -1 or > 0");
+		} else {
+			final long intervalInMillis = TimeUnit.MINUTES.toMillis(cleanupValue);
+
+			final Timer cleanUpTaskTimer = new Timer(true);
+			cleanUpTaskTimer.scheduleAtFixedRate(new TimerTask() {
+				@Override
+				public void run() {
+					try (SqrlAutoCloseablePersistence sqrlPersistence = new SqrlAutoCloseablePersistence(
+							getSqrlPersistenceFactory().createSqrlPersistence())) {
+						sqrlPersistence.cleanUpExpiredEntries();
+						sqrlPersistence.closeCommit();
+					} catch (final RuntimeException e) {
+						logger.error("Error during execution of SqrlPersistence.createSqrlPersistence()", e);
+					}
+				}
+			}, intervalInMillis, intervalInMillis);
+		}
 	}
 
 	public Key getAESKey() {
@@ -194,9 +238,7 @@ public class SqrlConfigOperations {
 		} else if (backchannelServletPath.contains(".")) {
 			// Must be a full url, validate it
 			try {
-				//				@SuppressWarnings("bug:unused") // This is for validation
-				// @SuppressWarnings("CERT:MSC03-J")
-				new URL(backchannelServletPath);
+				new URL(backchannelServletPath).toString(); // toString() = @SuppressWarnings(value = "squid:S1848")
 				type = BackchannelSettingType.FULL_URL;
 			} catch (final MalformedURLException e) {
 				// Try build a specific error message depending on the circumstances
@@ -213,18 +255,6 @@ public class SqrlConfigOperations {
 	}
 
 	public SqrlPersistenceFactory getSqrlPersistenceFactory() {
-		if (sqrlPersistenceFactory == null) {
-			// Get the factory class name and validate it
-			final String factoryClassName = config.getSqrlPersistenceFactoryClass();
-			try {
-				@SuppressWarnings("rawtypes")
-				final Class clazz = Class.forName(factoryClassName);
-				sqrlPersistenceFactory = (SqrlPersistenceFactory) clazz.newInstance();
-			} catch (final Exception e) {
-				throw new IllegalArgumentException(
-						"Could not create SqrlPersistenceFactory with name '" + factoryClassName + "'", e);
-			}
-		}
 		return sqrlPersistenceFactory;
 	}
 }

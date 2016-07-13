@@ -9,9 +9,9 @@ import java.util.Arrays;
  * 2) generate reproducible test data
  * 
  * @author Dave Badia
- * @deprecated Test case data use ONLY
  */
 @Deprecated class TestSecureRandom extends SecureRandom {
+	private static final long serialVersionUID = 1L;
 	private final byte[] bytesToReturn;
 
 	public TestSecureRandom(final byte[] bytesToReturn) {

@@ -1,6 +1,9 @@
 package com.github.dbadia.sqrl.server;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
+
+import javax.servlet.http.Cookie;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 
@@ -15,13 +18,15 @@ public class SqrlAuthPageData {
 	private final ByteArrayOutputStream qrBaos;
 	private final SqrlNutToken nut;
 	private final String correlator;
+	private final List<Cookie> cookiesToSet;
 
-	public SqrlAuthPageData(final String url, final ByteArrayOutputStream qrBaos, final SqrlNutToken nut,
-			final String correlator) {
+	public SqrlAuthPageData(final String url, final ByteArrayOutputStream qrBaos,
+			final SqrlNutToken nut, final String correlator, final List<Cookie> cookiesToSet) {
 		this.url = url;
 		this.qrBaos = qrBaos;
 		this.nut = nut;
 		this.correlator = correlator;
+		this.cookiesToSet = cookiesToSet;
 	}
 
 	public String getUrl() {
@@ -44,4 +49,7 @@ public class SqrlAuthPageData {
 		return sqrlConfig.getQrCodeFileType().toString().toLowerCase();
 	}
 
+	public List<Cookie> getCookiesToSet() {
+		return cookiesToSet;
+	}
 }

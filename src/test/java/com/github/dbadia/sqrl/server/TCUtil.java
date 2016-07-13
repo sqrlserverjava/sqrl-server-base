@@ -1,23 +1,23 @@
 package com.github.dbadia.sqrl.server;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Persistence;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
-import com.github.dbadia.sqrl.server.data.Constants;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
@@ -25,9 +25,6 @@ import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 import junitx.util.PrivateAccessor;
 
 public class TCUtil {
-	private static final EntityManager tcEntityManager = Persistence
-			.createEntityManagerFactory(Constants.PERSISTENCE_UNIT_NAME).createEntityManager();
-
 	public static final Date AWHILE_FROM_NOW = new Date(System.currentTimeMillis() + 1000000);
 	static final String DEFAULT_CONFIG_SQRL_BACKCHANNEL_PATH = "http://127.0.0.1:8080/sqrlbc";
 	static final byte[] AES_TEST_KEY = new byte[16];
@@ -92,8 +89,7 @@ public class TCUtil {
 	// // return new TestOnlySqrlPersistence2();
 	// }
 
-	// TODO: change to setup
-	public static SqrlPersistence buildSqrlPersistence(final String correlatorFromServerParam,
+	public static void setupSqrlPersistence(final String correlatorFromServerParam,
 			final String serverParam) throws Throwable {
 		final SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlatorFromServerParam,
@@ -102,7 +98,6 @@ public class TCUtil {
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		}
 		sqrlPersistence.closeCommit();
-		return sqrlPersistence;
 	}
 
 	public static SqrlPersistence setupIdk(final String idk, final String correlator, final String serverParam) {
@@ -195,6 +190,33 @@ public class TCUtil {
 	public static SqrlPersistence createSqrlPersistence() {
 		return new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()).getSqrlPersistenceFactory()
 				.createSqrlPersistence();
+	}
+
+	/**
+	 * Performs the SQRL required base64URL encoding
+	 * 
+	 * @param toEncode
+	 *            the string to be encoded
+	 * @return the encoded string
+	 */
+	protected static String sqrlBase64UrlEncode(final String toEncode) {
+		try {
+			return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8));
+		} catch (final UnsupportedEncodingException e) {
+			throw new IllegalStateException("UnsupportedEncodingException ", e);
+		}
+	}
+
+	public static String sqrlBase64UrlEncode(final byte[] bytes) {
+		try {
+			String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8);
+			while (encoded.endsWith("=")) {
+				encoded = encoded.substring(0, encoded.length() - 1);
+			}
+			return encoded;
+		} catch (final UnsupportedEncodingException e) {
+			throw new IllegalStateException("UnsupportedEncodingException during base64 encode", e);
+		}
 	}
 
 }

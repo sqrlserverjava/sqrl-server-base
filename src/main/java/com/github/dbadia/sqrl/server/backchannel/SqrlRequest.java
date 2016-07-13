@@ -35,7 +35,7 @@ public class SqrlRequest {
 	private final String clientCommand;
 	private final Map<String, byte[]> clientKeys = new ConcurrentHashMap<>();
 	private final Map<String, String> clientKeysBsse64 = new ConcurrentHashMap<>();
-	private final List<SqrlClientOpt> optList = new ArrayList();
+	private final List<SqrlClientOpt> optList = new ArrayList<>();
 
 	private final HttpServletRequest servletRequest;
 	private final String clientParam;
@@ -84,9 +84,11 @@ public class SqrlRequest {
 
 		// Per the SQRL spec, since the server response is not signed, we must check the value that comes
 		// back to ensure it wasn't tampered with
-		// TODO: add fetchTransientAuthDataOrException
 		final String expectedServerValue = persistence.fetchTransientAuthData(correlator,
 				SqrlConstants.TRANSIENT_NAME_SERVER_PARROT);
+		if (SqrlUtil.isBlank(expectedServerValue)) {
+			throw new SqrlException("Server parrot was not found in persistence");
+		}
 		if (!expectedServerValue.equals(serverParam)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Server parrot mismatch, possible tampering.  Nut compare: Expected={}, Received={}",
@@ -98,7 +100,6 @@ public class SqrlRequest {
 				logger.info("Server parrot mismatch, possible tampering.  Expected={}, Received={}",
 						expectedServerValue, serverParam);
 			}
-			// TODO: re-enable
 			throw new SqrlException("Server parrot mismatch, possible tampering");
 		}
 
