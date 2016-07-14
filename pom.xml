@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.dbadia.sqrl</groupId>
 	<artifactId>sqrl-server-lib</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<name>SQRL Server Base Library</name>
 	<description>Library that implements the server side portions of the SQRL protocol.</description>
 	<packaging>jar</packaging>

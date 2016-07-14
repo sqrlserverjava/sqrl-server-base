@@ -11,11 +11,10 @@ import com.github.dbadia.sqrl.server.SqrlPersistence;
  * @author Dave Badia
  */
 public class SqrlPersistenceException extends PersistenceException {
-	private static final long serialVersionUID = 1650507051187559258L;
+    private static final long serialVersionUID = 1650507051187559258L;
 
-	public SqrlPersistenceException(final String message) {
-		super(message);
-	}
-
+    public SqrlPersistenceException(final String message) {
+	super(message);
+    }
 
 }

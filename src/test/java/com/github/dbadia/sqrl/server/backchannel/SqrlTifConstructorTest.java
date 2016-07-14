@@ -10,25 +10,25 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 
 public class SqrlTifConstructorTest {
 
-	@Test
-	public void testTif_IpsMatched() throws Exception {
-		final SqrlTif tif = new TifBuilder(true).createTif();
-		assertTrue(isTifPresent(tif, SqrlTif.TIF_IPS_MATCHED));
-		assertEquals(4, tif.toHexInt());
-	}
+    @Test
+    public void testTif_IpsMatched() throws Exception {
+	final SqrlTif tif = new TifBuilder(true).createTif();
+	assertTrue(isTifPresent(tif, SqrlTif.TIF_IPS_MATCHED));
+	assertEquals(4, tif.toHexInt());
+    }
 
-	@Test
-	public void testTif_IpsNotMatched() throws Exception {
-		final SqrlTif tif = new TifBuilder(false).createTif();
-		assertTrue(isTifAbsent(tif, SqrlTif.TIF_IPS_MATCHED));
-		assertEquals(0, tif.toHexInt());
-	}
+    @Test
+    public void testTif_IpsNotMatched() throws Exception {
+	final SqrlTif tif = new TifBuilder(false).createTif();
+	assertTrue(isTifAbsent(tif, SqrlTif.TIF_IPS_MATCHED));
+	assertEquals(0, tif.toHexInt());
+    }
 
-	static final boolean isTifPresent(final SqrlTif tif, final int tifToLookFor) {
-		return (tif.toHexInt() & tifToLookFor) == tifToLookFor;
-	}
+    static final boolean isTifPresent(final SqrlTif tif, final int tifToLookFor) {
+	return (tif.toHexInt() & tifToLookFor) == tifToLookFor;
+    }
 
-	static final boolean isTifAbsent(final SqrlTif tif, final int tifToLookFor) {
-		return !isTifPresent(tif, tifToLookFor);
-	}
+    static final boolean isTifAbsent(final SqrlTif tif, final int tifToLookFor) {
+	return !isTifPresent(tif, tifToLookFor);
+    }
 }

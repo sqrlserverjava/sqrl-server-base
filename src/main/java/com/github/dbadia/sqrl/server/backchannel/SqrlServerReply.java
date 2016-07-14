@@ -13,16 +13,16 @@ import com.github.dbadia.sqrl.server.SqrlUtil;
  */
 // @formatter:on
 public class SqrlServerReply {
-	private static final String VERSION_1 = "1";
-	public static final String SEPARATOR = "\r\n";
+    private static final String VERSION_1 = "1";
+    public static final String SEPARATOR = "\r\n";
 
-	private final String nut;
-	private final int tifInt;
-	private final String queryWithoutNut;
-	private final String correlator;
-	private final Map<String, String> additionalDataTable;
+    private final String nut;
+    private final int tifInt;
+    private final String queryWithoutNut;
+    private final String correlator;
+    private final Map<String, String> additionalDataTable;
 
-	// @formatter:off
+    // @formatter:off
 	/**
 	 * From GRC trace
 	 * 
@@ -34,27 +34,27 @@ public class SqrlServerReply {
 
 	 */
 	// @formatter:on
-	SqrlServerReply(final String nut, final SqrlTif tif, final String queryWithoutNut, final String correlator,
-			final Map<String, String> additionalDataTable) {
-		super();
-		this.nut = nut;
-		this.tifInt = tif.toHexInt();
-		this.queryWithoutNut = queryWithoutNut;
-		this.correlator = correlator;
-		this.additionalDataTable = additionalDataTable;
-	}
+    SqrlServerReply(final String nut, final SqrlTif tif, final String queryWithoutNut, final String correlator,
+	    final Map<String, String> additionalDataTable) {
+	super();
+	this.nut = nut;
+	this.tifInt = tif.toHexInt();
+	this.queryWithoutNut = queryWithoutNut;
+	this.correlator = correlator;
+	this.additionalDataTable = additionalDataTable;
+    }
 
-	String toBase64() {
-		final StringBuilder buf = new StringBuilder();
-		buf.append("ver=").append(VERSION_1).append(SEPARATOR);
-		buf.append("nut=").append(nut).append(SEPARATOR);
-		buf.append("tif=").append(tifInt).append(SEPARATOR);
-		buf.append("qry=").append(queryWithoutNut).append("?nut=").append(nut);
-		buf.append("&").append(SqrlConstants.CLIENT_PARAM_CORRELATOR).append("=").append(correlator).append(SEPARATOR);
-		for (final Map.Entry<String, String> entry : additionalDataTable.entrySet()) {
-			buf.append(entry.getKey()).append("=").append(entry.getValue()).append(SEPARATOR);
-		}
-		return SqrlUtil.sqrlBase64UrlEncode(buf.toString());
+    String toBase64() {
+	final StringBuilder buf = new StringBuilder();
+	buf.append("ver=").append(VERSION_1).append(SEPARATOR);
+	buf.append("nut=").append(nut).append(SEPARATOR);
+	buf.append("tif=").append(tifInt).append(SEPARATOR);
+	buf.append("qry=").append(queryWithoutNut).append("?nut=").append(nut);
+	buf.append("&").append(SqrlConstants.CLIENT_PARAM_CORRELATOR).append("=").append(correlator).append(SEPARATOR);
+	for (final Map.Entry<String, String> entry : additionalDataTable.entrySet()) {
+	    buf.append(entry.getKey()).append("=").append(entry.getValue()).append(SEPARATOR);
 	}
+	return SqrlUtil.sqrlBase64UrlEncode(buf.toString());
+    }
 
 }

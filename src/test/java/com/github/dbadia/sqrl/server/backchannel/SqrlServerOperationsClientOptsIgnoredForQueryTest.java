@@ -29,10 +29,9 @@ import junit.framework.TestCase;
 @RunWith(Parameterized.class)
 public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 
-
-	@Parameters(name = "{index}: SqrlClientOpt=({0})")
-	public static Collection<Object[]> data() {
-		// @formatter:off
+    @Parameters(name = "{index}: SqrlClientOpt=({0})")
+    public static Collection<Object[]> data() {
+	// @formatter:off
 		// return all SqrlClientOpt which are nonQuery only
 		final List<Object[]> data = new ArrayList<>();
 		for(final SqrlClientOpt opt : SqrlClientOpt.values()) {
@@ -44,42 +43,42 @@ public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 	}
 	// @formatter:on
 
-	@Test
-	public void testIt() throws Throwable {
-		// Setup
-		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		TCUtil.createEmptySqrlPersistence();
-		TCUtil.setupIdk(idk, "abc", "123");
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", false, opt);
+    @Test
+    public void testIt() throws Throwable {
+	// Setup
+	final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
+	TCUtil.createEmptySqrlPersistence();
+	TCUtil.setupIdk(idk, "abc", "123");
+	final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", false, opt);
 
-		// Execute
-		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
+	// Execute
+	final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
 
-		// Validate - everything should be normal since these flags are ignored on a query command
-		TestCase.assertTrue(idkExists);
-		final SqrlTif tif = tifBuilder.createTif();
-		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
-		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
-		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
-	}
+	// Validate - everything should be normal since these flags are ignored on a query command
+	TestCase.assertTrue(idkExists);
+	final SqrlTif tif = tifBuilder.createTif();
+	SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
+	assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+	assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
+    }
 
-	// In parameterized tests, the instance variables and constructor are boilerplate so keep them out of the way
-	private final String correlator = "abc";
-	private final SqrlConfig config;
-	private final SqrlPersistence sqrlPersistence;
-	private final SqrlServerOperations sqrlServerOps;
-	private final TifBuilder tifBuilder;
-	private final SqrlNutToken nutToken;
-	private final SqrlClientOpt opt;
+    // In parameterized tests, the instance variables and constructor are boilerplate so keep them out of the way
+    private final String correlator = "abc";
+    private final SqrlConfig config;
+    private final SqrlPersistence sqrlPersistence;
+    private final SqrlServerOperations sqrlServerOps;
+    private final TifBuilder tifBuilder;
+    private final SqrlNutToken nutToken;
+    private final SqrlClientOpt opt;
 
-	public SqrlServerOperationsClientOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws Exception {
-		super();
-		this.opt = opt;
-		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
-		config = TCUtil.buildTestSqrlConfig();
-		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		sqrlServerOps = new SqrlServerOperations(config);
-		tifBuilder = new TifBuilder();
-		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
-	}
+    public SqrlServerOperationsClientOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws Exception {
+	super();
+	this.opt = opt;
+	sqrlPersistence = TCUtil.createEmptySqrlPersistence();
+	config = TCUtil.buildTestSqrlConfig();
+	config.setNutValidityInSeconds(Integer.MAX_VALUE);
+	sqrlServerOps = new SqrlServerOperations(config);
+	tifBuilder = new TifBuilder();
+	nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
+    }
 }

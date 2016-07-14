@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
 import com.github.dbadia.sqrl.server.SqrlConfig;
@@ -51,7 +52,8 @@ public class SqrlServerOperationsQrCodeTest {
 
 		// Emulate the login page generation
 		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);
-		final SqrlAuthPageData authPageData = sqrlServerOps.buildQrCodeForAuthPage(loginPageRequest,
+		MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
+		final SqrlAuthPageData authPageData = sqrlServerOps.buildQrCodeForAuthPage(loginPageRequest, loginPageResponse,
 				InetAddress.getByName("localhost"), 250);
 		assertNotNull(authPageData);
 		assertNotNull(authPageData.getQrCodeOutputStream());

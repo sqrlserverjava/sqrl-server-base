@@ -10,19 +10,21 @@ import java.util.Arrays;
  * 
  * @author Dave Badia
  */
-@Deprecated class TestSecureRandom extends SecureRandom {
-	private static final long serialVersionUID = 1L;
-	private final byte[] bytesToReturn;
+@Deprecated
+class TestSecureRandom extends SecureRandom {
+    private static final long serialVersionUID = 1L;
+    private final byte[] bytesToReturn;
 
-	public TestSecureRandom(final byte[] bytesToReturn) {
-		this.bytesToReturn = bytesToReturn;
+    public TestSecureRandom(final byte[] bytesToReturn) {
+	this.bytesToReturn = bytesToReturn;
+    }
+
+    @Override
+    synchronized public void nextBytes(final byte[] bytes) {
+	if (bytesToReturn == null) {
+	    Arrays.fill(bytes, (byte) 0);
+	} else {
+	    System.arraycopy(bytesToReturn, 0, bytes, 0, bytes.length);
 	}
-	@Override
-	synchronized public void nextBytes(final byte[] bytes) {
-		if (bytesToReturn == null) {
-			Arrays.fill(bytes, (byte) 0);
-		} else {
-			System.arraycopy(bytesToReturn, 0, bytes, 0, bytes.length);
-		}
-	}
+    }
 }
