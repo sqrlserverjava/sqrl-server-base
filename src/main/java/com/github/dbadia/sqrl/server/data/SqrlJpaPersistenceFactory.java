@@ -5,9 +5,9 @@ import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
 
 public class SqrlJpaPersistenceFactory implements SqrlPersistenceFactory {
 
-    @Override
-    public SqrlPersistence createSqrlPersistence() {
-	return new SqrlJpaPersistenceProvider();
-    }
+	@Override
+	public SqrlPersistence createSqrlPersistence() {
+		return new SqrlJpaPersistenceProvider();
+	}
 
 }

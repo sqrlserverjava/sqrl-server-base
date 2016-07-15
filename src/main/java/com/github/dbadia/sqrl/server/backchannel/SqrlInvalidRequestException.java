@@ -8,14 +8,14 @@ import com.github.dbadia.sqrl.server.SqrlException;
  * @author Dave Badia
  */
 public class SqrlInvalidRequestException extends SqrlException {
-    private static final long serialVersionUID = 5873378145444320669L;
+	private static final long serialVersionUID = 5873378145444320669L;
 
-    public SqrlInvalidRequestException(final String message, final Throwable e) {
-	super(message, e);
-    }
+	public SqrlInvalidRequestException(final String message, final Throwable e) {
+		super(message, e);
+	}
 
-    public SqrlInvalidRequestException(final String message) {
-	super(message);
-    }
+	public SqrlInvalidRequestException(final String message) {
+		super(message);
+	}
 
 }

@@ -15,8 +15,8 @@ import junit.framework.TestCase;
 @RunWith(Parameterized.class)
 public class TCUtilTest {
 
-    @Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
-    public static Collection<Object[]> data() {
+	@Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
+	public static Collection<Object[]> data() {
 	// @formatter:off
 		return Arrays.asList(new Object[][] { 
 			{ "http://127.0.0.1:8080/sqrlexample/sqrlbc", "http", "127.0.0.1", 8080, "/sqrlexample/sqrlbc" },
@@ -31,31 +31,31 @@ public class TCUtilTest {
 	}
 	// @formatter:on
 
-    @Test
-    public void testBuildMockHttpRequest() throws URISyntaxException {
-	final MockHttpServletRequest request = TCUtil.buildMockRequest(urlString);
-	TestCase.assertNotNull(request);
-	TestCase.assertEquals(expectedProtocol, request.getScheme());
-	TestCase.assertEquals(expectedHostname, request.getServerName());
-	TestCase.assertEquals(expectedPort, request.getServerPort());
-	TestCase.assertEquals(expectedQueryString, request.getRequestURI());
-    }
+	@Test
+	public void testBuildMockHttpRequest() throws URISyntaxException {
+		final MockHttpServletRequest request = TCUtil.buildMockRequest(urlString);
+		TestCase.assertNotNull(request);
+		TestCase.assertEquals(expectedProtocol, request.getScheme());
+		TestCase.assertEquals(expectedHostname, request.getServerName());
+		TestCase.assertEquals(expectedPort, request.getServerPort());
+		TestCase.assertEquals(expectedQueryString, request.getRequestURI());
+	}
 
-    // Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
-    private final String urlString;
-    private final String expectedProtocol;
-    private final String expectedHostname;
-    private final int expectedPort;
-    private final String expectedQueryString;
+	// Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
+	private final String	urlString;
+	private final String	expectedProtocol;
+	private final String	expectedHostname;
+	private final int		expectedPort;
+	private final String	expectedQueryString;
 
-    public TCUtilTest(final String urlString, final String expectedProtocol, final String expectedHostname,
-	    final int expectedPort, final String expectedQueryString) {
-	super();
-	this.urlString = urlString;
-	this.expectedProtocol = expectedProtocol;
-	this.expectedHostname = expectedHostname;
-	this.expectedPort = expectedPort;
-	this.expectedQueryString = expectedQueryString;
-    }
+	public TCUtilTest(final String urlString, final String expectedProtocol, final String expectedHostname,
+			final int expectedPort, final String expectedQueryString) {
+		super();
+		this.urlString = urlString;
+		this.expectedProtocol = expectedProtocol;
+		this.expectedHostname = expectedHostname;
+		this.expectedPort = expectedPort;
+		this.expectedQueryString = expectedQueryString;
+	}
 
 }

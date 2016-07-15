@@ -14,42 +14,42 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class SqrlLoggingUtil {
-    private static final Logger logger = LoggerFactory.getLogger(SqrlLoggingUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger(SqrlLoggingUtil.class);
 
-    private static final ThreadLocal<String> threadLocalLogHeader = new ThreadLocal<String>() {
-	@Override
-	protected String initialValue() {
-	    return "";
+	private static final ThreadLocal<String> threadLocalLogHeader = new ThreadLocal<String>() {
+		@Override
+		protected String initialValue() {
+			return "";
+		}
+	};
+
+	private SqrlLoggingUtil() {
+		// util class
 	}
-    };
 
-    private SqrlLoggingUtil() {
-	// util class
-    }
+	static void initLoggingHeader(final HttpServletRequest servletRequest) {
+		final String sqrlAgentString = servletRequest.getHeader("user-agent");
+		logger.info("sqrlagent={}", sqrlAgentString);
+		threadLocalLogHeader.set(sqrlAgentString);
+	}
 
-    static void initLoggingHeader(final HttpServletRequest servletRequest) {
-	final String sqrlAgentString = servletRequest.getHeader("user-agent");
-	logger.info("sqrlagent={}", sqrlAgentString);
-	threadLocalLogHeader.set(sqrlAgentString);
-    }
+	/**
+	 * Internal use only.
+	 * 
+	 * @param logHeader
+	 *            the data to be appended to the current log header
+	 * @return the updated logHeader for convience
+	 */
+	static String updateLogHeader(final String logHeader) {
+		threadLocalLogHeader.set(threadLocalLogHeader.get() + " " + logHeader);
+		return logHeader;
+	}
 
-    /**
-     * Internal use only.
-     * 
-     * @param logHeader
-     *            the data to be appended to the current log header
-     * @return the updated logHeader for convience
-     */
-    static String updateLogHeader(final String logHeader) {
-	threadLocalLogHeader.set(threadLocalLogHeader.get() + " " + logHeader);
-	return logHeader;
-    }
+	static void clearLogHeader() {
+		threadLocalLogHeader.remove();
+	}
 
-    static void clearLogHeader() {
-	threadLocalLogHeader.remove();
-    }
-
-    public static String getLogHeader() {
-	return threadLocalLogHeader.get();
-    }
+	public static String getLogHeader() {
+		return threadLocalLogHeader.get();
+	}
 }

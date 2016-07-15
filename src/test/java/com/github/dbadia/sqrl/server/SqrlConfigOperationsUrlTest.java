@@ -17,8 +17,8 @@ import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 @RunWith(Parameterized.class)
 public class SqrlConfigOperationsUrlTest {
 
-    @Parameters(name = "{index}: bcsetting=({0}) httpreq=({1}) expected=({2})")
-    public static Collection<Object[]> data() {
+	@Parameters(name = "{index}: bcsetting=({0}) httpreq=({1}) expected=({2})")
+	public static Collection<Object[]> data() {
 	// @formatter:off
 		return Arrays.asList(new Object[][] { 
 			// SqrlConfig.backchannel,  login url, expected sqrl url 
@@ -37,35 +37,35 @@ public class SqrlConfigOperationsUrlTest {
 	}
 	// @formatter:on
 
-    @Test
-    public void testBuildReturnPaths() throws Throwable {
-	// Data from a real transaction with a long expiry
-	final SqrlConfig config = TCUtil.buildTestSqrlConfig();
-	config.setBackchannelServletPath(configBackchannelPath);
+	@Test
+	public void testBuildReturnPaths() throws Throwable {
+		// Data from a real transaction with a long expiry
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		config.setBackchannelServletPath(configBackchannelPath);
 
-	final SqrlConfigOperations ops = new SqrlConfigOperations(config);
+		final SqrlConfigOperations ops = new SqrlConfigOperations(config);
 
-	// Execute
-	final MockHttpServletRequest loginServletRequest = TCUtil.buildMockRequest(loginRequestUrl);
-	assertEquals(expectedFullSqrlUrl, ops.getBackchannelRequestUrl(loginServletRequest).toString());
+		// Execute
+		final MockHttpServletRequest loginServletRequest = TCUtil.buildMockRequest(loginRequestUrl);
+		assertEquals(expectedFullSqrlUrl, ops.getBackchannelRequestUrl(loginServletRequest).toString());
 
-	final MockHttpServletRequest sqrlServletRequest = TCUtil.buildMockRequest(expectedFullSqrlUrl);
-	assertEquals(expectedSubsequentPath, ops.getSubsequentRequestPath(sqrlServletRequest));
-    }
+		final MockHttpServletRequest sqrlServletRequest = TCUtil.buildMockRequest(expectedFullSqrlUrl);
+		assertEquals(expectedSubsequentPath, ops.getSubsequentRequestPath(sqrlServletRequest));
+	}
 
-    // Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
+	// Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
 
-    private final String configBackchannelPath;
-    private final String loginRequestUrl;
-    private final String expectedFullSqrlUrl;
-    private final String expectedSubsequentPath;
+	private final String	configBackchannelPath;
+	private final String	loginRequestUrl;
+	private final String	expectedFullSqrlUrl;
+	private final String	expectedSubsequentPath;
 
-    public SqrlConfigOperationsUrlTest(final String configBackchannelPath, final String loginRequestUrl,
-	    final String expectedFullSqrlUrl, final String expectedSubsequentPath) {
-	super();
-	this.configBackchannelPath = configBackchannelPath;
-	this.loginRequestUrl = loginRequestUrl;
-	this.expectedFullSqrlUrl = expectedFullSqrlUrl;
-	this.expectedSubsequentPath = expectedSubsequentPath;
-    }
+	public SqrlConfigOperationsUrlTest(final String configBackchannelPath, final String loginRequestUrl,
+			final String expectedFullSqrlUrl, final String expectedSubsequentPath) {
+		super();
+		this.configBackchannelPath = configBackchannelPath;
+		this.loginRequestUrl = loginRequestUrl;
+		this.expectedFullSqrlUrl = expectedFullSqrlUrl;
+		this.expectedSubsequentPath = expectedSubsequentPath;
+	}
 }

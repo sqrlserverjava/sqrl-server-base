@@ -9,13 +9,13 @@ package com.github.dbadia.sqrl.server;
  */
 public class SqrlNutTokenReplayedException extends SqrlException {
 
-    private static final long serialVersionUID = 3262027974608634373L;
+	private static final long serialVersionUID = 3262027974608634373L;
 
-    /**
-     * {@inheritDoc}
-     */
-    public SqrlNutTokenReplayedException(final String message) {
-	super(message);
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	public SqrlNutTokenReplayedException(final String message) {
+		super(message);
+	}
 
 }

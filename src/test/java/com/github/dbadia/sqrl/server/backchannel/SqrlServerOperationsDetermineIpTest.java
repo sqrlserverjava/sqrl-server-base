@@ -17,8 +17,8 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 
 @RunWith(Parameterized.class)
 public class SqrlServerOperationsDetermineIpTest {
-    @Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
-    public static Collection<Object[]> data() {
+	@Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
+	public static Collection<Object[]> data() {
 	// @formatter:off
 		return Arrays.asList(new Object[][] {
 			// final String expectedIp, final String[] headerConfigSetting,
@@ -32,28 +32,28 @@ public class SqrlServerOperationsDetermineIpTest {
 	}
 	// @formatter:on
 
-    @Test
-    public void testIt() throws Throwable {
-	final InetAddress inetAddress = SqrlServerOperations.determineClientIpAddress(request, config);
-	assertEquals(expectedIp, inetAddress);
-    }
-
-    // Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
-    private final MockHttpServletRequest request = new MockHttpServletRequest();
-    private final SqrlConfig config = new SqrlConfig();
-    private final InetAddress expectedIp;
-
-    public SqrlServerOperationsDetermineIpTest(final String expectedIp, final String[] headerConfigSetting,
-	    final String ipToSetOnRequest, final String[] headersToSetOnRequest) throws UnknownHostException {
-	super();
-	this.expectedIp = InetAddress.getByName(expectedIp);
-	config.setIpForwardedForHeaders(headerConfigSetting);
-	request.setRemoteHost(ipToSetOnRequest);
-	if (headersToSetOnRequest != null) {
-	    for (int i = 0; i < headersToSetOnRequest.length; i += 2) {
-		request.addHeader(headersToSetOnRequest[i], headersToSetOnRequest[i + 1]);
-	    }
+	@Test
+	public void testIt() throws Throwable {
+		final InetAddress inetAddress = SqrlServerOperations.determineClientIpAddress(request, config);
+		assertEquals(expectedIp, inetAddress);
 	}
-    }
+
+	// Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
+	private final MockHttpServletRequest	request	= new MockHttpServletRequest();
+	private final SqrlConfig				config	= new SqrlConfig();
+	private final InetAddress				expectedIp;
+
+	public SqrlServerOperationsDetermineIpTest(final String expectedIp, final String[] headerConfigSetting,
+			final String ipToSetOnRequest, final String[] headersToSetOnRequest) throws UnknownHostException {
+		super();
+		this.expectedIp = InetAddress.getByName(expectedIp);
+		config.setIpForwardedForHeaders(headerConfigSetting);
+		request.setRemoteHost(ipToSetOnRequest);
+		if (headersToSetOnRequest != null) {
+			for (int i = 0; i < headersToSetOnRequest.length; i += 2) {
+				request.addHeader(headersToSetOnRequest[i], headersToSetOnRequest[i + 1]);
+			}
+		}
+	}
 
 }
