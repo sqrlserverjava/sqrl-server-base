@@ -1,9 +1,11 @@
 package com.github.dbadia.sqrl.server.data;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
@@ -14,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +35,11 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
  *
  */
 public class SqrlJpaPersistenceProvider implements SqrlPersistence {
-	public static final String	PERSISTENCE_UNIT_NAME	= "javasqrl-persistence";
-	private static final Logger	logger					= LoggerFactory.getLogger(SqrlJpaPersistenceProvider.class);
+	public static final String PERSISTENCE_UNIT_NAME = "javasqrl-persistence";
+	private static final Logger logger = LoggerFactory.getLogger(SqrlJpaPersistenceProvider.class);
 
-	private static EntityManagerFactory				entityManagerFactory	= Persistence
-			.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
-	private static final Map<EntityManager, Long>	LAST_USED_TIME_TABLE	= new WeakHashMap<>();
+	private static EntityManagerFactory	entityManagerFactory = Persistence.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
+	private static final Map<EntityManager, Long> LAST_USED_TIME_TABLE = new WeakHashMap<>();
 	// Need strong references so we can check that it was closed, will be removed below
 	private static final Map<EntityManager, Exception> CREATED_BY_STACK_TABLE = new ConcurrentHashMap<>();
 
@@ -81,7 +83,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		return (SqrlIdentity) returnOneOrNull(
 				entityManager.createQuery("SELECT i FROM SqrlIdentity i WHERE i.idk = :sqrlIdk")
-						.setParameter("sqrlIdk", sqrlIdk).getResultList());
+				.setParameter("sqrlIdk", sqrlIdk).getResultList());
 	}
 
 	private SqrlIdentity fetchRequiredSqrlIdentity(final String sqrlIdk) {
@@ -97,9 +99,9 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	@Override
 	public SqrlIdentity fetchSqrlIdentityByUserXref(final String userXref) {
 		updateLastUsed(entityManager);
-		return (SqrlIdentity) entityManager
-				.createQuery("SELECT i FROM SqrlIdentity i WHERE i.nativeUserXref = :userXref")
-				.setParameter("userXref", userXref).getResultList();
+		return (SqrlIdentity) returnOneOrNull(
+				entityManager.createQuery("SELECT i FROM SqrlIdentity i WHERE i.nativeUserXref = :userXref")
+				.setParameter("userXref", userXref).getResultList());
 	}
 
 	@Override
@@ -132,11 +134,12 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	/* ************************ Sqrl Correlator methods *****************************/
 
-	private SqrlCorrelator fetchSqrlCorrelator(final String sqrlCorrelatorString) {
+	@Override
+	public SqrlCorrelator fetchSqrlCorrelator(final String sqrlCorrelatorString) {
 		updateLastUsed(entityManager);
 		return (SqrlCorrelator) returnOneOrNull(
 				entityManager.createQuery("SELECT i FROM SqrlCorrelator i WHERE i.value = :correlator")
-						.setParameter("correlator", sqrlCorrelatorString).getResultList());
+				.setParameter("correlator", sqrlCorrelatorString).getResultList());
 	}
 
 	@Override
@@ -148,6 +151,75 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		} else {
 			return sqrlCorrelator;
 		}
+	}
+
+	@Override
+	public Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(final Set<String> correlatorStringSet) {
+		updateLastUsed(entityManager);
+		if(correlatorStringSet.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		final StringBuilder buf = new StringBuilder("SELECT i FROM SqrlCorrelator i WHERE ");
+
+		for (int i = 0; i < correlatorStringSet.size(); i++) {
+			buf.append(" i.value = :correlator").append(i).append(" OR");
+		}
+		buf.replace(buf.length() - 3, buf.length(), ""); // Remove OR
+		final TypedQuery<SqrlCorrelator> query = entityManager.createQuery(buf.toString(), SqrlCorrelator.class);
+		int i = 0;
+		for (final String correlatorString : correlatorStringSet) {
+			query.setParameter("correlator" + (i++), correlatorString);
+		}
+
+		// Parse the result into a table
+		final Map<String, SqrlCorrelator> resultTable = new ConcurrentHashMap<>();
+		for(final SqrlCorrelator correlator : query.getResultList()) {
+			entityManager.detach(correlator);
+			resultTable.put(correlator.getCorrelatorString(), correlator);
+		}
+		return resultTable;
+	}
+
+	@Override
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+			final Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable) {
+		updateLastUsed(entityManager);
+		if (correlatorToCurrentStatusTable.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		final StringBuilder buf = new StringBuilder("SELECT i FROM SqrlCorrelator i WHERE ");
+
+		int counter = 0;
+		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
+			buf.append(" (i.value = :correlator").append(counter)
+			.append(" AND i.authenticationStatus <> :authenticationStatus").append(counter).append(" ) OR");
+			counter++;
+		}
+		buf.replace(buf.length() - 3, buf.length(), ""); // Remove OR
+		final TypedQuery<SqrlCorrelator> query = entityManager.createQuery(buf.toString(), SqrlCorrelator.class);
+		counter = 0;
+		final StringBuilder debugBuf = new StringBuilder(buf);
+		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
+			query.setParameter("correlator" + counter, entry.getKey());
+			query.setParameter("authenticationStatus" + counter, entry.getValue());
+			updateDebugBuf(debugBuf, ":correlator" + counter, entry.getKey());
+			updateDebugBuf(debugBuf, ":authenticationStatus" + counter, entry.getValue().toString());
+			counter++;
+		}
+
+		logger.debug("monitor correaltor for change SQL: {}", debugBuf.toString());
+		// Parse the result into a table
+		final Map<String, SqrlAuthenticationStatus> resultTable = new ConcurrentHashMap<>();
+		for (final SqrlCorrelator correlator : query.getResultList()) {
+			resultTable.put(correlator.getCorrelatorString(), correlator.getAuthenticationStatus());
+		}
+		return resultTable;
+	}
+
+	private static void updateDebugBuf(final StringBuilder buf, final String name, final String value) {
+		final int start = buf.indexOf(name);
+		final int end = start + name.length();
+		buf.replace(start, end, "'" + value + "'");
 	}
 
 	@Override
@@ -252,6 +324,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	@Override
 	public void createAndEnableSqrlIdentity(final String sqrlIdk, final Map<String, String> identityDataTable) {
+		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = new SqrlIdentity(sqrlIdk);
 		sqrlIdentity.getFlagTable().put(SqrlFlag.SQRL_AUTH_ENABLED, true);
 		sqrlIdentity.getIdentityDataTable().putAll(identityDataTable);
@@ -263,6 +336,16 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		final SqrlCorrelator sqrlCorrelator = new SqrlCorrelator(correlatorString, expiryTime);
 		entityManager.persist(sqrlCorrelator);
 		return sqrlCorrelator;
+	}
+
+	@Override
+	public void deleteSqrlCorrelator(final SqrlCorrelator sqrlCorrelator) {
+		SqrlCorrelator toRemove = sqrlCorrelator;
+		updateLastUsed(entityManager);
+		if (!entityManager.contains(sqrlCorrelator)) {
+			toRemove = fetchSqrlCorrelator(sqrlCorrelator.getCorrelatorString());
+		}
+		entityManager.remove(toRemove);
 	}
 
 	@Override
@@ -324,4 +407,5 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 			}
 		}
 	}
+
 }

@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -173,9 +174,11 @@ public class TCUtil {
 		return nut;
 	}
 
-	public static SqrlPersistence createEmptySqrlPersistence() throws NoSuchFieldException {
+	public static SqrlAutoCloseablePersistence createEmptySqrlPersistence() throws NoSuchFieldException {
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
-		final EntityManager entityManager = (EntityManager) PrivateAccessor.getField(sqrlPersistence, "entityManager");
+		EntityManagerFactory entityManagerFactory = extractEntityManagerFactory(sqrlPersistence);
+		final EntityManager entityManager = entityManagerFactory.createEntityManager();
+		entityManager.getTransaction().begin();
 		// entityManager.createQuery("DELETE FROM SqrlCorrelator m").executeUpdate();
 		// entityManager.createQuery("DELETE FROM SqrlIdentity m").executeUpdate();
 		for (final Object object : entityManager.createQuery("SELECT e FROM SqrlCorrelator e").getResultList()) {
@@ -184,13 +187,23 @@ public class TCUtil {
 		for (final Object object : entityManager.createQuery("SELECT e FROM SqrlIdentity e").getResultList()) {
 			entityManager.remove(object);
 		}
+		entityManager.getTransaction().commit();
+		entityManager.close();
 		sqrlPersistence.closeCommit();
 		return new SqrlAutoCloseablePersistence(createSqrlPersistence());
 	}
 
-	public static SqrlPersistence createSqrlPersistence() {
-		return new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()).getSqrlPersistenceFactory()
-				.createSqrlPersistence();
+	static EntityManagerFactory extractEntityManagerFactory(SqrlPersistence sqrlPersistence) throws NoSuchFieldException {
+		SqrlPersistence extracted = sqrlPersistence;
+		if(extracted instanceof SqrlAutoCloseablePersistence) {
+			extracted =  (SqrlPersistence) PrivateAccessor.getField(extracted, "sqrlPersistence");
+		}
+		return (EntityManagerFactory) PrivateAccessor.getField(extracted, "entityManagerFactory");
+	}
+
+	public static SqrlAutoCloseablePersistence createSqrlPersistence() {
+		return new SqrlAutoCloseablePersistence(new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()).getSqrlPersistenceFactory()
+				.createSqrlPersistence());
 	}
 
 	/**

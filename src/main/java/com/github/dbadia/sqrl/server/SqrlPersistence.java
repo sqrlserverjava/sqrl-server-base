@@ -2,6 +2,7 @@ package com.github.dbadia.sqrl.server;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
@@ -201,13 +202,22 @@ public interface SqrlPersistence {
 	public SqrlCorrelator createCorrelator(String correlatorString, Date expiryTime);
 
 	/**
-	 * Fetch the correlator object for the given string value
+	 * Fetch the correlator object for the given string value, or throw an exception if it does not exist
 	 * 
 	 * @param correlator
 	 *            the string value to search for
 	 * @return the non-null correlator object
 	 */
 	public SqrlCorrelator fetchSqrlCorrelatorRequired(String correlator);
+
+	/**
+	 * Fetch the correlator object for the given string value
+	 * 
+	 * @param correlator
+	 *            the string value to search for
+	 * @return the correlator object or null if it does not exist
+	 */
+	public SqrlCorrelator fetchSqrlCorrelator(String correlator);
 
 	/* ***************** TRANSACTION START / STOP *********************/
 
@@ -230,5 +240,12 @@ public interface SqrlPersistence {
 	 * Delete any expired objects in the persistence store
 	 */
 	public void cleanUpExpiredEntries();
+
+	Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(Set<String> correlatorStringSet);
+
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+			Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable);
+
+	public void deleteSqrlCorrelator(SqrlCorrelator sqrlCorrelator);
 
 }

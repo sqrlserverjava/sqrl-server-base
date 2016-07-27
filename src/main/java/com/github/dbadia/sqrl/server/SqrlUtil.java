@@ -216,7 +216,7 @@ public class SqrlUtil {
 		return buf.toString();
 	}
 
-	public static Cookie createOrUpdateCookie(HttpServletRequest request, final String name, final String value) {
+	public static Cookie createOrUpdateCookie(final HttpServletRequest request, final String name, final String value) {
 		Cookie cookie = findCookie(request, name);
 		if (cookie == null) {
 			cookie = new Cookie(name, value);
@@ -227,11 +227,12 @@ public class SqrlUtil {
 			cookie.setMaxAge(-1);
 		} else {
 			cookie.setValue(value);
+			cookie.setMaxAge(-1);
 		}
 		return cookie;
 	}
 
-	private static Cookie findCookie(HttpServletRequest request, String toFind) {
+	private static Cookie findCookie(final HttpServletRequest request, final String toFind) {
 		if (request.getCookies() != null) {
 			for (final Cookie cookie : request.getCookies()) {
 				if (toFind.equals(cookie.getName())) {
@@ -243,7 +244,7 @@ public class SqrlUtil {
 	}
 
 	public static String findCookieValue(final HttpServletRequest request, final String toFind) {
-		Cookie cookie = findCookie(request, toFind);
+		final Cookie cookie = findCookie(request, toFind);
 		if (cookie == null) {
 			return null;
 		}
@@ -253,18 +254,9 @@ public class SqrlUtil {
 	public static void deleteCookies(final HttpServletRequest request, final HttpServletResponse response,
 			final String... cookiesToDelete) {
 		final List<String> cookieToDeleteList = Arrays.asList(cookiesToDelete);
-		for (final Cookie cookie : request.getCookies()) {
-			if (cookieToDeleteList.contains(cookie.getName())) {
-				cookie.setMaxAge(0);
-				cookie.setValue(null);
-				response.addCookie(cookie);
-			}
+		if (request.getCookies() == null) {
+			return;
 		}
-	}
-
-	public static void setCookiesOnResponse(HttpServletRequest request, final HttpServletResponse response,
-			final String... cookiesToDelete) {
-		final List<String> cookieToDeleteList = Arrays.asList(cookiesToDelete);
 		for (final Cookie cookie : request.getCookies()) {
 			if (cookieToDeleteList.contains(cookie.getName())) {
 				cookie.setMaxAge(0);

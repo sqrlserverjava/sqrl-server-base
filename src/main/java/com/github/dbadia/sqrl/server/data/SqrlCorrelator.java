@@ -122,10 +122,10 @@ public class SqrlCorrelator implements Serializable {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("SqrlCorrelator [id=").append(id).append(", value=").append(value)
-				.append(", authenticationStatus=").append(authenticationStatus).append(", expiryTime=")
-				.append(expiryTime).append(", transientAuthDataTable=").append(transientAuthDataTable)
-				.append(", usedNutTokenList=").append(usedNutTokenList).append(", authenticatedIdentity=")
-				.append(authenticatedIdentity).append("]");
+		.append(", authenticationStatus=").append(authenticationStatus).append(", expiryTime=")
+		.append(expiryTime).append(", transientAuthDataTable=").append(transientAuthDataTable)
+		.append(", usedNutTokenList=").append(usedNutTokenList).append(", authenticatedIdentity=")
+		.append(authenticatedIdentity).append("]");
 		return builder.toString();
 	}
 
@@ -197,6 +197,10 @@ public class SqrlCorrelator implements Serializable {
 			return false;
 		}
 		return true;
+	}
+
+	public long getId() {
+		return id;
 	}
 
 }

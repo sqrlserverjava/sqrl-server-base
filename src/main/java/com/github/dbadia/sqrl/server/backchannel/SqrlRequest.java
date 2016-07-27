@@ -67,7 +67,7 @@ public class SqrlRequest {
 					final SqrlClientOpt clientOpt = SqrlClientOpt.valueOf(optString);
 					optList.add(clientOpt);
 				} catch (IllegalArgumentException e) {
-					logger.error("Unknown SQRL client option {}", optString, e);
+					throw new SqrlException("Unknown SQRL client option '"+optString+"'", e);
 				}
 			}
 		}
@@ -124,27 +124,23 @@ public class SqrlRequest {
 		clientCommand = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_CMD);
 	}
 
-	private void validateSignature(final String keyName, final String signatureParamValue) throws SqrlException {
-		final byte[] signatureFromMessage = SqrlUtil.base64UrlDecode(signatureParamValue);
+	/**
+	 * The correlator is our only key to determining which user this is, so it's critical we parse this out first 
+	 */
+	public static String parseCorrelatorOnly(HttpServletRequest servletRequest) throws SqrlException {
+		String serverParam = getRequiredParameter(servletRequest, "server");
+		// parse server - not a name value pair, just the query string we gave
+		return  extractFromSqrlCsvString(serverParam, SqrlConstants.CLIENT_PARAM_CORRELATOR);
+	}
 
-		try {
-			final byte[] publicKey = clientKeys.get(keyName);
-			if (publicKey == null) {
-				throw new SqrlInvalidRequestException(
-						SqrlLoggingUtil.getLogHeader() + keyName + " not found in client param: " + clientParam);
-			}
-			final byte[] messageBytes = (clientParam + serverParam).getBytes();
-			final boolean isSignatureValid = SqrlUtil.verifyED25519(signatureFromMessage, messageBytes, publicKey);
-			if (!isSignatureValid) {
-				throw new SqrlInvalidRequestException(
-						SqrlLoggingUtil.getLogHeader() + "Signature for " + keyName + " was invalid");
-			}
-		} catch (final SqrlException e) {
-			throw e;
-		} catch (final Exception e) {
-			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Error computing signature for " + keyName, e);
+	private static String getRequiredParameter(final HttpServletRequest servletRequest, final String requiredParamName)
+			throws SqrlInvalidRequestException {
+		final String value = servletRequest.getParameter(requiredParamName);
+		if (value == null || value.trim().length() == 0) {
+			throw new SqrlInvalidRequestException("Missing required parameter " + requiredParamName
+					+ ".  Request contained: " + SqrlUtil.buildRequestParamList(servletRequest));
 		}
-
+		return value;
 	}
 
 	static String extractFromSqrlCsvString(final String serverParam, final String variableToFind) throws SqrlException {
@@ -172,14 +168,26 @@ public class SqrlRequest {
 		return value;
 	}
 
-	private String getRequiredParameter(final HttpServletRequest servletRequest, final String requiredParamName)
-			throws SqrlInvalidRequestException {
-		final String value = servletRequest.getParameter(requiredParamName);
-		if (value == null || value.trim().length() == 0) {
-			throw new SqrlInvalidRequestException("Missing required parameter " + requiredParamName
-					+ ".  Request contained: " + SqrlUtil.buildRequestParamList(servletRequest));
+	private void validateSignature(final String keyName, final String signatureParamValue) throws SqrlException {
+		final byte[] signatureFromMessage = SqrlUtil.base64UrlDecode(signatureParamValue);
+
+		try {
+			final byte[] publicKey = clientKeys.get(keyName);
+			if (publicKey == null) {
+				throw new SqrlInvalidRequestException(
+						SqrlLoggingUtil.getLogHeader() + keyName + " not found in client param: " + clientParam);
+			}
+			final byte[] messageBytes = (clientParam + serverParam).getBytes();
+			final boolean isSignatureValid = SqrlUtil.verifyED25519(signatureFromMessage, messageBytes, publicKey);
+			if (!isSignatureValid) {
+				throw new SqrlInvalidRequestException(
+						SqrlLoggingUtil.getLogHeader() + "Signature for " + keyName + " was invalid");
+			}
+		} catch (final SqrlException e) {
+			throw e;
+		} catch (final Exception e) {
+			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Error computing signature for " + keyName, e);
 		}
-		return value;
 	}
 
 	private Map<String, String> parseLinesToNameValueMap(final String decoded) throws SqrlException {

@@ -2,10 +2,12 @@ package com.github.dbadia.sqrl.server.data;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 
@@ -115,6 +117,11 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	}
 
 	@Override
+	public SqrlCorrelator fetchSqrlCorrelator(final String correlator) {
+		return sqrlPersistence.fetchSqrlCorrelator(correlator);
+	}
+
+	@Override
 	public SqrlCorrelator fetchSqrlCorrelatorRequired(final String correlator) {
 		return sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
 	}
@@ -137,5 +144,20 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	@Override
 	public void cleanUpExpiredEntries() {
 		sqrlPersistence.cleanUpExpiredEntries();
+	}
+
+	@Override
+	public Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(final Set<String> correlatorStringSet) {
+		return sqrlPersistence.fetchSqrlCorrelatorsDetached(correlatorStringSet);
+	}
+
+	@Override
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+			final Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable) {
+		return sqrlPersistence.fetchSqrlCorrelatorStatusChanged(correlatorToCurrentStatusTable);
+	}
+
+	public void deleteSqrlCorrelator(final SqrlCorrelator sqrlCorrelator) {
+		sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);
 	}
 }

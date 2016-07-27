@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
+import com.github.dbadia.sqrl.server.SqrlAuthStateAsyncSseServlet;
+import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlConstants;
@@ -87,6 +90,7 @@ public class SqrlServerOperations {
 		this.configOperations = new SqrlConfigOperations(config);
 		this.sqrlPersistenceFactory = configOperations.getSqrlPersistenceFactory();
 		this.config = config;
+		SqrlAuthStateAsyncSseServlet.init(config, this);
 	}
 
 	/**
@@ -103,7 +107,7 @@ public class SqrlServerOperations {
 	 * @throws SqrlException
 	 *             if an error occurs
 	 */
-	public SqrlAuthPageData buildQrCodeForAuthPage(final HttpServletRequest request, HttpServletResponse response,
+	public SqrlAuthPageData buildQrCodeForAuthPage(final HttpServletRequest request, final HttpServletResponse response,
 			final InetAddress userInetAddress, final int qrCodeSizeInPixels) throws SqrlException {
 		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString());
@@ -172,14 +176,15 @@ public class SqrlServerOperations {
 		final TifBuilder tifBuilder = new TifBuilder();
 		boolean idkExistsInDataStore = false;
 		String requestState = "invalid";
-		boolean isInErrorState = false;
 		try {
 			String logHeader = "";
 			SqrlRequest request = null;
 			SqrlPersistence sqrlPersistence = createSqrlPersistence();
+			Exception exception = null;
 			try {
+				// Get the correlator first. Then, if the request is invalid, we can update the auth page saying so
+				correlator = SqrlRequest.parseCorrelatorOnly(servletRequest);
 				request = new SqrlRequest(servletRequest, sqrlPersistence, configOperations);
-				correlator = request.getCorrelator();
 				logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
 						.append(request.getClientCommand()).append(":: ").toString());
 				if (checkIfIpsMatch(request.getNut(), servletRequest)) {
@@ -193,13 +198,13 @@ public class SqrlServerOperations {
 				requestState = "OK";
 				sqrlPersistence.closeCommit();
 			} catch (final SqrlException e) {
+				exception = e;
 				sqrlPersistence.closeRollback();
-				isInErrorState = true;
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
 				if (e instanceof SqrlInvalidRequestException) { // NOSONAR: don't want to duplicate all other logic in a
 					// separate try block
 					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
-					logger.error(SqrlLoggingUtil.getLogHeader() + "Recevied invalid SQRL request: " + e.getMessage(),
+					logger.error(SqrlLoggingUtil.getLogHeader() + "Received invalid SQRL request: " + e.getMessage(),
 							e);
 				} else {
 					logger.error(SqrlLoggingUtil.getLogHeader() + "General exception processing SQRL request: "
@@ -216,12 +221,20 @@ public class SqrlServerOperations {
 			sqrlPersistence = sqrlPersistenceFactory.createSqrlPersistence();
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
+				final boolean isInErrorState = exception != null;
 				serverReplyString = buildReply(isInErrorState, servletRequest, request, idkExistsInDataStore, tif,
 						correlator);
-				if (!isInErrorState) {
+				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
+				if (isInErrorState) {
+					// update the correlator with the proper error state
+					SqrlAuthenticationStatus authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL;
+					if (exception instanceof SqrlInvalidRequestException) {
+						authErrorState = SqrlAuthenticationStatus.ERROR_BAD_REQUEST;
+					}
+					sqrlCorrelator.setAuthenticationStatus(authErrorState);
+				} else {
 					// Store the serverReplyString in the server parrot value so we can validate it on the clients next
 					// request
-					final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
 					sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
 							serverReplyString);
 				}
@@ -374,7 +387,7 @@ public class SqrlServerOperations {
 			throw new SqrlException(
 					SqrlLoggingUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
 							+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
-					e);
+							e);
 		}
 	}
 
@@ -526,8 +539,18 @@ public class SqrlServerOperations {
 		}
 	}
 
+	/**
+	 * Checks the request and trys to extract the correlator string from the cookie. Useful for error logging/reporting
+	 * when a persistence call is unnecessary
+	 * 
+	 * @return the value or null if the cookie was not present
+	 */
+	public String extractSqrlCorrelatorStringFromRequestCookie(final HttpServletRequest request) {
+		return SqrlUtil.findCookieValue(request, config.getCorrelatorCookieName());
+	}
+
 	public SqrlCorrelator fetchSqrlCorrelator(final HttpServletRequest request) {
-		String correlatorString = SqrlUtil.findCookieValue(request, config.getCorrelatorCookieName());
+		final String correlatorString = extractSqrlCorrelatorStringFromRequestCookie(request);
 		return fetchSqrlCorrelator(correlatorString);
 	}
 
@@ -536,7 +559,7 @@ public class SqrlServerOperations {
 			throw new SqrlPersistenceException("Correlator cookie not found on request");
 		}
 		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
-			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorString);
+			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelator(correlatorString);
 			sqrlPersistence.closeCommit();
 			return sqrlCorrelator;
 		}
@@ -557,4 +580,71 @@ public class SqrlServerOperations {
 		}
 	}
 
+	// TODO: remove
+	//	private static List<SqrlMiniCorrelator> fetchCorrelatorIdsAndState(List<String> correaltorStringList) throws NoSuchFieldException {
+	//		if(correaltorStringList.isEmpty()) {
+	//			return Collections.emptyList();
+	//		}
+	//		try(SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
+	//			EntityManagerFactory entityManagerFactory = TCUtil.extractEntityManagerFactory(sqrlPersistence);
+	//			final EntityManager entityManager = entityManagerFactory.createEntityManager();
+	//
+	//			StringBuilder buf = new StringBuilder("SELECT c.id, c.value, c.authenticationStatus FROM SqrlCorrelator AS c WHERE ");
+	//			for(String correlatorString : correaltorStringList) {
+	//				buf.append(" c.value = '").append(correlatorString).append("' OR ");
+	//			}
+	//			String queryString = buf.substring(0, buf.length() - 3);
+	//			TypedQuery<SqrlMiniCorrelator> query = entityManager.createQuery(
+	//					queryString, SqrlMiniCorrelator.class);
+	//
+	//			List results = query.getResultList();
+	//			List<SqrlMiniCorrelator> toReturn = null;
+	//			//Work around a JPA bug?
+	//			if(results.isEmpty()) {
+	//				toReturn = Collections.emptyList();
+	//			}  else {
+	//				Object firstOne = results.get(0);
+	//				if(firstOne instanceof SqrlMiniCorrelator) {
+	//					toReturn = results;
+	//				} else if(firstOne.getClass().isArray()) {
+	//					// We got List<Object[]>
+	//					toReturn= new ArrayList<>();
+	//					for (int i = 0; i < results.size(); i++) {
+	//						Object[] objectArray = (Object[]) results.get(i);
+	//						toReturn.add(new SqrlMiniCorrelator((long)objectArray[0], (String)objectArray[1], (SqrlAuthenticationStatus)objectArray[2]));
+	//					}
+	//				}
+	//			}
+	//			sqrlPersistence.closeCommit();
+	//			sqrlPersistence.close();
+	//			entityManager.close();
+	//			return toReturn;
+	//		}
+	//	}
+
+
+	public Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(final Set<String> correlatorStringSet) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
+			final Map<String, SqrlCorrelator> resultTable = sqrlPersistence.fetchSqrlCorrelatorsDetached(correlatorStringSet);
+			sqrlPersistence.closeCommit();
+			return resultTable;
+		}
+	}
+
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+			final Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
+			final Map<String, SqrlAuthenticationStatus> resultTable = sqrlPersistence
+					.fetchSqrlCorrelatorStatusChanged(correlatorToCurrentStatusTable);
+			sqrlPersistence.closeCommit();
+			return resultTable;
+		}
+	}
+
+	public void deleteSqrlCorrelator(final SqrlCorrelator sqrlCorrelator) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
+			sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);
+			sqrlPersistence.closeCommit();
+		}
+	}
 }
