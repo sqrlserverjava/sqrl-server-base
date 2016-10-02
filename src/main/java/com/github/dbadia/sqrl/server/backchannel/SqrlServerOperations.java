@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
-import com.github.dbadia.sqrl.server.SqrlAuthStateAsyncSseServlet;
 import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
@@ -90,7 +89,6 @@ public class SqrlServerOperations {
 		this.configOperations = new SqrlConfigOperations(config);
 		this.sqrlPersistenceFactory = configOperations.getSqrlPersistenceFactory();
 		this.config = config;
-		SqrlAuthStateAsyncSseServlet.init(config, this);
 	}
 
 	/**

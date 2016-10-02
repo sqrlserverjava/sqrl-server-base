@@ -3,6 +3,7 @@ package com.github.dbadia.sqrl.server;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.AsyncContext;
@@ -18,30 +19,35 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
 
+// TODO: delete now that we have atomosphere
 /**
  * An efficient, async io servlet for processing SSE (server side event) queries from the browser during SQRL auth, as
  * seen in the example app. To use this servlet, it must be added to your application's web.xml file with
  * async-supported=true set
  * 
  * @author Dave Badia
- *
+ * @deprecated use atmosphere handler instead
  */
+@Deprecated
 public class SqrlAuthStateAsyncSseServlet extends HttpServlet implements ServletContextListener {
 	private static final long serialVersionUID = -9005876954442678700L;
 	private static final Logger logger = LoggerFactory.getLogger(SqrlAuthStateAsyncSseServlet.class);
-	private static boolean initialized = false;
+	// Use statics since the servlet can be created many times
 	private static SqrlServerOperations sqrlServerOperations = null;
 	private static SqrlAuthStateMonitor sqrlAuthStateMonitor = null;
 	private static String correlatorCookieName = null;
 	private static ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(1);
+	private static ScheduledFuture executingTask = null;
 
-	public static synchronized void init(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations) {
+	public static synchronized void init(final SqrlConfig sqrlConfig, final SqrlAuthStateMonitor sqrlAuthStateMonitor,
+			final SqrlServerOperations sqrlServerOperations) {
 		SqrlAuthStateAsyncSseServlet.correlatorCookieName = sqrlConfig.getCorrelatorCookieName();
-		SqrlAuthStateAsyncSseServlet.sqrlAuthStateMonitor = new SqrlAuthStateMonitor(sqrlConfig, sqrlServerOperations);
+		SqrlAuthStateAsyncSseServlet.sqrlAuthStateMonitor = sqrlAuthStateMonitor;
 		SqrlAuthStateAsyncSseServlet.sqrlServerOperations = sqrlServerOperations;
-		scheduledExecutor.scheduleAtFixedRate(sqrlAuthStateMonitor, 1, 1, TimeUnit.SECONDS); // TODO: configurable and
-		initialized = true;
-		// -1
+		if (executingTask != null) {
+			executingTask.cancel(false);
+		}
+		executingTask = scheduledExecutor.scheduleAtFixedRate(sqrlAuthStateMonitor, 1, 1, TimeUnit.SECONDS); // TODO:
 	}
 
 	@Override
@@ -82,10 +88,10 @@ public class SqrlAuthStateAsyncSseServlet extends HttpServlet implements Servlet
 		}
 		if(newStatus != null) {
 			// Error state, send the reply right away
-			SqrlAuthStateMonitor.sendSseResponse(asyncContext, SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL);
+			// SqrlAuthStateMonitor.sendSseResponse(asyncContext, SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL);
 		} else {
 			// Let the monitor watch the db for correaltor chagne, then send the reply when it changes
-			sqrlAuthStateMonitor.monitorCorrelatorForChange(asyncContext, correlatorString, clientStatus);
+			// sqrlAuthStateMonitor.monitorCorrelatorForChange(asyncContext, correlatorString, clientStatus);
 		}
 	}
 
