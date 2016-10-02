@@ -1,11 +1,15 @@
 package com.github.dbadia.sqrl.server;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +19,14 @@ import com.github.dbadia.sqrl.server.util.SelfExpiringHashMap;
 
 public class SqrlAuthStateMonitor implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlAuthStateMonitor.class);
+	/**
+	 * Lock object to be used when {@link #pendingMonitorTable} is accessed
+	 */
+	private static final Object PENDING_MONITOR_TABLE_LOCK = new Object();
+	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
+	private static ScheduledFuture monitorFuture = null;
+
+	private final List<ClientAuthStateUpdater> updaterList = new ArrayList<>();
 
 	private final SqrlConfig sqrlConfig;
 	private final SqrlServerOperations sqrlServerOperations;
@@ -25,28 +37,27 @@ public class SqrlAuthStateMonitor implements Runnable {
 	private final Map<String, CorrelatorToMonitor> monitorTable;
 
 	/**
-	 * Table of atmosphere sessionId to most current AtmosphereResource request object. This is necessary as certain
-	 * polling mechanisms, such as long polling can timeout and result in subsequent requests. This ensure we send our
-	 * reply to the current request instead of a stale one
-	 */
-	private final Map<String, AtmosphereResource> currentAtmosphereRequestTable;
-
-	/**
 	 * Table of correlators that need to be added to {@link #monitorTable}; stored in a separate table to minimize
 	 * synchronization overhead
 	 */
-	private volatile Map<String, CorrelatorToMonitor> pendingWatchTable = new ConcurrentHashMap<>();
+	private Map<String, CorrelatorToMonitor> pendingMonitorTable = new ConcurrentHashMap<>();
 
-	/**
-	 * Lock object to be used when {@link #pendingWatchTable} is accessed
-	 */
-	private static final Object PENDING_WATCH_TABLE_LOCK = new Object();
+
 
 	public SqrlAuthStateMonitor(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations) {
 		this.sqrlConfig = sqrlConfig;
 		this.sqrlServerOperations = sqrlServerOperations;
 		monitorTable = new SelfExpiringHashMap<>(sqrlConfig.getNutValidityInSeconds());
-		currentAtmosphereRequestTable = new SelfExpiringHashMap<>(sqrlConfig.getNutValidityInSeconds());
+	}
+
+	public void registerUpdater(final ClientAuthStateUpdater clientAuthStateUpdater) {
+		if (clientAuthStateUpdater != null) {
+			updaterList.add(clientAuthStateUpdater);
+			if (updaterList.size() == 1 && monitorFuture == null) {
+				monitorFuture = EXECUTOR_SERVICE.scheduleAtFixedRate(this, 1, 1, TimeUnit.SECONDS); // TODO:
+				// configurable
+			}
+		}
 	}
 
 	/**
@@ -61,37 +72,21 @@ public class SqrlAuthStateMonitor implements Runnable {
 	 */
 	public void monitorCorrelatorForChange(final String atmosphereSessionId, final String correlatorString,
 			final SqrlAuthenticationStatus browserStatus) {
-		synchronized (PENDING_WATCH_TABLE_LOCK) {
-			pendingWatchTable.put(correlatorString,
+		synchronized (PENDING_MONITOR_TABLE_LOCK) {
+			pendingMonitorTable.put(correlatorString,
 					new CorrelatorToMonitor(atmosphereSessionId, correlatorString, browserStatus));
 		}
 	}
 
-	/**
-	 * Certain atmosphere polling mechanisms (long polling, etc)timeout and result in subsequent polling requests. This
-	 * method must be called each time a new request is received so we can send our response to the current, valid
-	 * resource object
-	 *
-	 * @param resource
-	 *            the atmosphere resource that was received
-	 */
-	public void updateCurrentAtomosphereRequest(final AtmosphereResource resource) {
-		final String atmosphereSessionId = extractAtmosphereSessionId(resource);
-		if (logger.isDebugEnabled()) {
-			logger.debug("In updateCurrentAtomosphereRequest for atmosphereSessionId {}, update? {}",
-					atmosphereSessionId, currentAtmosphereRequestTable.containsKey(atmosphereSessionId));
-		}
-		currentAtmosphereRequestTable.put(atmosphereSessionId, resource);
-	}
 
 	@Override
 	public void run() {
 		// A temporary reference so we can free up pendingWatchTable
 		Map<String, CorrelatorToMonitor> tempTable = null;
-		// "Steal" newToMonitorTable as ourTable and create a new empty table for newToMonitorTable
-		synchronized (PENDING_WATCH_TABLE_LOCK) {
-			tempTable = pendingWatchTable;
-			pendingWatchTable = new ConcurrentHashMap<>();
+		// "Steal" pendingMonitorTable as tempTable and create a new empty table for pendingMonitorTable
+		synchronized (PENDING_MONITOR_TABLE_LOCK) {
+			tempTable = pendingMonitorTable;
+			pendingMonitorTable = new ConcurrentHashMap<>();
 		}
 
 		if (!tempTable.isEmpty()) {
@@ -129,56 +124,16 @@ public class SqrlAuthStateMonitor implements Runnable {
 			} else {
 				logger.info("State changed from {} to {}, sending atmosphere response",
 						correlatorToMonitor.browserStatus, entry.getValue());
-				sendAtmostphereResponse(correlatorToMonitor.atmosphereSessionId, correlatorToMonitor.browserStatus,
-						entry.getValue());
+				for (final ClientAuthStateUpdater clientUpdater : updaterList) {
+					clientUpdater.pushStatusUpdateToBrowser(correlatorToMonitor.browserSessionId,
+							correlatorToMonitor.browserStatus, entry.getValue());
+				}
 			}
 		}
-	}
-
-	public void sendAtmostphereResponse(final String atmosphereSessionId, final SqrlAuthenticationStatus oldAuthStatus,
-			final SqrlAuthenticationStatus newAuthStatus) {
-		final AtmosphereResource resource = currentAtmosphereRequestTable.get(atmosphereSessionId);
-		if (resource == null) {
-			logger.error("AtmosphereResource not found for sessionId {}, can't communicate status change from {} to {}",
-					atmosphereSessionId, oldAuthStatus, newAuthStatus);
-			return;
-		}
-		final AtmosphereResponse response = resource.getResponse();
-		logger.error("Sending atmosphere state change from {} to  {} via {} to {}, ", oldAuthStatus,
-				newAuthStatus, resource.transport(), atmosphereSessionId);
-		try {
-			response.getWriter().write(newAuthStatus.toString());
-			switch (resource.transport()) {
-				case JSONP:
-				case LONG_POLLING:
-					resource.resume();
-					break;
-				case WEBSOCKET:
-					break;
-				case SSE: // this is not in the original examples but is necessary for SSE
-				case STREAMING:
-					response.getWriter().flush();
-					break;
-				default:
-					// No point in throwing an exception since we are running in a separate thread.
-					// Just log the error
-					logger.error("Don't know how to handle transport {} for atmosphereSessionId {}",
-							resource.transport(), atmosphereSessionId);
-			}
-		} catch (final Exception e) {
-			logger.error(new StringBuilder("Caught IO error trying to send status of ").append(newAuthStatus)
-					.append(" via atmosphere to atmosphereSessionId ").append(atmosphereSessionId)
-					.append(" with transport ")
-					.append(resource.transport()).toString(), e);
-		}
-	}
-
-	public static String extractAtmosphereSessionId(final AtmosphereResource resource) {
-		return resource.getRequest().getRequestedSessionId();
 	}
 
 	private static class CorrelatorToMonitor {
-		private final String atmosphereSessionId;
+		private final String browserSessionId;
 		private final String correlatorString;
 		private final SqrlAuthenticationStatus browserStatus;
 		private long id; // assigned later
@@ -187,7 +142,7 @@ public class SqrlAuthStateMonitor implements Runnable {
 		public CorrelatorToMonitor(final String atmosphereSessionId, final String correlatorString,
 				final SqrlAuthenticationStatus browserStatus) {
 			super();
-			this.atmosphereSessionId = atmosphereSessionId;
+			this.browserSessionId = atmosphereSessionId;
 			this.correlatorString = correlatorString;
 			this.browserStatus = browserStatus;
 		}
