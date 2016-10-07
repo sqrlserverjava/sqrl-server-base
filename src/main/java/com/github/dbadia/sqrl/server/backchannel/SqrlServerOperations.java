@@ -18,6 +18,10 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
@@ -27,7 +31,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dbadia.sqrl.server.ClientAuthStateUpdater;
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
+import com.github.dbadia.sqrl.server.SqrlAuthStateMonitor;
 import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
@@ -51,15 +57,13 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 /**
  * The core SQRL class which processes all SQRL requests and generates the appropriates responses
- * 
+ *
  * @author Dave Badia
  *
  */
 
 public class SqrlServerOperations {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
-
-	static final long MAX_TIMESTAMP = Integer.toUnsignedLong(-1) * 1000L;
 
 	private static final String	COMMAND_QUERY	= "query";
 	private static final String	COMMAND_IDENT	= "ident";
@@ -68,14 +72,20 @@ public class SqrlServerOperations {
 	private static final String	COMMAND_REMOVE	= "remove";
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
+	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1,
+			new SqrlThreadFactory());
 
-	private final SqrlPersistenceFactory	sqrlPersistenceFactory;
+	static final long MAX_TIMESTAMP = Integer.toUnsignedLong(-1) * 1000L;
+	private static ScheduledFuture monitorFuture = null; // TODO; add destroy method and shutdown
+
+	private final SqrlPersistenceFactory	persistenceFactory;
 	private final SqrlConfigOperations		configOperations;
 	private final SqrlConfig				config;
+	private final SqrlAuthStateMonitor authStateMonitor;
 
 	/**
 	 * Initializes the operations class with the given config, defaulting to the built in JPA persisentce provider.
-	 * 
+	 *
 	 * @param sqrlPersistence
 	 *            the persistence to be used for storing and retreiving SQRL data
 	 * @param config
@@ -87,13 +97,36 @@ public class SqrlServerOperations {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
 		this.configOperations = new SqrlConfigOperations(config);
-		this.sqrlPersistenceFactory = configOperations.getSqrlPersistenceFactory();
+		this.persistenceFactory = configOperations.getSqrlPersistenceFactory();
 		this.config = config;
+		final String classname = config.getClientAuthStateUpdaterClass();
+		if (config.getClientAuthStateUpdaterClass() == null) {
+			logger.warn("No ClientAuthStateUpdaterClass is set, auto client status refresh is disabled");
+			authStateMonitor = null;
+		} else {
+			try {
+				@SuppressWarnings("rawtypes")
+				final Class clazz = Class.forName(classname);
+				final Object object = clazz.newInstance();
+				if (!(object instanceof ClientAuthStateUpdater)) {
+					throw new IllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+							+ " was not an instance of ClientAuthStateUpdater");
+				}
+				final ClientAuthStateUpdater clientAuthStateUpdater = (ClientAuthStateUpdater) object;
+				authStateMonitor = new SqrlAuthStateMonitor(config, this, clientAuthStateUpdater);
+				clientAuthStateUpdater.initSqrl(config, authStateMonitor);
+				monitorFuture = EXECUTOR_SERVICE.scheduleAtFixedRate(authStateMonitor, 1, 1, TimeUnit.SECONDS); // TODO:
+				// configurable
+			} catch (final ReflectiveOperationException e) {
+				throw new IllegalStateException("SQRL: Error instantiating ClientAuthStateUpdaterClass of " + classname,
+						e);
+			}
+		}
 	}
 
 	/**
 	 * Called to generate the data the server needs to display to allow a user to authenticate via SQRL
-	 * 
+	 *
 	 * @param request
 	 *            the servlet request
 	 * @param response
@@ -156,7 +189,7 @@ public class SqrlServerOperations {
 	/**
 	 * The backchannel servlet which is accepting requests from SQRL clients should call this method to process the
 	 * request
-	 * 
+	 *
 	 * @param servletRequest
 	 *            the servlet request
 	 * @param servletResponse
@@ -216,7 +249,7 @@ public class SqrlServerOperations {
 
 			// We have processed the request, success or failure. Now prep and transmit the reply
 			String serverReplyString = ""; // for logging
-			sqrlPersistence = sqrlPersistenceFactory.createSqrlPersistence();
+			sqrlPersistence = persistenceFactory.createSqrlPersistence();
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
 				final boolean isInErrorState = exception != null;
@@ -488,13 +521,13 @@ public class SqrlServerOperations {
 	}
 
 	private SqrlAutoCloseablePersistence createSqrlPersistence() {
-		final SqrlPersistence sqrlPersistence = sqrlPersistenceFactory.createSqrlPersistence();
+		final SqrlPersistence sqrlPersistence = persistenceFactory.createSqrlPersistence();
 		return new SqrlAutoCloseablePersistence(sqrlPersistence);
 	}
 
 	/**
 	 * Called by the web app once authentication is complete to cleanup any cookies set by the SQRL library
-	 * 
+	 *
 	 * @param request
 	 *            the HTTP request
 	 * @param response
@@ -506,7 +539,7 @@ public class SqrlServerOperations {
 
 	/**
 	 * Looks for the SQRL first nut cookie and extracts the time at which it expires
-	 * 
+	 *
 	 * @param request
 	 *            the HTTP request
 	 * @return the timestamp when the nut token expires
@@ -525,7 +558,7 @@ public class SqrlServerOperations {
 
 	// @formatter:off
 	/*
-	 * **************** Persistence layer interface ********************** 
+	 * **************** Persistence layer interface **********************
 	 * To isolate the web app from the full persistence API and transaction management, we expose the limited subset here
 	 */
 	// @formatter:on
@@ -540,7 +573,7 @@ public class SqrlServerOperations {
 	/**
 	 * Checks the request and trys to extract the correlator string from the cookie. Useful for error logging/reporting
 	 * when a persistence call is unnecessary
-	 * 
+	 *
 	 * @return the value or null if the cookie was not present
 	 */
 	public String extractSqrlCorrelatorStringFromRequestCookie(final HttpServletRequest request) {
@@ -565,7 +598,7 @@ public class SqrlServerOperations {
 
 	/**
 	 * Invoked to see if a web app user has a corresponding SQRL identity registered
-	 * 
+	 *
 	 * @param webAppUserCrossReference
 	 *            the username, customer id, or whatever mechanism is used to uniquely identify users in the web app
 	 * @return the SQRL identity or null if none exists for this web app user
@@ -578,49 +611,6 @@ public class SqrlServerOperations {
 		}
 	}
 
-	// TODO: remove
-	//	private static List<SqrlMiniCorrelator> fetchCorrelatorIdsAndState(List<String> correaltorStringList) throws NoSuchFieldException {
-	//		if(correaltorStringList.isEmpty()) {
-	//			return Collections.emptyList();
-	//		}
-	//		try(SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
-	//			EntityManagerFactory entityManagerFactory = TCUtil.extractEntityManagerFactory(sqrlPersistence);
-	//			final EntityManager entityManager = entityManagerFactory.createEntityManager();
-	//
-	//			StringBuilder buf = new StringBuilder("SELECT c.id, c.value, c.authenticationStatus FROM SqrlCorrelator AS c WHERE ");
-	//			for(String correlatorString : correaltorStringList) {
-	//				buf.append(" c.value = '").append(correlatorString).append("' OR ");
-	//			}
-	//			String queryString = buf.substring(0, buf.length() - 3);
-	//			TypedQuery<SqrlMiniCorrelator> query = entityManager.createQuery(
-	//					queryString, SqrlMiniCorrelator.class);
-	//
-	//			List results = query.getResultList();
-	//			List<SqrlMiniCorrelator> toReturn = null;
-	//			//Work around a JPA bug?
-	//			if(results.isEmpty()) {
-	//				toReturn = Collections.emptyList();
-	//			}  else {
-	//				Object firstOne = results.get(0);
-	//				if(firstOne instanceof SqrlMiniCorrelator) {
-	//					toReturn = results;
-	//				} else if(firstOne.getClass().isArray()) {
-	//					// We got List<Object[]>
-	//					toReturn= new ArrayList<>();
-	//					for (int i = 0; i < results.size(); i++) {
-	//						Object[] objectArray = (Object[]) results.get(i);
-	//						toReturn.add(new SqrlMiniCorrelator((long)objectArray[0], (String)objectArray[1], (SqrlAuthenticationStatus)objectArray[2]));
-	//					}
-	//				}
-	//			}
-	//			sqrlPersistence.closeCommit();
-	//			sqrlPersistence.close();
-	//			entityManager.close();
-	//			return toReturn;
-	//		}
-	//	}
-
-
 	public Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(final Set<String> correlatorStringSet) {
 		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
 			final Map<String, SqrlCorrelator> resultTable = sqrlPersistence.fetchSqrlCorrelatorsDetached(correlatorStringSet);
@@ -629,11 +619,11 @@ public class SqrlServerOperations {
 		}
 	}
 
-	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusUpdates(
 			final Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable) {
 		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
 			final Map<String, SqrlAuthenticationStatus> resultTable = sqrlPersistence
-					.fetchSqrlCorrelatorStatusChanged(correlatorToCurrentStatusTable);
+					.fetchSqrlCorrelatorStatusUpdates(correlatorToCurrentStatusTable);
 			sqrlPersistence.closeCommit();
 			return resultTable;
 		}

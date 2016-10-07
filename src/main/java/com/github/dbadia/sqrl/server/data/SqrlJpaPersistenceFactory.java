@@ -5,6 +5,7 @@ import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
 
 public class SqrlJpaPersistenceFactory implements SqrlPersistenceFactory {
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public SqrlPersistence createSqrlPersistence() {
 		return new SqrlJpaPersistenceProvider();

@@ -31,6 +31,7 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 	/**
 	 * Holds the map keys using the given life time for expiration.
 	 */
+	@SuppressWarnings("rawtypes")
 	private final DelayQueue<ExpiringKey> delayQueue = new DelayQueue<ExpiringKey>();
 
 	/**
@@ -103,6 +104,7 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 		return internalMap.containsValue(value);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public V get(final Object key) {
 		cleanup();
@@ -121,6 +123,7 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public V put(final K key, final V value, final long lifeTimeMillis) {
 		cleanup();
@@ -183,19 +186,19 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 	}
 
 	/**
-	 * Not supported.
+	 * Originally threw UnsupportedOperationException. Modified by Dave
 	 */
 	@Override
 	public Set<K> keySet() {
-		throw new UnsupportedOperationException();
+		return internalMap.keySet();
 	}
 
 	/**
-	 * Not supported.
+	 * Originally threw UnsupportedOperationException. Modified by Dave
 	 */
 	@Override
 	public Collection<V> values() {
-		throw new UnsupportedOperationException();
+		return internalMap.values();
 	}
 
 	/**
@@ -203,9 +206,10 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 	 */
 	@Override
 	public Set<Entry<K, V>> entrySet() {
-		throw new UnsupportedOperationException();
+		return internalMap.entrySet();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void cleanup() {
 		ExpiringKey<K> delayedKey = delayQueue.poll();
 		while (delayedKey != null) {
@@ -215,24 +219,25 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 		}
 	}
 
-	private class ExpiringKey<K> implements Delayed {
+	private class ExpiringKey<L> implements Delayed {
 
 		private long startTime = System.currentTimeMillis();
 		private final long maxLifeTimeMillis;
-		private final K key;
+		private final L key;
 
-		public ExpiringKey(final K key, final long maxLifeTimeMillis) {
+		public ExpiringKey(final L key, final long maxLifeTimeMillis) {
 			this.maxLifeTimeMillis = maxLifeTimeMillis;
 			this.key = key;
 		}
 
-		public K getKey() {
+		public L getKey() {
 			return key;
 		}
 
 		/**
 		 * {@inheritDoc}
 		 */
+		@SuppressWarnings("unchecked")
 		@Override
 		public boolean equals(final Object obj) {
 			if (obj == null) {
@@ -281,6 +286,7 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 		/**
 		 * {@inheritDoc}
 		 */
+		@SuppressWarnings("rawtypes")
 		@Override
 		public int compareTo(final Delayed that) {
 			return Long.compare(this.getDelayMillis(), ((ExpiringKey) that).getDelayMillis());

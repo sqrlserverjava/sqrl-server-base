@@ -19,7 +19,7 @@ import com.github.dbadia.sqrl.server.SqrlPersistence;
  * <p>
  * While it is an unfortunate tradeoff to have deviate from the standard try-with-resources pattern, this is the only
  * way we can ensure rollback gets called when both checked and unchecked exceptions occur
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -152,11 +152,12 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	}
 
 	@Override
-	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusUpdates(
 			final Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable) {
-		return sqrlPersistence.fetchSqrlCorrelatorStatusChanged(correlatorToCurrentStatusTable);
+		return sqrlPersistence.fetchSqrlCorrelatorStatusUpdates(correlatorToCurrentStatusTable);
 	}
 
+	@Override
 	public void deleteSqrlCorrelator(final SqrlCorrelator sqrlCorrelator) {
 		sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);
 	}

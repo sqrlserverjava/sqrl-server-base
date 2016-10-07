@@ -59,15 +59,12 @@ public class SqrlAuthStateEventServletTest {
 	public void testFetchSqrlCorrelatorsStatusChanged_NoChange() throws NoSuchFieldException {
 		final String abc = "abc";
 		final String def = "def";
-		final String ghi = "ghi";
 
 		SqrlCorrelator corrAbc = null;
 		SqrlCorrelator corrDef = null;
-		SqrlCorrelator corrGhi = null;
 		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence()) {
 			corrAbc = sqrlPersistence.createCorrelator(abc, minutesFromNow(3));
 			corrDef = sqrlPersistence.createCorrelator(def, minutesFromNow(3));
-			corrGhi = sqrlPersistence.createCorrelator(ghi, minutesFromNow(3));
 			sqrlPersistence.closeCommit();
 		}
 
@@ -77,7 +74,7 @@ public class SqrlAuthStateEventServletTest {
 
 		Map<String, SqrlAuthenticationStatus> statusChangedTable = null;
 		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
-			statusChangedTable = sqrlPersistence.fetchSqrlCorrelatorStatusChanged(correlatorToCurrentStatusTable);
+			statusChangedTable = sqrlPersistence.fetchSqrlCorrelatorStatusUpdates(correlatorToCurrentStatusTable);
 			sqrlPersistence.closeCommit();
 		}
 
@@ -141,6 +138,7 @@ public class SqrlAuthStateEventServletTest {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private static List<SqrlMiniCorrelator> fetchCorrelatorIdsAndState(final List<String> correaltorStringList) throws NoSuchFieldException {
 		if(correaltorStringList.isEmpty()) {
 			return Collections.emptyList();
@@ -157,6 +155,7 @@ public class SqrlAuthStateEventServletTest {
 			final TypedQuery<SqrlMiniCorrelator> query = entityManager.createQuery(
 					queryString, SqrlMiniCorrelator.class);
 
+			@SuppressWarnings("rawtypes") // need to map to SqrlMiniCorrelator or Object[] below
 			final List results = query.getResultList();
 			List<SqrlMiniCorrelator> toReturn = null;
 			//Work around a JPA bug?

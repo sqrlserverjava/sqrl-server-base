@@ -26,7 +26,7 @@ public class SqrlConfigTest {
 		jaxbContext = JAXBContext.newInstance(SqrlConfig.class);
 	}
 
-	private static final String EXPECTED_TEST_MARSHALL = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sqrlConfig><nutValidityInSeconds>900000</nutValidityInSeconds><qrCodeFileType>PNG</qrCodeFileType><sqrlPersistenceFactoryClass>com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory</sqrlPersistenceFactoryClass><correlatorCookieName>sqrlcorrelator</correlatorCookieName><firstNutCookieName>sqrlfirstnut</firstNutCookieName><cleanupTaskExecInMinutes>15</cleanupTaskExecInMinutes></sqrlConfig>";
+	private static final String EXPECTED_TEST_MARSHALL = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sqrlConfig><nutValidityInSeconds>900000</nutValidityInSeconds><qrCodeFileType>PNG</qrCodeFileType><sqrlPersistenceFactoryClass>com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory</sqrlPersistenceFactoryClass><correlatorCookieName>sqrlcorrelator</correlatorCookieName><clientAuthStateUpdaterClass>com.MyClass</clientAuthStateUpdaterClass><cleanupTaskExecInMinutes>15</cleanupTaskExecInMinutes><firstNutCookieName>sqrlfirstnut</firstNutCookieName></sqrlConfig>";
 
 	/**
 	 * Basic test to ensure we don't break {@link SqrlConfig} JAXB marshalling by trying to do something illegal (try
@@ -35,6 +35,7 @@ public class SqrlConfigTest {
 	@Test
 	public void testMarshall() throws Exception {
 		final SqrlConfig config = new SqrlConfig();
+		config.setClientAuthStateUpdaterClass("com.MyClass");
 		final Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 		final StringWriter writer = new StringWriter();
 		jaxbMarshaller.marshal(config, writer);

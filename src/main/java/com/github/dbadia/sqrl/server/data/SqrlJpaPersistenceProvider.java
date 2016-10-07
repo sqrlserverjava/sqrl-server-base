@@ -30,7 +30,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
  * The default implementation of {@link SqrlPersistence} which uses JPA in order to provide SQL and no-SQL connectivity.
  * <p>
  * Web apps should not use this class directly, instead {@link SqrlServerOperations} should be used
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -38,6 +38,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	public static final String PERSISTENCE_UNIT_NAME = "javasqrl-persistence";
 	private static final Logger logger = LoggerFactory.getLogger(SqrlJpaPersistenceProvider.class);
 
+	private static final String PARAM_CORRELATOR = "correlator";
 	private static EntityManagerFactory	entityManagerFactory = Persistence.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
 	private static final Map<EntityManager, Long> LAST_USED_TIME_TABLE = new WeakHashMap<>();
 	// Need strong references so we can check that it was closed, will be removed below
@@ -139,7 +140,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		return (SqrlCorrelator) returnOneOrNull(
 				entityManager.createQuery("SELECT i FROM SqrlCorrelator i WHERE i.value = :correlator")
-				.setParameter("correlator", sqrlCorrelatorString).getResultList());
+				.setParameter(PARAM_CORRELATOR, sqrlCorrelatorString).getResultList());
 	}
 
 	@Override
@@ -168,7 +169,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		final TypedQuery<SqrlCorrelator> query = entityManager.createQuery(buf.toString(), SqrlCorrelator.class);
 		int i = 0;
 		for (final String correlatorString : correlatorStringSet) {
-			query.setParameter("correlator" + (i++), correlatorString);
+			query.setParameter(PARAM_CORRELATOR + (i++), correlatorString);
 		}
 
 		// Parse the result into a table
@@ -181,7 +182,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	}
 
 	@Override
-	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusUpdates(
 			final Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable) {
 		updateLastUsed(entityManager);
 		if (correlatorToCurrentStatusTable.isEmpty()) {
@@ -191,8 +192,11 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 		int counter = 0;
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
-			buf.append(" (i.value = :correlator").append(counter)
-			.append(" AND i.authenticationStatus <> :authenticationStatus").append(counter).append(" ) OR");
+			buf.append(" (i.value = :correlator").append(counter);
+			if (entry.getValue() != SqrlAuthenticationStatus.AUTH_COMPLETE) {
+				buf.append(" AND i.authenticationStatus <> :authenticationStatus");
+			}
+			buf.append(counter).append(" ) OR");
 			counter++;
 		}
 		buf.replace(buf.length() - 3, buf.length(), ""); // Remove OR
@@ -200,7 +204,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		counter = 0;
 		final StringBuilder debugBuf = new StringBuilder(buf);
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
-			query.setParameter("correlator" + counter, entry.getKey());
+			query.setParameter(PARAM_CORRELATOR + counter, entry.getKey());
 			query.setParameter("authenticationStatus" + counter, entry.getValue());
 			updateDebugBuf(debugBuf, ":correlator" + counter, entry.getKey());
 			updateDebugBuf(debugBuf, ":authenticationStatus" + counter, entry.getValue().toString());
@@ -365,7 +369,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	/**
 	 * A task which periodically checks the state of various {@link EntityManager} instances to ensure they are being
 	 * closed properly by the library
-	 * 
+	 *
 	 * @author Dave Badia
 	 *
 	 */
@@ -380,7 +384,6 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 				logger.debug("Running EntityManagerMonitorTimerTask");
 				final Iterator<EntityManager> iter = CREATED_BY_STACK_TABLE.keySet().iterator();
 				while (iter.hasNext()) {
-					@SuppressWarnings("squid:HiddenFieldCheck") // false-positive, this is a static inner class
 					final EntityManager entityManager = iter.next();
 					if (!entityManager.isOpen()) {
 						logger.debug("entityManager closed, removing from monitor table");

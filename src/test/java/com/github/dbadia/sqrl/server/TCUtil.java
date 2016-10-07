@@ -44,6 +44,7 @@ public class TCUtil {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static final SqrlConfig buildTestSqrlConfig(final String nutString) throws Exception {
 		final SqrlNutToken nutToken = new SqrlNutToken(new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()),
 				nutString);
@@ -66,6 +67,7 @@ public class TCUtil {
 		return config;
 	}
 
+	@SuppressWarnings("deprecation") // test cases can use deprecated TestSecureRandom
 	public static final SqrlConfig buildTestSqrlConfig() {
 		final SqrlConfig config = new SqrlConfig();
 		config.setServerFriendlyName("Dave Test");
@@ -80,17 +82,6 @@ public class TCUtil {
 		return config;
 	}
 
-	// public static final SqrlPersistence buildEmptySqrlPersistence() {
-	// final SqrlJpaPersistenceProvider persistence = new SqrlJpaPersistenceProvider();
-	// tcEntityManager.getTransaction().begin();
-	// tcEntityManager.createQuery("DELETE FROM SqrlCorrelator m").executeUpdate();
-	// tcEntityManager.createQuery("DELETE FROM SqrlIdentity m").executeUpdate();
-	// tcEntityManager.getTransaction().commit();
-	// // Have to return a new one since
-	// return new SqrlJpaPersistenceProvider();
-	// // return new TestOnlySqrlPersistence2();
-	// }
-
 	public static void setupSqrlPersistence(final String correlatorFromServerParam, final String serverParam)
 			throws Throwable {
 		final SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
@@ -102,6 +93,7 @@ public class TCUtil {
 		sqrlPersistence.closeCommit();
 	}
 
+	@SuppressWarnings("deprecation") // OK for test case use
 	public static SqrlPersistence setupIdk(final String idk, final String correlator, final String serverParam) {
 		final SqrlPersistence persistence = new SqrlJpaPersistenceProvider();
 		final SqrlCorrelator sqrlCorrelator = persistence.createCorrelator(correlator, TCUtil.AWHILE_FROM_NOW);
@@ -118,7 +110,7 @@ public class TCUtil {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param loginRequestUrl
 	 * @param mockDataParams
 	 *            a URI string from the GRC client log such as "client=123&server=456&ids=789"
@@ -176,7 +168,7 @@ public class TCUtil {
 
 	public static SqrlAutoCloseablePersistence createEmptySqrlPersistence() throws NoSuchFieldException {
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
-		EntityManagerFactory entityManagerFactory = extractEntityManagerFactory(sqrlPersistence);
+		final EntityManagerFactory entityManagerFactory = extractEntityManagerFactory(sqrlPersistence);
 		final EntityManager entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
 		// entityManager.createQuery("DELETE FROM SqrlCorrelator m").executeUpdate();
@@ -193,7 +185,7 @@ public class TCUtil {
 		return new SqrlAutoCloseablePersistence(createSqrlPersistence());
 	}
 
-	static EntityManagerFactory extractEntityManagerFactory(SqrlPersistence sqrlPersistence) throws NoSuchFieldException {
+	static EntityManagerFactory extractEntityManagerFactory(final SqrlPersistence sqrlPersistence) throws NoSuchFieldException {
 		SqrlPersistence extracted = sqrlPersistence;
 		if(extracted instanceof SqrlAutoCloseablePersistence) {
 			extracted =  (SqrlPersistence) PrivateAccessor.getField(extracted, "sqrlPersistence");
@@ -208,7 +200,7 @@ public class TCUtil {
 
 	/**
 	 * Performs the SQRL required base64URL encoding
-	 * 
+	 *
 	 * @param toEncode
 	 *            the string to be encoded
 	 * @return the encoded string

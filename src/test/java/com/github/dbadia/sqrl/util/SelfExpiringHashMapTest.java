@@ -19,6 +19,7 @@ public class SelfExpiringHashMapTest {
 
 	@Test
 	public void basicGetTest() throws InterruptedException {
+		@SuppressWarnings("deprecation") // OK for test case use
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
 		map.put("a", "b", 2 * SLEEP_MULTIPLIER);
 		Thread.sleep(1 * SLEEP_MULTIPLIER);
@@ -43,6 +44,7 @@ public class SelfExpiringHashMapTest {
 
 	@Test
 	public void basicExpireTest() throws InterruptedException {
+		@SuppressWarnings("deprecation")
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
 		map.put("a", "b", 2 * SLEEP_MULTIPLIER);
 		Thread.sleep(3 * SLEEP_MULTIPLIER);
@@ -52,6 +54,7 @@ public class SelfExpiringHashMapTest {
 	@Test
 	@Ignore // we don't use renew so we don't care
 	public void basicRenewTest() throws InterruptedException {
+		@SuppressWarnings("deprecation")
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
 		map.put("a", "b", 3 * SLEEP_MULTIPLIER);
 		Thread.sleep(2 * SLEEP_MULTIPLIER);
@@ -63,6 +66,7 @@ public class SelfExpiringHashMapTest {
 	@Test
 	@Ignore // we don't use renew so we don't care
 	public void getRenewTest() throws InterruptedException {
+		@SuppressWarnings("deprecation")
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
 		map.put("a", "b", 3 * SLEEP_MULTIPLIER);
 		Thread.sleep(2 * SLEEP_MULTIPLIER);
@@ -73,6 +77,7 @@ public class SelfExpiringHashMapTest {
 
 	@Test
 	public void multiplePutThenRemoveTest() throws InterruptedException {
+		@SuppressWarnings("deprecation")
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
 		map.put("a", "b", 2 * SLEEP_MULTIPLIER);
 		Thread.sleep(1 * SLEEP_MULTIPLIER);
@@ -85,6 +90,7 @@ public class SelfExpiringHashMapTest {
 
 	@Test
 	public void multiplePutThenGetTest() throws InterruptedException {
+		@SuppressWarnings("deprecation")
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
 		map.put("a", "b", 2 * SLEEP_MULTIPLIER);
 		Thread.sleep(1 * SLEEP_MULTIPLIER);

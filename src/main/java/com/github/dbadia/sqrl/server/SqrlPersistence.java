@@ -12,7 +12,7 @@ import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 
 /**
  * Bridge between the SQRL library and the persistence layer (database, etc)
- * 
+ *
  * @see SqrlJpaPersistenceProvider
  * @author Dave Badia
  *
@@ -21,7 +21,7 @@ public interface SqrlPersistence {
 	/* ***************** SqrlIdentity *********************/
 	/**
 	 * Create a new {@link SqrlIdentity} and enable SQRL authentication
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the idk of the SQRL identity
 	 * @param identityDataTable
@@ -31,7 +31,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Check persistence to see if a user exists with the given sqrlIdk
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID to check for
 	 * @return true if sqrlIdk exists, false otherwise
@@ -40,7 +40,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Fetch the sqrl identity for the the given app user cross reference id
-	 * 
+	 *
 	 * @param appUserXref
 	 *            the app user cross reference value to search by
 	 * @return the SQRL identity for this app user
@@ -50,7 +50,7 @@ public interface SqrlPersistence {
 	/**
 	 * The user has updated their SQRL ID but this application is still using the old one. The application must lookup
 	 * the user by previousSqrlIdk, and replace that SQRL ID with nnewSqrlIdk
-	 * 
+	 *
 	 * @param previousSqrlIdk
 	 *            the old SQRL ID, which is present in persistence
 	 * @param newSqrlIdk
@@ -60,7 +60,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Invoked when the user chooses to remove SQRL authentication for this site
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID which represents the user.
 	 * @throws SqrlPersistenceException
@@ -71,7 +71,7 @@ public interface SqrlPersistence {
 	/**
 	 * Called to assign a native user cross reference to the given SQRL identity object so when SQRL authentication
 	 * takes place, the application knows which user has authenticated
-	 * 
+	 *
 	 * @param sqrlIdentityId
 	 *            the SQRL identity to update
 	 * @param nativeUserXref
@@ -89,7 +89,7 @@ public interface SqrlPersistence {
 	 * <li>Follow the webapp flow as if the user logged in via username and password. That is, lookup customer data and
 	 * display the relevant content
 	 * <p>
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID which the user authenticated with.
 	 * @param correlator
@@ -103,7 +103,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Invoked to determine if SQRL auth is enabled for a user
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID which represents the user.
 	 * @return the auth state of the SQRL user or {@link SqrlEaabledState#NOT_EXIST} if there is none
@@ -114,7 +114,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Invoked when the user chooses to temporarily disable SQRL authentication for this site
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID which represents the user.
 	 * @param state
@@ -130,7 +130,7 @@ public interface SqrlPersistence {
 	 * <b>NOTE<b> this is often the first call made for a new SQRL identity, so if the identity does not currently
 	 * exist, it must be created
 	 * <p>
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID which the user authenticated with.
 	 * @param dataToStore
@@ -144,7 +144,7 @@ public interface SqrlPersistence {
 	 * Request to the data store to retrieve user specific SQRL data that was previously stored via
 	 * {@link #userAuthenticatedViaSqrl(String, String, Map)}
 	 * <p>
-	 * 
+	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID which the user authenticated with.
 	 * @param toFetch
@@ -156,7 +156,7 @@ public interface SqrlPersistence {
 	/* ***************** SQRL USED TOKENS *********************/
 	/**
 	 * Check persistence to see if this token has already been used
-	 * 
+	 *
 	 * @param nutTokenString
 	 *            the {@link SqrlNutToken} token in sqbase64 format as received from the client the token sent by the
 	 *            SQRL client in the request
@@ -168,7 +168,7 @@ public interface SqrlPersistence {
 	 * Mark the given token as used in persistence. After this call, any subsequent calls to
 	 * {@link #hasTokenBeenUsed(SqrlNutToken)} must return true for this token until expiryTime. Once the expiryTime has
 	 * been reached, persistence cleanup can occur and this token can be deleted from persistence
-	 * 
+	 *
 	 * @param nutTokenString
 	 *            the {@link SqrlNutToken} token in sqbase64 format as received from the client
 	 * @param expiryTime
@@ -179,7 +179,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Fetch a short lived name/value for a given correlator and name
-	 * 
+	 *
 	 * @param correlator
 	 *            correlator to which this data belongs
 	 * @param name
@@ -192,7 +192,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Create a new correlator instance in the persistence
-	 * 
+	 *
 	 * @param correlatorString
 	 *            the correlator value string
 	 * @param expiryTime
@@ -203,7 +203,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Fetch the correlator object for the given string value, or throw an exception if it does not exist
-	 * 
+	 *
 	 * @param correlator
 	 *            the string value to search for
 	 * @return the non-null correlator object
@@ -212,7 +212,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * Fetch the correlator object for the given string value
-	 * 
+	 *
 	 * @param correlator
 	 *            the string value to search for
 	 * @return the correlator object or null if it does not exist
@@ -243,7 +243,15 @@ public interface SqrlPersistence {
 
 	Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(Set<String> correlatorStringSet);
 
-	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusChanged(
+	/**
+	 * Checks for correlators who's status has changed or is {@link SqrlAuthenticationStatus#AUTH_COMPLETE}. Complete
+	 * state is always returned in case the client didn't get the update the first time it was sent
+	 *
+	 * @param correlatorToCurrentStatusTable
+	 *            table of string correlators and their current state as sent by the browser
+	 * @return table of correlators and their updated (or complete) states
+	 */
+	public Map<String, SqrlAuthenticationStatus> fetchSqrlCorrelatorStatusUpdates(
 			Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable);
 
 	public void deleteSqrlCorrelator(SqrlCorrelator sqrlCorrelator);

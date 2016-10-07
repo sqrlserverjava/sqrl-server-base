@@ -1,9 +1,21 @@
 package com.github.dbadia.sqrl.server;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
-
+/**
+ * For use when SQRL auto refresh is desired so that a user is automatically logged in upon a successful SQRL
+ * authentication. There is a pre-built implementation of this class which uses the atmosphere framework. See TODO
+ *
+ * @author Dave Badia
+ *
+ */
 public interface ClientAuthStateUpdater {
-	public void initSqrl(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations);
+	/**
+	 * Invoked during initialization so that the {@link ClientAuthStateUpdater} has access to the resources it may need
+	 */
+	public void initSqrl(final SqrlConfig sqrlConfig, SqrlAuthStateMonitor sqrlAuthStateMonitor);
+
+	/**
+	 * Invoked by {@link SqrlAuthStateMonitor} when it is time to respond to a browsers polling request with an update
+	 */
 	public void pushStatusUpdateToBrowser(final String browserSessionId, final SqrlAuthenticationStatus oldAuthStatus,
 			final SqrlAuthenticationStatus newAuthStatus);
 }

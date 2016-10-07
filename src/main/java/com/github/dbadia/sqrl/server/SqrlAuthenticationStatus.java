@@ -7,4 +7,8 @@ public enum SqrlAuthenticationStatus {
 		return this.toString().startsWith("ERROR_");
 	}
 
+	public boolean isUpdatesForThisCorrelatorComplete() {
+		return (isErrorStatus() || this == AUTH_COMPLETE);
+	}
+
 }

@@ -13,7 +13,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 
 // @formatter:off
 /**
- * Bean which stores our server-side SQRL configuration settings. 
+ * Bean which stores our server-side SQRL configuration settings.
  * <p/>
  * <b>Required</b>fields to be set are:
  * <ul>
@@ -21,7 +21,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
  * <li>{@link #backchannelServletPath}
  * </ul><p>
  *  <b>Recommended</b> fields to be set are:
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -29,14 +29,14 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SqrlConfig {
-	public static enum ImageFormat {
+	public enum ImageFormat {
 		PNG, JPG
 	}
 
 	/**
 	 * The amount of time the SQRL "Nut" will be valid for. That is the maximum amount of time that can pass between us
 	 * (server) generating the QR code and us receiving the clients response
-	 * 
+	 *
 	 * It is strongly recommended that this value be set to 15 minutes (default) or more as this is a new protocol. The
 	 * user may use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it
 	 * works etc.
@@ -85,10 +85,10 @@ public class SqrlConfig {
 	private String correlatorCookieName = "sqrlcorrelator";
 
 	/**
-	 * The cookie name to use for the SQRL first nut during authentication
+	 * The full classname of the {@link ClientAuthStateUpdater} that will push status updates to the client browser
 	 */
 	@XmlElement
-	private String firstNutCookieName = "sqrlfirstnut";
+	private String clientAuthStateUpdaterClass = null;
 
 	/**
 	 * The frequency with which to execute {@link SqrlPersistence#cleanUpExpiredEntries()} via {@link java.util.Timer};
@@ -96,6 +96,12 @@ public class SqrlConfig {
 	 */
 	@XmlElement
 	private int cleanupTaskExecInMinutes = 15;
+
+	/**
+	 * The cookie name to use for the SQRL first nut during authentication
+	 */
+	@XmlElement
+	private String firstNutCookieName = "sqrlfirstnut";
 
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;
@@ -111,7 +117,7 @@ public class SqrlConfig {
 
 	/**
 	 * Set the length of time (in seconds) that the nut will be valid for
-	 * 
+	 *
 	 * @param nutValidityInSeconds
 	 * @throws IllegalArgumentException
 	 *             if nutValidityInSeconds is less than 0
@@ -156,7 +162,7 @@ public class SqrlConfig {
 	 * Required: sets the URL to the servlet endpoint which will handle SQRL client requests, can be either a full URL,
 	 * a full URI, or a partial URI.
 	 * <p/>
-	 * 
+	 *
 	 * <table summary="Backchannel Servlet Path Examples">
 	 *   <tr>
 	 *      <td>Setting</td><td>Login URL</td><td>Computed BC url</td>
@@ -171,7 +177,7 @@ public class SqrlConfig {
 	 *      <td>sqrlbc</td><td>https://sqrljava.tech/sqrlexample/login</td><td>https://sqrljava.tech/sqrlexample/<b>sqrlbc</b></td>
 	 *   </tr>
 	 * </table>
-	 * 
+	 *
 	 * @param backchannelServletPath
 	 *            the servlet endpoint which will handle SQRL client requests.  Can be a full URL,
 	 * a full URI, or a partial URI
@@ -223,5 +229,13 @@ public class SqrlConfig {
 
 	public void setCleanupTaskExecInMinutes(final int cleanupTaskExecInMinutes) {
 		this.cleanupTaskExecInMinutes = cleanupTaskExecInMinutes;
+	}
+
+	public String getClientAuthStateUpdaterClass() {
+		return clientAuthStateUpdaterClass;
+	}
+
+	public void setClientAuthStateUpdaterClass(final String clientAuthStateUpdaterClass) {
+		this.clientAuthStateUpdaterClass = clientAuthStateUpdaterClass;
 	}
 }

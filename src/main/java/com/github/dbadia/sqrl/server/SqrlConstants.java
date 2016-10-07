@@ -22,7 +22,6 @@ public class SqrlConstants {
 	public static final String	FORWARD_SLASH		= "/";
 
 	public static final CharSequence	FORWARD_SLASH_X2_LOCALHOST	= "//localhost";
-	@SuppressWarnings("CERT:MSC03-J")
 	public static final CharSequence	FORWARD_SLASH_X2_127_0_0_1	= "//127.0.0.1";
 	public static final int				AES_KEY_LENGTH				= 16;
 	public static final String			CLIENT_PARAM_CORRELATOR		= "cor";
