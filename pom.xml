@@ -2,8 +2,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.dbadia.sqrl</groupId>
-	<artifactId>sqrl-server-lib</artifactId>
-	<version>0.0.5-SNAPSHOT</version>
+	<artifactId>sqrl-server-base</artifactId>
+	<version>0.6.0-SNAPSHOT</version>
 	<name>SQRL Server Base Library</name>
 	<description>Library that implements the server side portions of the SQRL protocol.</description>
 	<packaging>jar</packaging>
@@ -22,7 +22,7 @@
 	<developers>
 		<developer>
 			<name>Dave Badia</name>
-			<email>dbadiaoss@gmail.com</email>
+			<email>dbmadiaoss@gmail.com</email>
 		</developer>
 	</developers>
 
@@ -42,10 +42,20 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.21</version>
 		</dependency>
-		<!-- PROVIDED -->
-		<!-- <dependency> <groupId>javax</groupId> <artifactId>javaee-api</artifactId> 
-			<version>6.0</version> <scope>provided</scope> </dependency> -->
+		<!-- https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink -->
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>eclipselink</artifactId>
+			<version>2.6.4</version>
+		</dependency>
+
 		<!-- TEST -->
+		<dependency>
+			<groupId>org.glassfish.main.extras</groupId>
+			<artifactId>glassfish-embedded-all</artifactId>
+			<version>3.1.2.2</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -111,12 +121,6 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.main.extras</groupId>
-			<artifactId>glassfish-embedded-all</artifactId>
-			<version>3.1.2.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>6.0.3</version>
@@ -127,6 +131,20 @@
 			<artifactId>eclipselink</artifactId>
 			<version>2.6.3</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.main.extras</groupId>
+			<artifactId>glassfish-embedded-all</artifactId>
+			<version>3.1.2.2</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- PROVIDED -->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>7.0</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -139,6 +157,16 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<classpathDependencyExcludes>
+						<!-- exclude code absent api -->
+						<classpathDependencyExclude>javax:javaee-api</classpathDependencyExclude>
+					</classpathDependencyExcludes>
 				</configuration>
 			</plugin>
 		</plugins>
