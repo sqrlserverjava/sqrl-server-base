@@ -42,7 +42,7 @@ public class SqrlConfig {
 	 * works etc.
 	 */
 	@XmlElement
-	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toMillis(15);
+	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toSeconds(15);
 
 	@XmlElement
 	private ImageFormat qrCodeFileType = ImageFormat.PNG;

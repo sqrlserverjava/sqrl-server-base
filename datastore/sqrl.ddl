@@ -3,7 +3,7 @@ CREATE TABLE sqrl_correlator (id BIGINT NOT NULL, authenticationStatus VARCHAR(2
 CREATE TABLE sqrl_identity_flag (id BIGINT NOT NULL, value TINYINT(1) default 0 NOT NULL, name VARCHAR(255) NOT NULL);
 CREATE TABLE sqrl_identity_data (id BIGINT NOT NULL, value VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL);
 CREATE TABLE sqrl_used_nut_token (id BIGINT NOT NULL, value VARCHAR(255) NOT NULL);
-CREATE TABLE sqrl_transient_auth_data (id BIGINT NOT NULL, value VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL);
+CREATE TABLE sqrl_transient_auth_data (id BIGINT NOT NULL, value VARCHAR(2000) NOT NULL, name VARCHAR(255) NOT NULL);
 -- INDEXES
 ALTER TABLE `sqrl_identity` ADD INDEX(`native_user_xref`);
 ALTER TABLE `sqrl_identity` ADD UNIQUE INDEX(`idk`);

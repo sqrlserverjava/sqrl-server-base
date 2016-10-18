@@ -6,7 +6,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -24,7 +23,7 @@ import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory;
 
 /**
  * Helper class to {@link SqrlConfig}
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -46,7 +45,7 @@ public class SqrlConfigOperations {
 
 	/**
 	 * Internal use only.
-	 * 
+	 *
 	 * @param config
 	 *            the SQRL config object
 	 */
@@ -54,18 +53,9 @@ public class SqrlConfigOperations {
 		this.config = config;
 
 		// SecureRandom init
-		SecureRandom secureRandom = config.getSecureRandom();
+		final SecureRandom secureRandom = config.getSecureRandom();
 		if (secureRandom == null) {
-			logger.warn("No SecureRandom set, initializing");
-			try {
-				secureRandom = SecureRandom.getInstanceStrong();
-			} catch (final NoSuchAlgorithmException e) {
-				// Per SecureRandom.getInstanceStrong() javadoc: Every implementation of the Java platform is required
-				// to
-				// support at least one strong {@code SecureRandom} implementation.
-				throw new IllegalStateException(
-						"SecureRandom.getInstanceStrong() threw NoSuchAlgorithmException: " + e.getMessage(), e);
-			}
+			throw new IllegalStateException("config.getSecureRandom() was null");
 		}
 
 		// Add extra entropy to the secureRandom - setSeed ADDs entropy, it does not replace existing entropy
@@ -140,7 +130,7 @@ public class SqrlConfigOperations {
 
 	/**
 	 * Internal use only. Determines backchannel request URL based on the loginPageRequest
-	 * 
+	 *
 	 * @param loginPageRequest
 	 *            the login page request
 	 * @return the URI where SQRL client requests should be sent
@@ -184,7 +174,7 @@ public class SqrlConfigOperations {
 
 	/**
 	 * Converts a URL with http or https to qrl or sqrl, respectively
-	 * 
+	 *
 	 * @param fullBackChannelUrl
 	 * @return
 	 */
@@ -209,7 +199,7 @@ public class SqrlConfigOperations {
 
 	/**
 	 * Internal use only. Computes the subsequent URI path for the SQRL client
-	 * 
+	 *
 	 * @param sqrlBackchannelRequest
 	 *            the original SQRL client request
 	 * @return the URI string to be sent back to the client

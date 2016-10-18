@@ -2,6 +2,7 @@ package com.github.dbadia.sqrl.server;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +21,14 @@ public class SqrlAuthStateMonitor implements Runnable {
 	 */
 	private final Map<String, CorrelatorToMonitor> monitorTable;
 
+	private final Map<String, String> sessionIdToCorrelatorTable;
+
 	public SqrlAuthStateMonitor(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations,
 			final ClientAuthStateUpdater clientAuthStateUpdater) {
 		this.clientAuthStateUpdater = clientAuthStateUpdater;
 		this.sqrlServerOperations = sqrlServerOperations;
-		monitorTable = new SelfExpiringHashMap<>(sqrlConfig.getNutValidityInSeconds());
+		monitorTable = new SelfExpiringHashMap<>(TimeUnit.SECONDS.toMillis(sqrlConfig.getNutValidityInSeconds()));
+		sessionIdToCorrelatorTable = new ConcurrentHashMap<>();
 	}
 
 	/**
@@ -39,13 +43,28 @@ public class SqrlAuthStateMonitor implements Runnable {
 	 */
 	public void monitorCorrelatorForChange(final String browserSessionId, final String correlatorString,
 			final SqrlAuthenticationStatus browserStatus) {
+		final String oldCorrelatorString = sessionIdToCorrelatorTable.remove(browserSessionId);
+		if (oldCorrelatorString != null) {
+			// Since the browser sent a new correlator, we can stop monitoring the old one
+			monitorTable.remove(oldCorrelatorString);
+			// TODO: Warn if null
+		}
 		monitorTable.put(correlatorString, new CorrelatorToMonitor(browserSessionId, browserStatus));
+		sessionIdToCorrelatorTable.put(browserSessionId, correlatorString);
 	}
 
-	public void stopMonitoringCorrelator(final String browserSessionId) {
-		if (monitorTable.remove(browserSessionId) == null) {
+	public void stopMonitoringSessionId(final String browserSessionId) {
+		final String correlatorString = sessionIdToCorrelatorTable.remove(browserSessionId);
+		if (correlatorString != null && monitorTable.remove(correlatorString) == null) {
 			logger.warn("Tried to remove browserSessionId {} from monitorTable but it wasn't present",
-					browserSessionId);
+					correlatorString);
+		}
+	}
+
+	public void stopMonitoringCorrelator(final String correlatorString) {
+		if (correlatorString != null && monitorTable.remove(correlatorString) == null) {
+			logger.warn("Tried to remove browserSessionId {} from monitorTable but it wasn't present",
+					correlatorString);
 		}
 	}
 

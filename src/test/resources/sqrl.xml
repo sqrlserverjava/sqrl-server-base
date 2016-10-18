@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sqrlConfig>
+    <backchannelServletPath>sqrlbc</backchannelServletPath>
+    <!-- Be sure to change this key! -->
+    <aesKeyBytes>DhMncY4ErDcLRfwfyeN02Q==</aesKeyBytes>
+    <clientAuthStateUpdaterClass>com.github.dbadia.sqrl.atmosphere.AtmosphereClientAuthStateUpdater</clientAuthStateUpdaterClass>
+</sqrlConfig>
