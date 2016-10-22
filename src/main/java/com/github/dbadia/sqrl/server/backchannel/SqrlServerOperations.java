@@ -115,8 +115,8 @@ public class SqrlServerOperations {
 				final ClientAuthStateUpdater clientAuthStateUpdater = (ClientAuthStateUpdater) object;
 				authStateMonitor = new SqrlAuthStateMonitor(config, this, clientAuthStateUpdater);
 				clientAuthStateUpdater.initSqrl(config, authStateMonitor);
-				monitorFuture = EXECUTOR_SERVICE.scheduleAtFixedRate(authStateMonitor, 1, 1, TimeUnit.SECONDS); // TODO:
-				// configurable
+				// TODO: move to config
+				monitorFuture = EXECUTOR_SERVICE.scheduleAtFixedRate(authStateMonitor, 1, 1, TimeUnit.SECONDS);
 			} catch (final ReflectiveOperationException e) {
 				throw new IllegalStateException("SQRL: Error instantiating ClientAuthStateUpdaterClass of " + classname,
 						e);
