@@ -49,7 +49,7 @@ public class TCUtil {
 		final SqrlNutToken nutToken = new SqrlNutToken(new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()),
 				nutString);
 
-		final SqrlConfig config = new TCSqrlConfig(nutToken.getIssuedTimestamp());
+		final SqrlConfig config = new TCSqrlConfig(nutToken.getIssuedTimestampMillis());
 		// Set SqrlServerOperations counter to generate the expected value
 		final AtomicInteger sqrlServerOperationscounter = (AtomicInteger) PrivateAccessor
 				.getField(SqrlServerOperations.class, "COUNTER");
@@ -177,6 +177,9 @@ public class TCUtil {
 			entityManager.remove(object);
 		}
 		for (final Object object : entityManager.createQuery("SELECT e FROM SqrlIdentity e").getResultList()) {
+			entityManager.remove(object);
+		}
+		for (final Object object : entityManager.createQuery("SELECT e FROM SqrlUsedNutToken e").getResultList()) {
 			entityManager.remove(object);
 		}
 		entityManager.getTransaction().commit();

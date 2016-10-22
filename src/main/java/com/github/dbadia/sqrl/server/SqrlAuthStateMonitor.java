@@ -80,17 +80,4 @@ public class SqrlAuthStateMonitor implements Runnable {
 			logger.error("Caught exception in SqrlAuthMonitor.run()", t);
 		}
 	}
-
-	private static class CorrelatorToMonitor {
-		private final String browserSessionId;
-		private final SqrlAuthenticationStatus browserStatus;
-
-		public CorrelatorToMonitor(final String atmosphereSessionId,
-				final SqrlAuthenticationStatus browserStatus) {
-			super();
-			this.browserSessionId = atmosphereSessionId;
-			this.browserStatus = browserStatus;
-		}
-	}
-
 }

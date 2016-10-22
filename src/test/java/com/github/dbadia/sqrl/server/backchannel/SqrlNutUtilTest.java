@@ -182,7 +182,7 @@ public class SqrlNutUtilTest {
 		final int nutValidityInSeconds = 1000;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config);
-		final long nutIssuedTime = nut.getIssuedTimestamp();
+		final long nutIssuedTime = nut.getIssuedTimestampMillis();
 		final long expiresAt = SqrlNutTokenUtil.computeNutExpiresAt(nut, config);
 		assertTrue(expiresAt > nutIssuedTime);
 		assertEquals(nutValidityInSeconds * 1000, expiresAt - nutIssuedTime);
@@ -193,7 +193,7 @@ public class SqrlNutUtilTest {
 		final int nutValidityInSeconds = 180;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config);
-		final long nutIssuedTime = nut.getIssuedTimestamp();
+		final long nutIssuedTime = nut.getIssuedTimestampMillis();
 		final long expiresAt = SqrlNutTokenUtil.computeNutExpiresAt(nut, config);
 		assertTrue(expiresAt > nutIssuedTime);
 		assertEquals(nutValidityInSeconds * 1000, expiresAt - nutIssuedTime);
@@ -211,7 +211,7 @@ public class SqrlNutUtilTest {
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
 		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
-		final long nutIssuedTime = nut.getIssuedTimestamp();
+		final long nutIssuedTime = nut.getIssuedTimestampMillis();
 		final long expiresAt = SqrlNutTokenUtil.computeNutExpiresAt(nut, config);
 		assertTrue(expiresAt > nutIssuedTime);
 		assertEquals(nutValidityInSeconds * 1000, expiresAt - nutIssuedTime);

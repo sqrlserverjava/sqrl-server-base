@@ -3,9 +3,7 @@ package com.github.dbadia.sqrl.server.data;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -60,11 +58,6 @@ public class SqrlCorrelator implements Serializable {
 	@Column(name = "value")
 	private final Map<String, String> transientAuthDataTable = new HashMap<>();
 
-	@ElementCollection
-	@CollectionTable(name = "sqrl_used_nut_token", joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
-	@Column(name = "value")
-	private final Set<String> usedNutTokenList = new HashSet<>();
-
 	@ManyToOne
 	@JoinColumn(name = "authenticated_identity", nullable = true)
 	private SqrlIdentity authenticatedIdentity;
@@ -88,10 +81,6 @@ public class SqrlCorrelator implements Serializable {
 
 	public Map<String, String> getTransientAuthDataTable() {
 		return transientAuthDataTable;
-	}
-
-	protected Set<String> getUsedNutTokenList() {
-		return usedNutTokenList;
 	}
 
 	public SqrlIdentity getAuthenticatedIdentity() {
@@ -130,8 +119,6 @@ public class SqrlCorrelator implements Serializable {
 		builder.append(expiryTime);
 		builder.append(", transientAuthDataTable=");
 		builder.append(transientAuthDataTable);
-		builder.append(", usedNutTokenList=");
-		builder.append(usedNutTokenList);
 		builder.append(", authenticatedIdentity=");
 		builder.append(authenticatedIdentity);
 		builder.append("]");
@@ -147,7 +134,6 @@ public class SqrlCorrelator implements Serializable {
 		result = prime * result + ((expiryTime == null) ? 0 : expiryTime.hashCode());
 		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((transientAuthDataTable == null) ? 0 : transientAuthDataTable.hashCode());
-		result = prime * result + ((usedNutTokenList == null) ? 0 : usedNutTokenList.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -179,11 +165,6 @@ public class SqrlCorrelator implements Serializable {
 			if (other.transientAuthDataTable != null)
 				return false;
 		} else if (!transientAuthDataTable.equals(other.transientAuthDataTable))
-			return false;
-		if (usedNutTokenList == null) {
-			if (other.usedNutTokenList != null)
-				return false;
-		} else if (!usedNutTokenList.equals(other.usedNutTokenList))
 			return false;
 		if (value == null) {
 			if (other.value != null)

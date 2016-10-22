@@ -31,7 +31,7 @@ public class SqrlNutTest {
 		assertEquals(inetInt, nut.getInetInt());
 		assertEquals(counter, nut.getCounter());
 		// Note that getTimestamp will remove millis since the Nut only has second granularity
-		assertEquals(1461244576000L, nut.getIssuedTimestamp());
+		assertEquals(1461244576000L, nut.getIssuedTimestampMillis());
 		assertEquals(random, nut.getRandomInt());
 		assertEquals(counter, nut.getCounter());
 		assertEquals(22, nut.asSqBase64EncryptedNut().length());
@@ -51,7 +51,7 @@ public class SqrlNutTest {
 		final SqrlNutToken nut = new SqrlNutToken(configOps, "QwJJFrvH1jBXakjOh_vVqg");
 		assertEquals(4, nut.getInetInt());
 		assertEquals(234, nut.getCounter());
-		assertEquals(1461244576000L, nut.getIssuedTimestamp());
+		assertEquals(1461244576000L, nut.getIssuedTimestampMillis());
 		assertEquals(6, nut.getRandomInt());
 	}
 }

@@ -124,7 +124,7 @@ public class SqrlNutTokenUtil {
 		if (now > nutExpiryMs) {
 			tifBuilder.addFlag(SqrlTif.TIF_TRANSIENT_ERROR);
 			throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader() + "Nut expired by "
-					+ (nutExpiryMs - now) + "ms, nut timetamp ms=" + nutToken.getIssuedTimestamp()
+					+ (nutExpiryMs - now) + "ms, nut timetamp ms=" + nutToken.getIssuedTimestampMillis()
 					+ ", expiry is set to " + config.getNutValidityInSeconds() + " seconds");
 		}
 		// Mark the token as used since we will process this request
@@ -148,7 +148,7 @@ public class SqrlNutTokenUtil {
 	 */
 	public static long computeNutExpiresAt(final SqrlNutToken nutToken, final SqrlConfig config) {
 		final long nutValidityMillis = config.getNutValidityInSeconds() * 1000L;
-		return nutToken.getIssuedTimestamp() + nutValidityMillis;
+		return nutToken.getIssuedTimestampMillis() + nutValidityMillis;
 	}
 
 	private static int packInet6Address(final Inet6Address requesterIpAddress, final SqrlConfig config)

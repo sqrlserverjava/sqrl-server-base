@@ -16,7 +16,7 @@ import com.github.dbadia.sqrl.server.SqrlUtil;
 
 /**
  * The SQRL "Nut" one time use (nonce) token as described on https://www.grc.com/sqrl/server.htm<br/>
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -32,7 +32,7 @@ public class SqrlNutToken {
 	private final String	base64UrlEncryptedNut;
 
 	/**
-	 * 
+	 *
 	 * @param inetInt
 	 * @param config
 	 * @param counter
@@ -119,14 +119,15 @@ public class SqrlNutToken {
 	}
 
 	/**
-	 * Creation time of the Nut in standard java millis; Note this value will most likely be different than what was
-	 * passed in the construtor we accepted millis but the nut only has second granularity. For example, if
-	 * {@link SqrlNutToken#Nut(int, SqrlConfig, int, long, int)} was called with a timestamp of
-	 * <code>1463948680679</code>, then {@link #getIssuedTimestamp()} would return <code>1463948680000</code>
-	 * 
-	 * @return the time at which the Nut token was created with second precision
+	 * Creation time of the Nut in standard java millis format, but with second granularity; the millis value will
+	 * always be 0000.
+	 *
+	 * @return the millis time at which the Nut token was created with <b>second precision</b>. For example, if
+	 *         {@link SqrlNutToken#Nut(int, SqrlConfig, int, long, int)} was called with a timestamp of
+	 *         <code>1463948680679</code>, then this would return <code>1463948680000</code>
+	 *
 	 */
-	public long getIssuedTimestamp() {
+	public long getIssuedTimestampMillis() {
 		return issuedTimestamp;
 	}
 
@@ -134,7 +135,7 @@ public class SqrlNutToken {
 		return randomInt;
 	}
 
-	public String asSqBase64EncryptedNut() {
+	public String asSqBase64EncryptedNut() { // TODO: rename to asSqrl
 		return base64UrlEncryptedNut;
 	}
 

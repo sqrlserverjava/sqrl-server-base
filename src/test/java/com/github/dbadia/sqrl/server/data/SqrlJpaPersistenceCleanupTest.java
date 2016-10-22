@@ -1,8 +1,9 @@
 package com.github.dbadia.sqrl.server.data;
 
-import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
@@ -36,62 +37,15 @@ public class SqrlJpaPersistenceCleanupTest {
 	}
 
 	@Test
-	public void testDateSetToLongest_NutIsLongest() throws Throwable {
-		// Setup
-		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
-		final long now = System.currentTimeMillis();
-		final String keepCorrelator = "keep";
-		SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator("keep", new Date(now + 5000));
-		sqrlPersistence.closeCommit();
-
-		// Execute
-		sqrlPersistence = TCUtil.createSqrlPersistence();
-		final Date expectedDate = new Date(now + 6000);
-		sqrlPersistence.markTokenAsUsed(keepCorrelator, "nutTokenKeep1", expectedDate);
-		sqrlPersistence.closeCommit();
-
-		// Validate
-		sqrlPersistence = TCUtil.createSqrlPersistence();
-		sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(keepCorrelator);
-		assertEquals(expectedDate, sqrlCorrelator.getExpiryTime());
-		sqrlPersistence.closeCommit();
-	}
-
-	@Test
-	public void testDateSetToLongest_CorrelatorIsLongest() throws Throwable {
-		// Setup
-		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
-		final long now = System.currentTimeMillis();
-		final String keepCorrelator = "keep";
-		final Date expectedDate = new Date(now + 5000);
-		SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator("keep", expectedDate);
-		sqrlPersistence.closeCommit();
-
-		// Execute
-		sqrlPersistence = TCUtil.createSqrlPersistence();
-		sqrlPersistence.markTokenAsUsed(keepCorrelator, "nutTokenKeep1", expectedDate);
-		sqrlPersistence.closeCommit();
-
-		// Validate
-		sqrlPersistence = TCUtil.createSqrlPersistence();
-		sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(keepCorrelator);
-		assertEquals(expectedDate, sqrlCorrelator.getExpiryTime());
-		sqrlPersistence.closeCommit();
-	}
-
-	@Test
-	public void testCleanup() throws Throwable {
+	public void testCleanupCorrelator() throws Throwable {
 		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 
 		final long now = System.currentTimeMillis();
 		final String keepCorrelator = "keep";
 		sqrlPersistence.createCorrelator(keepCorrelator, new Date(now + 5000));
-		final Date expectedDate = new Date(now + 6000);
-		sqrlPersistence.markTokenAsUsed(keepCorrelator, "nutTokenKeep1", expectedDate);
 
 		final String deleteCorrelator = "delete";
 		sqrlPersistence.createCorrelator(deleteCorrelator, new Date(now - 1000));
-		sqrlPersistence.markTokenAsUsed(deleteCorrelator, "nutTokenDelete1", new Date(now - 1000));
 		sqrlPersistence.closeCommit();
 
 		// Execute
@@ -108,6 +62,31 @@ public class SqrlJpaPersistenceCleanupTest {
 		} catch (final Exception e) {
 			ObjectAssert.assertInstanceOf(SqrlPersistenceException.class, e);
 		}
+	}
+
+	@Test
+	public void testCleanupNutToken() throws Throwable {
+		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
+
+		final long now = System.currentTimeMillis();
+		final Date expectedDate = new Date(now + 6000);
+		final String keepToken = "nBuewGyan2u2Yx1McUXetQ";
+		sqrlPersistence.markTokenAsUsed("a", keepToken, expectedDate);
+
+		final String deleteToken = "qhDh85lYnwZzMYSrAEnkew";
+		sqrlPersistence.markTokenAsUsed("a", "nutTokenDelete1", new Date(now - 1000));
+		sqrlPersistence.closeCommit();
+
+		// Execute
+		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence.cleanUpExpiredEntries();
+		sqrlPersistence.closeCommit();
+
+		// Verify
+		sqrlPersistence = TCUtil.createSqrlPersistence();
+		assertTrue(sqrlPersistence.hasTokenBeenUsed(keepToken));
+		assertFalse(sqrlPersistence.hasTokenBeenUsed(deleteToken));
+		sqrlPersistence.closeCommit();
 	}
 
 }

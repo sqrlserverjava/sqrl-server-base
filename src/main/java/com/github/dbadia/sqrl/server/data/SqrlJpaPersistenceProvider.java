@@ -259,20 +259,15 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	@Override
 	public boolean hasTokenBeenUsed(final String nutTokenString) {
 		updateLastUsed(entityManager);
-		final SqrlCorrelator sqrlCorrelator = (SqrlCorrelator) returnOneOrNull(entityManager
-				.createQuery("SELECT i FROM SqrlCorrelator i WHERE :nutTokenString MEMBER OF  i.usedNutTokenList")
-				.setParameter("nutTokenString", nutTokenString).getResultList());
-		return sqrlCorrelator != null;
+		return entityManager.find(SqrlUsedNutToken.class, nutTokenString) != null;
 	}
 
 	@Override
+	// TODO: remove correlator arg
 	public void markTokenAsUsed(final String correlatorString, final String nutTokenString, final Date expiryTime) {
 		updateLastUsed(entityManager);
-		final SqrlCorrelator sqrlCorrelator = fetchSqrlCorrelatorRequired(correlatorString);
-		sqrlCorrelator.getUsedNutTokenList().add(nutTokenString);
-		if (sqrlCorrelator.getExpiryTime() == null || sqrlCorrelator.getExpiryTime().before(expiryTime)) {
-			sqrlCorrelator.setExpiryTime(expiryTime);
-		}
+		final SqrlUsedNutToken sqrlUsedNutToken = new SqrlUsedNutToken(nutTokenString, expiryTime);
+		entityManager.persist(sqrlUsedNutToken);
 	}
 
 	@Override
@@ -363,10 +358,17 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	@Override
 	public void cleanUpExpiredEntries() {
-		final int rowsDeleted = entityManager.createQuery("DELETE FROM SqrlCorrelator i WHERE i.expiryTime < :now")
-				.setParameter("now", new Date(), TemporalType.TIMESTAMP).executeUpdate();
+		final Date now = new Date();
+		int rowsDeleted = entityManager.createQuery("DELETE FROM SqrlCorrelator i WHERE i.expiryTime < :now")
+				.setParameter("now", now, TemporalType.TIMESTAMP).executeUpdate();
 		if (rowsDeleted > 0) {
-			logger.info("Cleanup deleted {}", rowsDeleted);
+			logger.info("SqrlCorrelatorc cleanup deleted {} rows", rowsDeleted);
+		}
+
+		rowsDeleted = entityManager.createQuery("DELETE FROM SqrlUsedNutToken i WHERE i.expiryTime < :now")
+				.setParameter("now", now, TemporalType.TIMESTAMP).executeUpdate();
+		if (rowsDeleted > 0) {
+			logger.info("SqrlUsedNutToken cleanup deleted {} rows", rowsDeleted);
 		}
 	}
 
