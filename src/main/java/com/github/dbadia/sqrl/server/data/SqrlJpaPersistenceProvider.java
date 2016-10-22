@@ -349,7 +349,11 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		if (!entityManager.contains(sqrlCorrelator)) {
 			toRemove = fetchSqrlCorrelator(sqrlCorrelator.getCorrelatorString());
 		}
-		entityManager.remove(toRemove);
+		if (toRemove == null) {
+			logger.debug("INFO-ONLY-STACK: Attempt to remove correlator that doesn't exist", new SqrlDebugException());
+		} else {
+			entityManager.remove(toRemove);
+		}
 	}
 
 	@Override

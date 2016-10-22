@@ -1,7 +1,7 @@
 package com.github.dbadia.sqrl.server;
 
+import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -16,19 +16,16 @@ public class SqrlAuthStateMonitor implements Runnable {
 	private final ClientAuthStateUpdater clientAuthStateUpdater;
 	private final SqrlServerOperations sqrlServerOperations;
 	/**
-	 * Table of correlators to be monitored for state changes. key is a correlator string. Entries in this table expire
-	 * automatically
+	 * Table of correlators to be monitored for state changes. key is a correlator string, value is the auth status
+	 * reported by the browser. Entries in this table expire automatically
 	 */
-	private final Map<String, CorrelatorToMonitor> monitorTable;
-
-	private final Map<String, String> sessionIdToCorrelatorTable;
+	private final Map<String, SqrlAuthenticationStatus> monitorTable;
 
 	public SqrlAuthStateMonitor(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations,
 			final ClientAuthStateUpdater clientAuthStateUpdater) {
 		this.clientAuthStateUpdater = clientAuthStateUpdater;
 		this.sqrlServerOperations = sqrlServerOperations;
 		monitorTable = new SelfExpiringHashMap<>(TimeUnit.SECONDS.toMillis(sqrlConfig.getNutValidityInSeconds()));
-		sessionIdToCorrelatorTable = new ConcurrentHashMap<>();
 	}
 
 	/**
@@ -41,24 +38,9 @@ public class SqrlAuthStateMonitor implements Runnable {
 	 * @param browserStatus
 	 *            the current status as reported by the browser
 	 */
-	public void monitorCorrelatorForChange(final String browserSessionId, final String correlatorString,
+	public void monitorCorrelatorForChange(final String correlatorString,
 			final SqrlAuthenticationStatus browserStatus) {
-		final String oldCorrelatorString = sessionIdToCorrelatorTable.remove(browserSessionId);
-		if (oldCorrelatorString != null) {
-			// Since the browser sent a new correlator, we can stop monitoring the old one
-			monitorTable.remove(oldCorrelatorString);
-			// TODO: Warn if null
-		}
-		monitorTable.put(correlatorString, new CorrelatorToMonitor(browserSessionId, browserStatus));
-		sessionIdToCorrelatorTable.put(browserSessionId, correlatorString);
-	}
-
-	public void stopMonitoringSessionId(final String browserSessionId) {
-		final String correlatorString = sessionIdToCorrelatorTable.remove(browserSessionId);
-		if (correlatorString != null && monitorTable.remove(correlatorString) == null) {
-			logger.warn("Tried to remove browserSessionId {} from monitorTable but it wasn't present",
-					correlatorString);
-		}
+		monitorTable.put(correlatorString, browserStatus);
 	}
 
 	public void stopMonitoringCorrelator(final String correlatorString) {
@@ -76,29 +58,22 @@ public class SqrlAuthStateMonitor implements Runnable {
 			}
 
 			// Map<String=correlator,...
-			final Map<String, SqrlAuthenticationStatus> correlatorToCurrentStatusTable = new ConcurrentHashMap<>();
-			for (final Map.Entry<String, CorrelatorToMonitor> entry : monitorTable.entrySet()) {
-				correlatorToCurrentStatusTable.put(entry.getKey(), entry.getValue().browserStatus);
-			}
-			// Map<String=correlator,...
 			final Map<String, SqrlAuthenticationStatus> statusChangedTable = sqrlServerOperations
-					.fetchSqrlCorrelatorStatusUpdates(correlatorToCurrentStatusTable);
+					.fetchSqrlCorrelatorStatusUpdates(Collections.unmodifiableMap(monitorTable));
 			for (final Map.Entry<String, SqrlAuthenticationStatus> entry : statusChangedTable.entrySet()) {
 				final String correlator = entry.getKey();
 				final SqrlAuthenticationStatus newState = entry.getValue();
-				CorrelatorToMonitor correlatorToMonitor = null;
+				SqrlAuthenticationStatus oldStatus = null;
 				if (newState.isUpdatesForThisCorrelatorComplete()) {
-					// Since the status changed, we no longer need monitor it
-					correlatorToMonitor = monitorTable.remove(correlator);
+					oldStatus = monitorTable.remove(correlator);
 				} else {
-					correlatorToMonitor = monitorTable.get(correlator);
+					oldStatus = monitorTable.get(correlator);
 				}
-				if (correlatorToMonitor == null) {
-					logger.error("Extracted null correlatorToMonitor from monitorTable for correlator {}",
+				if (oldStatus == null) {
+					logger.error("Extracted null oldStatus from monitorTable for correlator {}",
 							correlator);
 				} else {
-					clientAuthStateUpdater.pushStatusUpdateToBrowser(correlatorToMonitor.browserSessionId,
-							correlatorToMonitor.browserStatus, entry.getValue());
+					clientAuthStateUpdater.pushStatusUpdateToBrowser(correlator, oldStatus, entry.getValue());
 				}
 			}
 		} catch (final Throwable t) { // Don't let anything escape

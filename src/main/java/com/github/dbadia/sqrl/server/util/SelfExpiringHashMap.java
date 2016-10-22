@@ -219,6 +219,7 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 		}
 	}
 
+
 	private class ExpiringKey<L> implements Delayed {
 
 		private long startTime = System.currentTimeMillis();
@@ -291,5 +292,10 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 		public int compareTo(final Delayed that) {
 			return Long.compare(this.getDelayMillis(), ((ExpiringKey) that).getDelayMillis());
 		}
+	}
+
+	@Override
+	public String toString() {
+		return internalMap.toString();
 	}
 }

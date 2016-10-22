@@ -16,6 +16,6 @@ public interface ClientAuthStateUpdater {
 	/**
 	 * Invoked by {@link SqrlAuthStateMonitor} when it is time to respond to a browsers polling request with an update
 	 */
-	public void pushStatusUpdateToBrowser(final String browserSessionId, final SqrlAuthenticationStatus oldAuthStatus,
+	public void pushStatusUpdateToBrowser(final String browserId, final SqrlAuthenticationStatus oldAuthStatus,
 			final SqrlAuthenticationStatus newAuthStatus);
 }
