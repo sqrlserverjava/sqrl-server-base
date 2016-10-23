@@ -57,8 +57,17 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:git:git@github.com:dbadia/sqrl-server-base.git</connection>
-		<developerConnection>scm:git:git@github.com:dbadia/sqrl-server-base.git</developerConnection>
-		<url>git@github.com:dbadia/sqrl-server-base.git</url>
+		<connection>scm:git:git@github.com:sqrlserverjava/sqrl-server-base.git</connection>
+		<developerConnection>scm:git:git@github.com:sqrlserverjava/sqrl-server-base.git</developerConnection>
+		<url>git@github.com:sqrlserverjava/sqrl-server-base.git</url>
 	</scm>
+	
+    <repositories>
+       <repository>
+         <id>snapshots-repo</id>
+         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+         <releases><enabled>false</enabled></releases>
+         <snapshots><enabled>true</enabled></snapshots>
+       </repository>
+     </repositories>
 </project>
