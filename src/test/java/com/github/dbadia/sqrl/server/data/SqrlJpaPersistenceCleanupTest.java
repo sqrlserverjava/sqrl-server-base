@@ -71,10 +71,10 @@ public class SqrlJpaPersistenceCleanupTest {
 		final long now = System.currentTimeMillis();
 		final Date expectedDate = new Date(now + 6000);
 		final String keepToken = "nBuewGyan2u2Yx1McUXetQ";
-		sqrlPersistence.markTokenAsUsed("a", keepToken, expectedDate);
+		sqrlPersistence.markTokenAsUsed(keepToken, expectedDate);
 
 		final String deleteToken = "qhDh85lYnwZzMYSrAEnkew";
-		sqrlPersistence.markTokenAsUsed("a", "nutTokenDelete1", new Date(now - 1000));
+		sqrlPersistence.markTokenAsUsed("nutTokenDelete1", new Date(now - 1000));
 		sqrlPersistence.closeCommit();
 
 		// Execute

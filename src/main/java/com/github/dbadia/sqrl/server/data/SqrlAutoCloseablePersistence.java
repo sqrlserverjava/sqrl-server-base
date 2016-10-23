@@ -102,8 +102,8 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	}
 
 	@Override
-	public void markTokenAsUsed(final String correlatorString, final String nutTokenString, final Date expiryTime) {
-		sqrlPersistence.markTokenAsUsed(correlatorString, nutTokenString, expiryTime);
+	public void markTokenAsUsed(final String nutTokenString, final Date expiryTime) {
+		sqrlPersistence.markTokenAsUsed(nutTokenString, expiryTime);
 	}
 
 	@Override

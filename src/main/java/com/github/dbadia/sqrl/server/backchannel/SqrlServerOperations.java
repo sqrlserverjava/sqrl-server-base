@@ -145,7 +145,7 @@ public class SqrlServerOperations {
 		// Now we append the nut and our SFN
 		// Even though urlBuf only contains the baseUrl, it's enough for NetUtil.inetAddressToInt
 		final SqrlNutToken nut = buildNut(backchannelUri, userInetAddress);
-		urlBuf.append("?nut=").append(nut.asSqBase64EncryptedNut());
+		urlBuf.append("?nut=").append(nut.asSqrlBase64EncryptedNut());
 		// Append the SFN
 		String sfn = config.getServerFriendlyName();
 		if (sfn == null) {
@@ -159,7 +159,7 @@ public class SqrlServerOperations {
 			// Need correlation id to be unique to each Nut, so sha-256 the nut
 			final MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			final String correlator = SqrlUtil
-					.sqrlBase64UrlEncode(digest.digest(nut.asSqBase64EncryptedNut().getBytes()));
+					.sqrlBase64UrlEncode(digest.digest(nut.asSqrlBase64EncryptedNut().getBytes()));
 			urlBuf.append("&").append(SqrlConstants.CLIENT_PARAM_CORRELATOR).append("=").append(correlator);
 
 			final String url = urlBuf.toString();
@@ -172,7 +172,7 @@ public class SqrlServerOperations {
 			sqrlPersistence.closeCommit();
 			response.addCookie(SqrlUtil.createOrUpdateCookie(request, config.getCorrelatorCookieName(), correlator));
 			response.addCookie(SqrlUtil.createOrUpdateCookie(request, config.getFirstNutCookieName(),
-					nut.asSqBase64EncryptedNut()));
+					nut.asSqrlBase64EncryptedNut()));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
@@ -405,7 +405,7 @@ public class SqrlServerOperations {
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
 						idkExistsInDataStore, sqrlPersistence);
 				// Build the final reply object
-				reply = new SqrlServerReply(replyNut.asSqBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
+				reply = new SqrlServerReply(replyNut.asSqrlBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
 						additionalDataTable);
 			}
 

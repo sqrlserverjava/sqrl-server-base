@@ -263,8 +263,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	}
 
 	@Override
-	// TODO: remove correlator arg
-	public void markTokenAsUsed(final String correlatorString, final String nutTokenString, final Date expiryTime) {
+	public void markTokenAsUsed(final String nutTokenString, final Date expiryTime) {
 		updateLastUsed(entityManager);
 		final SqrlUsedNutToken sqrlUsedNutToken = new SqrlUsedNutToken(nutTokenString, expiryTime);
 		entityManager.persist(sqrlUsedNutToken);

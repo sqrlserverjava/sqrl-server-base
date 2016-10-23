@@ -128,13 +128,13 @@ public class SqrlNutTokenUtil {
 					+ ", expiry is set to " + config.getNutValidityInSeconds() + " seconds");
 		}
 		// Mark the token as used since we will process this request
-		final String nutTokenString = nutToken.asSqBase64EncryptedNut();
+		final String nutTokenString = nutToken.asSqrlBase64EncryptedNut();
 		if (sqrlPersistence.hasTokenBeenUsed(nutTokenString)) {
 			throw new SqrlNutTokenReplayedException(
 					SqrlLoggingUtil.getLogHeader() + "Nut token was replayed " + nutToken);
 		}
 		final Date nutExpiry = new Date(nutExpiryMs);
-		sqrlPersistence.markTokenAsUsed(correlator, nutTokenString, nutExpiry);
+		sqrlPersistence.markTokenAsUsed(nutTokenString, nutExpiry);
 	}
 
 	/**

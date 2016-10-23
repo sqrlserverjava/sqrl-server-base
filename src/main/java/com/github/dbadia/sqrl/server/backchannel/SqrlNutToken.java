@@ -135,7 +135,7 @@ public class SqrlNutToken {
 		return randomInt;
 	}
 
-	public String asSqBase64EncryptedNut() { // TODO: rename to asSqrl
+	public String asSqrlBase64EncryptedNut() {
 		return base64UrlEncryptedNut;
 	}
 

@@ -34,8 +34,8 @@ public class SqrlNutTest {
 		assertEquals(1461244576000L, nut.getIssuedTimestampMillis());
 		assertEquals(random, nut.getRandomInt());
 		assertEquals(counter, nut.getCounter());
-		assertEquals(22, nut.asSqBase64EncryptedNut().length());
-		assertEquals("QwJJFrvH1jBXakjOh_vVqg", nut.asSqBase64EncryptedNut());
+		assertEquals(22, nut.asSqrlBase64EncryptedNut().length());
+		assertEquals("QwJJFrvH1jBXakjOh_vVqg", nut.asSqrlBase64EncryptedNut());
 	}
 
 	@Test
