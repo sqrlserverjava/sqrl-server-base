@@ -7,8 +7,8 @@
 		<version>0.2.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>sqrl-server-base</artifactId>
-	<version>0.6.0-SNAPSHOT</version>
 	<name>SQRL Server Base Library</name>
+	<version>0.6.1-SNAPSHOT</version>
 	<description>Library that implements the server side portions of the SQRL protocol.</description>
 	<packaging>jar</packaging>
 

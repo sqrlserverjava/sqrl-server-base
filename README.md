@@ -1,6 +1,6 @@
 <!--- http://dillinger.io/ --->
 
-[![Build Status](https://travis-ci.org/dbadia/sqrl-server-base.svg?branch=master)](https://travis-ci.org/dbadia/sqrl-server-base)
+[![Build Status](https://travis-ci.org/sqrlserverjava/sqrl-server-base.svg?branch=master)](https://travis-ci.org/sqrlserverjava/sqrl-server-base)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/204/badge)](https://bestpractices.coreinfrastructure.org/projects/204)
 # sqrl-server-base
 

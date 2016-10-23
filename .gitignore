@@ -6,3 +6,9 @@ mynotes.txt
 /bin/
 derby.log
 persistenceDaveMysql.xml
+/.gradle/
+gradle/
+gradlew
+gradlew.bat
+build.gradle
+settings.gradle
