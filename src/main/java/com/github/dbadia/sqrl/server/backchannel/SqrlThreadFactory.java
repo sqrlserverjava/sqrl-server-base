@@ -12,6 +12,6 @@ public class SqrlThreadFactory implements ThreadFactory {
 	private static final AtomicInteger THREAD_COUNT = new AtomicInteger(1);
 	@Override
 	public Thread newThread(final Runnable r) {
-		return new Thread(r, "Sqrl Background "+THREAD_COUNT.getAndIncrement());
+		return new Thread(r, "Sqrl Background #" + THREAD_COUNT.getAndIncrement());
 	}
 }

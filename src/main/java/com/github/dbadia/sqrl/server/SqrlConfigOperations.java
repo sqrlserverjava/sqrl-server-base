@@ -7,10 +7,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.Key;
 import java.security.SecureRandom;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory;
 
 /**
@@ -99,29 +95,7 @@ public class SqrlConfigOperations {
 			}
 		}
 
-		// Cleanup task
-		final int cleanupValue = config.getCleanupTaskExecInMinutes();
-		if (cleanupValue == -1) {
-			logger.warn("Auto cleanup is disabled since config.getCleanupTaskExecInMinutes() == -1");
-		} else if (cleanupValue <= 0) {
-			throw new IllegalArgumentException("config.getCleanupTaskExecInMinutes() must be -1 or > 0");
-		} else {
-			final long intervalInMillis = TimeUnit.MINUTES.toMillis(cleanupValue);
-
-			final Timer cleanUpTaskTimer = new Timer(true);
-			cleanUpTaskTimer.scheduleAtFixedRate(new TimerTask() {
-				@Override
-				public void run() {
-					try (SqrlAutoCloseablePersistence sqrlPersistence = new SqrlAutoCloseablePersistence(
-							getSqrlPersistenceFactory().createSqrlPersistence())) {
-						sqrlPersistence.cleanUpExpiredEntries();
-						sqrlPersistence.closeCommit();
-					} catch (final RuntimeException e) {
-						logger.error("Error during execution of SqrlPersistence.createSqrlPersistence()", e);
-					}
-				}
-			}, intervalInMillis, intervalInMillis);
-		}
+		// getCleanupTaskExecInMinutes is handled by SqrlserverOperations since it has the Executor
 	}
 
 	public Key getAESKey() {

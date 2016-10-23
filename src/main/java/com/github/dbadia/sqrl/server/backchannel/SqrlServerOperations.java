@@ -12,9 +12,11 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -25,6 +27,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -47,6 +52,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
+import com.github.dbadia.sqrl.server.data.SqrlPersistenceCleanupTask;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -56,14 +62,21 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 /**
- * The core SQRL class which processes all SQRL requests and generates the appropriates responses
+ * The core SQRL class which processes all SQRL requests and generates the appropriates responses. Registers itself for
+ * servlet context destroy events so background tasks can be stopped
  *
  * @author Dave Badia
  *
  */
-
-public class SqrlServerOperations {
+@WebListener
+public class SqrlServerOperations implements ServletContextListener {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
+
+	/**
+	 * DB cleanup may be slow running, so ensure another thread is always available to check for status updates from
+	 * SQRL clients
+	 */
+	private static final int THREAD_COUNT = 2;
 
 	private static final String	COMMAND_QUERY	= "query";
 	private static final String	COMMAND_IDENT	= "ident";
@@ -72,11 +85,14 @@ public class SqrlServerOperations {
 	private static final String	COMMAND_REMOVE	= "remove";
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
-	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1,
+	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(THREAD_COUNT,
 			new SqrlThreadFactory());
 
 	static final long MAX_TIMESTAMP = Integer.toUnsignedLong(-1) * 1000L;
-	private static ScheduledFuture monitorFuture = null; // TODO; add destroy method and shutdown
+
+	@SuppressWarnings("rawtypes")
+	private static List<ScheduledFuture> backgroundTaskList = new ArrayList<>(); // TODO; add destroy method and
+	// shutdown
 
 	private final SqrlPersistenceFactory	persistenceFactory;
 	private final SqrlConfigOperations		configOperations;
@@ -115,12 +131,28 @@ public class SqrlServerOperations {
 				final ClientAuthStateUpdater clientAuthStateUpdater = (ClientAuthStateUpdater) object;
 				authStateMonitor = new SqrlAuthStateMonitor(config, this, clientAuthStateUpdater);
 				clientAuthStateUpdater.initSqrl(config, authStateMonitor);
-				// TODO: move to config
-				monitorFuture = EXECUTOR_SERVICE.scheduleAtFixedRate(authStateMonitor, 1, 1, TimeUnit.SECONDS);
+				// TODO: move interval to config as millis
+				final long intervalInMilis = 1000;
+				logger.info("Client auth state task scheduled to run every {} ms", intervalInMilis);
+				backgroundTaskList.add(EXECUTOR_SERVICE.scheduleAtFixedRate(authStateMonitor, intervalInMilis,
+						intervalInMilis, TimeUnit.MILLISECONDS));
 			} catch (final ReflectiveOperationException e) {
 				throw new IllegalStateException("SQRL: Error instantiating ClientAuthStateUpdaterClass of " + classname,
 						e);
 			}
+		}
+
+		// DB Cleanup task
+		final int cleanupIntervalInMinutes = config.getCleanupTaskExecInMinutes();
+		if (cleanupIntervalInMinutes == -1) {
+			logger.warn("Auto cleanup is disabled since config.getCleanupTaskExecInMinutes() == -1");
+		} else if (cleanupIntervalInMinutes <= 0) {
+			throw new IllegalArgumentException("config.getCleanupTaskExecInMinutes() must be -1 or > 0");
+		} else {
+			logger.info("Persistence cleanup task registered to run every {} minutes", cleanupIntervalInMinutes);
+			final SqrlPersistenceCleanupTask cleanupRunnable = new SqrlPersistenceCleanupTask(persistenceFactory);
+			backgroundTaskList.add(EXECUTOR_SERVICE.scheduleAtFixedRate(cleanupRunnable, cleanupIntervalInMinutes, cleanupIntervalInMinutes,
+					TimeUnit.MINUTES));
 		}
 	}
 
@@ -634,5 +666,20 @@ public class SqrlServerOperations {
 			sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);
 			sqrlPersistence.closeCommit();
 		}
+	}
+
+	@Override
+	public void contextDestroyed(final ServletContextEvent arg0) {
+		logger.info("Shutting down background tasks and executor service");
+		for (@SuppressWarnings("rawtypes")
+		final ScheduledFuture backgroundTask : backgroundTaskList) {
+			backgroundTask.cancel(false);
+		}
+		EXECUTOR_SERVICE.shutdown();
+	}
+
+	@Override
+	public void contextInitialized(final ServletContextEvent arg0) {
+		// Nothing to do
 	}
 }
