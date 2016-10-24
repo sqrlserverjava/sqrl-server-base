@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -121,9 +122,15 @@ public class SqrlServerOperations implements ServletContextListener {
 			authStateMonitor = null;
 		} else {
 			try {
+				logger.info("Instantiating ClientAuthStateUpdater class of {}", classname);
 				@SuppressWarnings("rawtypes")
 				final Class clazz = Class.forName(classname);
-				final Object object = clazz.newInstance();
+				final Constructor<ClientAuthStateUpdater> constructor = clazz.getConstructor();
+				if (constructor == null) {
+					throw new IllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+							+ " must have a no-arg constructor, but does not");
+				}
+				final Object object = constructor.newInstance();
 				if (!(object instanceof ClientAuthStateUpdater)) {
 					throw new IllegalStateException("SQRL AuthStateUpdaterClass of " + classname
 							+ " was not an instance of ClientAuthStateUpdater");
