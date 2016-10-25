@@ -19,6 +19,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.backchannel.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
@@ -69,6 +70,8 @@ public class TCUtil {
 
 	@SuppressWarnings("deprecation") // test cases can use deprecated TestSecureRandom
 	public static final SqrlConfig buildTestSqrlConfig() {
+		final SqrlServiceExecutor executor = new SqrlServiceExecutor();
+		executor.contextInitialized(null);
 		final SqrlConfig config = new SqrlConfig();
 		config.setServerFriendlyName("Dave Test");
 		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
