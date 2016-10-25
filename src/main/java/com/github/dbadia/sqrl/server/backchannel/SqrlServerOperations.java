@@ -13,24 +13,16 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -69,15 +61,8 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
  * @author Dave Badia
  *
  */
-@WebListener
-public class SqrlServerOperations implements ServletContextListener {
+public class SqrlServerOperations {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
-
-	/**
-	 * DB cleanup may be slow running, so ensure another thread is always available to check for status updates from
-	 * SQRL clients
-	 */
-	private static final int THREAD_COUNT = 2;
 
 	private static final String	COMMAND_QUERY	= "query";
 	private static final String	COMMAND_IDENT	= "ident";
@@ -86,14 +71,10 @@ public class SqrlServerOperations implements ServletContextListener {
 	private static final String	COMMAND_REMOVE	= "remove";
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
-	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(THREAD_COUNT,
-			new SqrlThreadFactory());
 
 	static final long MAX_TIMESTAMP = Integer.toUnsignedLong(-1) * 1000L;
 
-	@SuppressWarnings("rawtypes")
-	private static List<ScheduledFuture> backgroundTaskList = new ArrayList<>(); // TODO; add destroy method and
-	// shutdown
+	private static SqrlServiceExecutor sqrlServiceExecutor;
 
 	private final SqrlPersistenceFactory	persistenceFactory;
 	private final SqrlConfigOperations		configOperations;
@@ -141,8 +122,8 @@ public class SqrlServerOperations implements ServletContextListener {
 				// TODO: move interval to config as millis
 				final long intervalInMilis = 1000;
 				logger.info("Client auth state task scheduled to run every {} ms", intervalInMilis);
-				backgroundTaskList.add(EXECUTOR_SERVICE.scheduleAtFixedRate(authStateMonitor, intervalInMilis,
-						intervalInMilis, TimeUnit.MILLISECONDS));
+				sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
+						TimeUnit.MILLISECONDS);
 			} catch (final ReflectiveOperationException e) {
 				throw new IllegalStateException("SQRL: Error instantiating ClientAuthStateUpdaterClass of " + classname,
 						e);
@@ -158,9 +139,13 @@ public class SqrlServerOperations implements ServletContextListener {
 		} else {
 			logger.info("Persistence cleanup task registered to run every {} minutes", cleanupIntervalInMinutes);
 			final SqrlPersistenceCleanupTask cleanupRunnable = new SqrlPersistenceCleanupTask(persistenceFactory);
-			backgroundTaskList.add(EXECUTOR_SERVICE.scheduleAtFixedRate(cleanupRunnable, cleanupIntervalInMinutes, cleanupIntervalInMinutes,
-					TimeUnit.MINUTES));
+			sqrlServiceExecutor.scheduleAtFixedRate(cleanupRunnable, cleanupIntervalInMinutes, cleanupIntervalInMinutes,
+					TimeUnit.MINUTES);
 		}
+	}
+
+	public static void setExecutor(final SqrlServiceExecutor sqrlServiceExecutor) {
+		SqrlServerOperations.sqrlServiceExecutor = sqrlServiceExecutor;
 	}
 
 	/**
@@ -673,20 +658,5 @@ public class SqrlServerOperations implements ServletContextListener {
 			sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);
 			sqrlPersistence.closeCommit();
 		}
-	}
-
-	@Override
-	public void contextDestroyed(final ServletContextEvent arg0) {
-		logger.info("Shutting down background tasks and executor service");
-		for (@SuppressWarnings("rawtypes")
-		final ScheduledFuture backgroundTask : backgroundTaskList) {
-			backgroundTask.cancel(false);
-		}
-		EXECUTOR_SERVICE.shutdown();
-	}
-
-	@Override
-	public void contextInitialized(final ServletContextEvent arg0) {
-		// Nothing to do
 	}
 }
