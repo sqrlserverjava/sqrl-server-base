@@ -119,8 +119,7 @@ public class SqrlServerOperations {
 				final ClientAuthStateUpdater clientAuthStateUpdater = (ClientAuthStateUpdater) object;
 				authStateMonitor = new SqrlAuthStateMonitor(config, this, clientAuthStateUpdater);
 				clientAuthStateUpdater.initSqrl(config, authStateMonitor);
-				// TODO: move interval to config as millis
-				final long intervalInMilis = 1000;
+				final long intervalInMilis = config.getAuthSyncCheckInMillis();
 				logger.info("Client auth state task scheduled to run every {} ms", intervalInMilis);
 				sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
 						TimeUnit.MILLISECONDS);
@@ -146,7 +145,7 @@ public class SqrlServerOperations {
 
 	/**
 	 * Poor mans dependency injection. Can't use CDI since we want to support lightweight JEE servers like tomcat
-	 * 
+	 *
 	 * @param sqrlServiceExecutor
 	 */
 	public static void setExecutor(final SqrlServiceExecutor sqrlServiceExecutor) {

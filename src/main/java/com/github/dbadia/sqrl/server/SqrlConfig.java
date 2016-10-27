@@ -112,6 +112,13 @@ public class SqrlConfig {
 	private int cleanupTaskExecInMinutes = 15;
 
 	/**
+	 * The amount of time in millis to pause in between persistence queries to see if the SQRL client has finished
+	 * authenticating users; defaults to 500
+	 */
+	@XmlElement
+	private long authSyncCheckInMillis = 500;
+
+	/**
 	 * The cookie name to use for the SQRL first nut during authentication; defaults to sqrlfirstnut
 	 */
 	@XmlElement
@@ -266,5 +273,13 @@ public class SqrlConfig {
 
 	public void setCookieDomain(final String cookieDomain) {
 		this.cookieDomain = cookieDomain;
+	}
+
+	public long getAuthSyncCheckInMillis() {
+		return authSyncCheckInMillis;
+	}
+
+	public void setAuthSyncCheckInMillis(final long authSyncCheckInMillis) {
+		this.authSyncCheckInMillis = authSyncCheckInMillis;
 	}
 }
