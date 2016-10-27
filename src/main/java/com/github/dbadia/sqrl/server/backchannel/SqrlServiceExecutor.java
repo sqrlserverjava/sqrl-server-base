@@ -16,6 +16,8 @@ import javax.servlet.annotation.WebListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dbadia.sqrl.server.SqrlConfigOperations;
+
 @WebListener
 public class SqrlServiceExecutor implements ServletContextListener {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServiceExecutor.class);
@@ -32,9 +34,10 @@ public class SqrlServiceExecutor implements ServletContextListener {
 	private static List<ScheduledFuture> backgroundTaskList = new ArrayList<>(); // TODO; add destroy method and
 
 	@Override
-	public void contextInitialized(final ServletContextEvent arg0) {
+	public void contextInitialized(final ServletContextEvent servletContextEvent) {
 		// Perform dependency injection
 		SqrlServerOperations.setExecutor(this);
+		SqrlConfigOperations.setExecutor(this);
 	}
 
 	public void scheduleAtFixedRate(final Runnable runnable, final long initialDelay, final long period,

@@ -1,6 +1,7 @@
 package com.github.dbadia.sqrl.server;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -8,6 +9,7 @@ import java.net.URL;
 import java.security.Key;
 import java.security.SecureRandom;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dbadia.sqrl.server.backchannel.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory;
+import com.github.dbadia.sqrl.server.util.SqrlConfigSettingException;
 
 /**
  * Helper class to {@link SqrlConfig}
@@ -25,6 +29,10 @@ import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory;
  */
 public class SqrlConfigOperations {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlConfig.class);
+	/**
+	 * Set automatically but only used if this class is set on {@link SqrlConfig#setSqrlPersistenceFactoryClass(String)}
+	 */
+	private static SqrlServiceExecutor sqrlServiceExecutor = null;
 
 	private enum BackchannelSettingType {
 		FULL_URL, FULL_PATH, PARTIAL_PATH
@@ -51,7 +59,7 @@ public class SqrlConfigOperations {
 		// SecureRandom init
 		final SecureRandom secureRandom = config.getSecureRandom();
 		if (secureRandom == null) {
-			throw new IllegalStateException("config.getSecureRandom() was null");
+			throw new SqrlConfigSettingException("config.getSecureRandom() was null");
 		}
 
 		// Add extra entropy to the secureRandom - setSeed ADDs entropy, it does not replace existing entropy
@@ -71,7 +79,7 @@ public class SqrlConfigOperations {
 			aesKeyBytes = new byte[SqrlConstants.AES_KEY_LENGTH];
 			secureRandom.nextBytes(aesKeyBytes);
 		} else if (aesKeyBytes.length != SqrlConstants.AES_KEY_LENGTH) {
-			throw new IllegalArgumentException("SqrlConfig AES key must be " + SqrlConstants.AES_KEY_LENGTH
+			throw new SqrlConfigSettingException("SqrlConfig AES key must be " + SqrlConstants.AES_KEY_LENGTH
 					+ " bytes, found " + aesKeyBytes.length);
 		}
 		aesKey = new SecretKeySpec(aesKeyBytes, 0, aesKeyBytes.length, "AES");
@@ -88,14 +96,43 @@ public class SqrlConfigOperations {
 			try {
 				@SuppressWarnings("rawtypes")
 				final Class clazz = Class.forName(factoryClassName);
-				sqrlPersistenceFactory = (SqrlPersistenceFactory) clazz.newInstance();
+				sqrlPersistenceFactory = (SqrlPersistenceFactory) createInstanceFromNoArgConstructor(clazz,
+						"sqrlPersistenceFactory");
 			} catch (final Exception e) {
 				throw new IllegalArgumentException(
 						"Could not create SqrlPersistenceFactory with name '" + factoryClassName + "'", e);
 			}
 		}
+		// register the cleanup task
+		final Class<? extends Runnable> cleanUpTaskClass = sqrlPersistenceFactory.getCleanupTaskClass();
+		if (cleanUpTaskClass == null) {
+			logger.warn("sqrlPersistenceFactory cleanup task was null, no background cleanup job scheduled");
+		} else {
+			final Runnable cleanupTask = (Runnable) createInstanceFromNoArgConstructor(cleanUpTaskClass,
+					"SqrlPersistenceFactory.getCleanupTaskClass()");
+			final int intervalMinutes = config.getCleanupTaskExecInMinutes();
+			sqrlServiceExecutor.scheduleAtFixedRate(cleanupTask, intervalMinutes, intervalMinutes, TimeUnit.MINUTES);
+		}
+	}
 
-		// getCleanupTaskExecInMinutes is handled by SqrlserverOperations since it has the Executor
+	private static Object createInstanceFromNoArgConstructor(final Class clazz, final String description) {
+		try {
+			@SuppressWarnings("rawtypes")
+			final Constructor constructor = clazz.getConstructor();
+			return constructor.newInstance();
+		} catch (final Exception e) {
+			throw new SqrlConfigSettingException(
+					description + " must have a default no-arg constructor but none was found");
+		}
+	}
+
+	/**
+	 * Poor mans dependency injection. Can't use CDI since we want to support lightweight JEE servers like tomcat
+	 *
+	 * @param sqrlServiceExecutor
+	 */
+	public static void setExecutor(final SqrlServiceExecutor sqrlServiceExecutor) {
+		SqrlConfigOperations.sqrlServiceExecutor = sqrlServiceExecutor;
 	}
 
 	public Key getAESKey() {

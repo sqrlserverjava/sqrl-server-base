@@ -6,8 +6,6 @@ import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import com.github.dbadia.sqrl.server.SqrlUtil;
-
 public class SqrlUtilTest {
 
 	/**
@@ -48,5 +46,24 @@ public class SqrlUtilTest {
 		final MockHttpServletRequest request = TCUtil.buildMockRequest(loginRequestUrl);
 		final String actual = SqrlUtil.computeSfnFromUrl(request);
 		assertEquals("sqrljava.tech", actual);
+	}
+
+	@Test
+	public void testExtractCookieDomain() throws Exception {
+		final String loginRequestUrl = "http://sqrljava.tech/sqrlexample/app";
+		final MockHttpServletRequest request = TCUtil.buildMockRequest(loginRequestUrl);
+		final String result = SqrlUtil.computeCookieDomain(request, TCUtil.buildTestSqrlConfig());
+		assertEquals("sqrljava.tech", result);
+	}
+
+	@Test
+	public void testExtractCookieDomainFromConfig() throws Exception {
+		final String loginRequestUrl = "http://sqrljava.tech/sqrlexample/app";
+		final MockHttpServletRequest request = TCUtil.buildMockRequest(loginRequestUrl);
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final String expected = "sqrl.sqrljava.tech";
+		config.setCookieDomain(expected);
+		final String result = SqrlUtil.computeCookieDomain(request, config);
+		assertEquals(expected, result);
 	}
 }

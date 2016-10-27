@@ -22,6 +22,8 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
  * </ul><p>
  *  <b>Recommended</b> fields to be set are:
  *
+ *  All other fields are optional with sensible defaults
+ *
  * @author Dave Badia
  *
  */
@@ -34,8 +36,8 @@ public class SqrlConfig {
 	}
 
 	/**
-	 * The amount of time the SQRL "Nut" will be valid for. That is the maximum amount of time that can pass between us
-	 * (server) generating the QR code and us receiving the clients response
+	 * The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time
+	 * that can pass between us (server) generating the QR code and us receiving the clients response
 	 *
 	 * It is strongly recommended that this value be set to 15 minutes (default) or more as this is a new protocol. The
 	 * user may use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it
@@ -44,21 +46,28 @@ public class SqrlConfig {
 	@XmlElement
 	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toSeconds(15);
 
+	/**
+	 * The image format to generate QR codes in; default is PNG
+	 */
 	@XmlElement
 	private ImageFormat qrCodeFileType = ImageFormat.PNG;
 
 	/**
-	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL client will call
+	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call
 	 */
 	@XmlElement
 	private String backchannelServletPath;
 
 	/**
-	 * The SQRL Server Friendly Name; optional, if not provided will be set the hostname of the site
+	 * The SQRL Server Friendly Name; default: the hostname of the site
 	 */
 	@XmlElement
 	private String serverFriendlyName;
 
+	/**
+	 * The secureRandom instance that is used to generate various random tokens; defaults to
+	 * {@link SecureRandom#SecureRandom()}
+	 */
 	@XmlTransient
 	private SecureRandom secureRandom;
 
@@ -75,11 +84,15 @@ public class SqrlConfig {
 	@XmlElement
 	private String[] ipForwardedForHeaders;
 
+	/**
+	 * The SQRL JPA persistence provider class which implements {@link SqrlPersistenceFactory}; default to
+	 * com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory
+	 */
 	@XmlElement
 	private String sqrlPersistenceFactoryClass = "com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory";
 
 	/**
-	 * The cookie name to use for the SQRL correlator during authentication
+	 * The cookie name to use for the SQRL correlator during authentication; defaults to sqrlcorrelator
 	 */
 	@XmlElement
 	private String correlatorCookieName = "sqrlcorrelator";
@@ -92,16 +105,24 @@ public class SqrlConfig {
 
 	/**
 	 * The frequency with which to execute {@link SqrlPersistence#cleanUpExpiredEntries()} via {@link java.util.Timer};
-	 * set to -1 to disable completely
+	 * defaults to 15. If an alternate cleanup mechanism is in use (DB stored procedure, etc), this should be set to -1
+	 * to disable the background task completely
 	 */
 	@XmlElement
 	private int cleanupTaskExecInMinutes = 15;
 
 	/**
-	 * The cookie name to use for the SQRL first nut during authentication
+	 * The cookie name to use for the SQRL first nut during authentication; defaults to sqrlfirstnut
 	 */
 	@XmlElement
 	private String firstNutCookieName = "sqrlfirstnut";
+
+	/**
+	 * The domain to set on cookies via cookie name to use for the SQRL first nut during authentication; defaults to the
+	 * domain (including subdomain) that the browser request came in on
+	 */
+	@XmlElement
+	private String cookieDomain = null;
 
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;
@@ -237,5 +258,13 @@ public class SqrlConfig {
 
 	public void setClientAuthStateUpdaterClass(final String clientAuthStateUpdaterClass) {
 		this.clientAuthStateUpdaterClass = clientAuthStateUpdaterClass;
+	}
+
+	public String getCookieDomain() {
+		return cookieDomain;
+	}
+
+	public void setCookieDomain(final String cookieDomain) {
+		this.cookieDomain = cookieDomain;
 	}
 }

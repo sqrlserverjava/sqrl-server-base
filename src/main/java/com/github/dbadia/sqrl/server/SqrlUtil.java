@@ -26,8 +26,8 @@ import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 
 /**
- * Various utility methods used by the rest of the SQRL code, including the SQRL base64url derivitive
- * 
+ * Various utility methods used by the rest of the SQRL code, including base64URL
+ *
  * @author Dave Badia
  *
  */
@@ -40,7 +40,7 @@ public class SqrlUtil {
 
 	/**
 	 * Performs the SQRL required base64URL encoding
-	 * 
+	 *
 	 * @param bytes
 	 *            the data to be encoded
 	 * @return the encoded string
@@ -59,7 +59,7 @@ public class SqrlUtil {
 
 	/**
 	 * Performs the SQRL required base64URL encoding
-	 * 
+	 *
 	 * @param toEncode
 	 *            the string to be encoded
 	 * @return the encoded string
@@ -74,7 +74,7 @@ public class SqrlUtil {
 
 	/**
 	 * Performs the SQRL required base64URL decoding
-	 * 
+	 *
 	 * @param toDecodeParam
 	 *            the data to be decoded
 	 * @return the decoded byte array
@@ -91,7 +91,7 @@ public class SqrlUtil {
 
 	/**
 	 * Performs the SQRL required base64URL decoding
-	 * 
+	 *
 	 * @param toDecodeParam
 	 *            the data to be decoded
 	 * @return the decoded data as a string using the UTF-8 character set
@@ -118,7 +118,7 @@ public class SqrlUtil {
 
 	/**
 	 * Internal use only. Verifies the ED25519 signature
-	 * 
+	 *
 	 * @param signatureFromMessage
 	 *            the signature data
 	 * @param messageBytes
@@ -148,7 +148,7 @@ public class SqrlUtil {
 
 	/**
 	 * Provides the functionality of Apache commons StringUtils.isBlank() without bringing in the dependency
-	 * 
+	 *
 	 * @param string
 	 *            the string to check
 	 * @return true if blank, false otherwise
@@ -159,7 +159,7 @@ public class SqrlUtil {
 
 	/**
 	 * Provides the functionality of Apache commons StringUtils.isNotBlank() without bringing in the dependency
-	 * 
+	 *
 	 * @param string
 	 *            the string to check
 	 * @return true if not blank, false otherwise
@@ -170,7 +170,7 @@ public class SqrlUtil {
 
 	/**
 	 * Internal use only.
-	 * 
+	 *
 	 * @param ipAddressString
 	 *            the ip address to parse
 	 * @return the IP address
@@ -191,7 +191,7 @@ public class SqrlUtil {
 	/**
 	 * Internal use only. Computes the SQRL server friendly name (SFN) from the servers URl. Typically used if a SFN is
 	 * not specified in the config
-	 * 
+	 *
 	 * @param request
 	 * @return
 	 */
@@ -201,7 +201,7 @@ public class SqrlUtil {
 
 	/**
 	 * Internal use only. Builds a string of name value pairs from the request
-	 * 
+	 *
 	 * @param servletRequest
 	 *            the request
 	 * @return a string of the name value pairs that were in the request
@@ -216,12 +216,14 @@ public class SqrlUtil {
 		return buf.toString();
 	}
 
-	public static Cookie createOrUpdateCookie(final HttpServletRequest request, final String name, final String value) {
+	public static Cookie createOrUpdateCookie(final HttpServletRequest request, final String cookieDomain,
+			final String name, final String value) {
 		Cookie cookie = findCookie(request, name);
 		if (cookie == null) {
 			cookie = new Cookie(name, value);
+			cookie.setDomain(cookieDomain);
 			cookie.setHttpOnly(true);
-			if (request.getScheme().equals("https")) {
+			if (request.getScheme().equals(SqrlConstants.SCHEME_HTTPS)) {
 				cookie.setSecure(true);
 			}
 			cookie.setMaxAge(-1);
@@ -264,5 +266,15 @@ public class SqrlUtil {
 				response.addCookie(cookie);
 			}
 		}
+	}
+
+	public static String computeCookieDomain(final HttpServletRequest request, final SqrlConfig config) {
+		String domain = config.getCookieDomain();
+		if (domain == null) {
+			final String requestUrl = request.getRequestURL().toString();
+			domain = requestUrl.substring(requestUrl.indexOf("//") + 2);
+			domain = domain.substring(0, domain.indexOf('/'));
+		}
+		return domain;
 	}
 }

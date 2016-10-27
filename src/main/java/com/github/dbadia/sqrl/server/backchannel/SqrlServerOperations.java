@@ -144,6 +144,11 @@ public class SqrlServerOperations {
 		}
 	}
 
+	/**
+	 * Poor mans dependency injection. Can't use CDI since we want to support lightweight JEE servers like tomcat
+	 * 
+	 * @param sqrlServiceExecutor
+	 */
 	public static void setExecutor(final SqrlServiceExecutor sqrlServiceExecutor) {
 		SqrlServerOperations.sqrlServiceExecutor = sqrlServiceExecutor;
 	}
@@ -194,8 +199,10 @@ public class SqrlServerOperations {
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
 					SqrlUtil.sqrlBase64UrlEncode(url));
 			sqrlPersistence.closeCommit();
-			response.addCookie(SqrlUtil.createOrUpdateCookie(request, config.getCorrelatorCookieName(), correlator));
-			response.addCookie(SqrlUtil.createOrUpdateCookie(request, config.getFirstNutCookieName(),
+			final String cookieDomain = SqrlUtil.computeCookieDomain(request, config);
+			response.addCookie(
+					SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getCorrelatorCookieName(), correlator));
+			response.addCookie(SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getFirstNutCookieName(),
 					nut.asSqrlBase64EncryptedNut()));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
