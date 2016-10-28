@@ -3,7 +3,6 @@ package com.github.dbadia.sqrl.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.util.SelfExpiringHashMap;
@@ -52,7 +51,6 @@ public class SelfExpiringHashMapTest {
 	}
 
 	@Test
-	@Ignore // we don't use renew so we don't care
 	public void basicRenewTest() throws InterruptedException {
 		@SuppressWarnings("deprecation")
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
@@ -64,7 +62,6 @@ public class SelfExpiringHashMapTest {
 	}
 
 	@Test
-	@Ignore // we don't use renew so we don't care
 	public void getRenewTest() throws InterruptedException {
 		@SuppressWarnings("deprecation")
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();

@@ -94,8 +94,6 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		// 100 hex
-		// TODO: is 402 right?
 		assertEquals("402", responseDataTable.get("tif"));
 	}
 

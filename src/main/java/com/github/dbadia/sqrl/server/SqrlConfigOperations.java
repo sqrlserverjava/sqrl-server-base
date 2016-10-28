@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.Key;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -117,12 +118,16 @@ public class SqrlConfigOperations {
 
 	private static Object createInstanceFromNoArgConstructor(final Class clazz, final String description) {
 		try {
+			System.out.println("Constructors: " + Arrays.toString(clazz.getConstructors()));
 			@SuppressWarnings("rawtypes")
 			final Constructor constructor = clazz.getConstructor();
 			return constructor.newInstance();
-		} catch (final Exception e) {
+		} catch (final NoSuchMethodException e) {
 			throw new SqrlConfigSettingException(
-					description + " must have a default no-arg constructor but none was found");
+					clazz.getName() + " must have a default no-arg constructor, but none was found", e);
+		} catch (final Exception e) {
+			throw new SqrlConfigSettingException("Error instantiating " + description + " of " + clazz.getName(),
+					e);
 		}
 	}
 

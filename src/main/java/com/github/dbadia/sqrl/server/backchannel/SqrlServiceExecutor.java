@@ -31,7 +31,7 @@ public class SqrlServiceExecutor implements ServletContextListener {
 			new SqrlThreadFactory());
 
 	@SuppressWarnings("rawtypes")
-	private static List<ScheduledFuture> backgroundTaskList = new ArrayList<>(); // TODO; add destroy method and
+	private static List<ScheduledFuture> backgroundTaskList = new ArrayList<>();
 
 	@Override
 	public void contextInitialized(final ServletContextEvent servletContextEvent) {

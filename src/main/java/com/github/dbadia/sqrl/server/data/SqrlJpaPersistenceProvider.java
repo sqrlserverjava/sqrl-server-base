@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimerTask;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -372,10 +371,14 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	 * @author Dave Badia
 	 *
 	 */
-	static final class SqrlJpaEntityManagerMonitorTimerTask extends TimerTask {
+	public static final class SqrlJpaEntityManagerMonitorTask implements Runnable {
 		private static final long	ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES	= 5;
 		private static final long	ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MS		= TimeUnit.MINUTES
 				.toMillis(ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES);
+
+		public SqrlJpaEntityManagerMonitorTask() {
+			// As required by
+		}
 
 		@Override
 		public void run() {

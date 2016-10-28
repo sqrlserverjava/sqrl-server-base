@@ -22,11 +22,10 @@ import junitx.util.PrivateAccessor;
 public class SqrlJpaPersistenceCleanupTest {
 	@After
 	public void tearDown() throws NoSuchFieldException {
-		// TODO: not sure why we need this to avoid mysql deadlock after first test case
 		/*
-		 * SQLTransactionRollbackException: A lock could not be obtained within the time requested Error Code: 30000
-		 * Call: SELECT id, authenticationStatus, expiryTime, value, authenticated_identity FROM sqrl_correlator Query:
-		 * ReadAllQuery(referenceClass=SqrlCorrelator sql=
+		 * This was found to be necessary becuase of this error: SQLTransactionRollbackException: A lock could not be
+		 * obtained within the time requested Error Code: 30000 Call: SELECT id, authenticationStatus, expiryTime,
+		 * value, authenticated_identity FROM sqrl_correlator Query: ReadAllQuery(referenceClass=SqrlCorrelator sql=
 		 * "SELECT id, authenticationStatus, expiryTime, value, authenticated_identity FROM sqrl_correlator")
 		 */
 		EntityManagerFactory entityManagerFactory = (EntityManagerFactory) PrivateAccessor

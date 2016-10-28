@@ -7,4 +7,8 @@ public class SqrlConfigSettingException extends RuntimeException {
 		super(message);
 	}
 
+	public SqrlConfigSettingException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
 }

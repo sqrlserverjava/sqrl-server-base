@@ -2,7 +2,7 @@ package com.github.dbadia.sqrl.server.data;
 
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider.SqrlJpaEntityManagerMonitorTimerTask;
+import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider.SqrlJpaEntityManagerMonitorTask;
 
 public class SqrlJpaPersistenceFactory implements SqrlPersistenceFactory {
 
@@ -14,7 +14,7 @@ public class SqrlJpaPersistenceFactory implements SqrlPersistenceFactory {
 
 	@Override
 	public Class<? extends Runnable> getCleanupTaskClass() {
-		return SqrlJpaEntityManagerMonitorTimerTask.class;
+		return SqrlJpaEntityManagerMonitorTask.class;
 	}
 
 }

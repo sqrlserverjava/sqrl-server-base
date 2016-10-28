@@ -18,8 +18,9 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 public class SqrlTifTest {
 	@Parameters(name = "{index}: ipmatch=({0}) expected=({1}) tifArray=({2}) )")
 	public static Collection<Object[]> data() {
-	// @formatter:off
-		return Arrays.asList(new Object[][] { 
+		// @formatter:off
+		return Arrays.asList(new Object[][] {
+			{ false, 1, new int[]{SqrlTif.TIF_CURRENT_ID_MATCH }},
 			{ true, 5, new int[]{SqrlTif.TIF_CURRENT_ID_MATCH }},
 			{ true, 196, new int[]{SqrlTif.TIF_COMMAND_FAILED, SqrlTif.TIF_CLIENT_FAILURE} },
 		});
