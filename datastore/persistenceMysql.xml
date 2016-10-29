@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence">
+    <persistence-unit name="javasqrl-persistence"
+        transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.github.dbadia.sqrl.server.data.SqrlIdentity</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlCorrelator</class>
+        <class>com.github.dbadia.sqrl.server.data.SqrlUsedNutToken</class>
+        <properties>
+            <property name="eclipselink.logging.level" value="INFO" />
+            <property name="eclipselink.target-database" value="MYSQL" />
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://yourmysqlserver/sqrl?serverTimezone=America/New_York&amp;character_set_server=utf8mb4" />
+            <property name="javax.persistence.jdbc.user" value="sqrluser" />
+            <property name="javax.persistence.jdbc.password" value="badpassword" />
+        </properties>
+    </persistence-unit>
+</persistence>
