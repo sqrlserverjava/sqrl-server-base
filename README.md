@@ -50,7 +50,7 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 #### License
 http://www.apache.org/licenses/LICENSE-2.0.html
 
-## General Considerations
+## Enterprise Considerations
 
 ###### Authentication page impact
 Traditionally, displaying an authentication page is an inexpensive operation.  Display some static html, username/password fields and some images from a CDN.  
