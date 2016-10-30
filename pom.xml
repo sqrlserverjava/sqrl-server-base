@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.sqrlserverjava</groupId>
 		<artifactId>sqrl-server-parent</artifactId>
-		<version>1.0.1</version>
+		<version>1.2.0</version>
 	</parent>
 	<artifactId>sqrl-server-base</artifactId>
 	<name>SQRL Server Base Library</name>
@@ -30,14 +30,14 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.21</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink -->
+
+		<!-- TEST -->
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
 			<version>2.6.4</version>
+			<scope>test</scope>
 		</dependency>
-
-		<!-- TEST -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
