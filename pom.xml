@@ -4,12 +4,14 @@
 	<parent>
 		<groupId>com.github.sqrlserverjava</groupId>
 		<artifactId>sqrl-server-parent</artifactId>
-		<version>0.3.0-SNAPSHOT</version>
+		<version>1.0.1</version>
 	</parent>
 	<artifactId>sqrl-server-base</artifactId>
 	<name>SQRL Server Base Library</name>
-	<version>0.6.1-SNAPSHOT</version>
 	<description>Library that implements the server side portions of the SQRL protocol.</description>
+	<url>https://github.com/sqrlserverjava/sqrl-server-base</url>
+	
+	<version>0.6.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<dependencies>
