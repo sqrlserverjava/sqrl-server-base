@@ -1,6 +1,6 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server.exception;
 
-import com.github.dbadia.sqrl.server.SqrlException;
+import com.github.dbadia.sqrl.server.util.SqrlException;
 
 /**
  * Indicates an invalid SQRL request was received

@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.util;
 
 import java.util.ArrayList;
 import java.util.List;

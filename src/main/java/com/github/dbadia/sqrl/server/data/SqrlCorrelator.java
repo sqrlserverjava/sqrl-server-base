@@ -23,6 +23,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
+import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 
 /**
  * Represents a correlator which is used to track the multiple transactions required in a SQRL authentication

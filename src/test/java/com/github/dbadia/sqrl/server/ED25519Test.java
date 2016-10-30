@@ -10,7 +10,7 @@ import java.security.Signature;
 
 import org.junit.Test;
 
-import com.github.dbadia.sqrl.server.SqrlUtil;
+import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;

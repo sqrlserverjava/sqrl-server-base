@@ -6,6 +6,8 @@ import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import com.github.dbadia.sqrl.server.util.SqrlUtil;
+
 public class SqrlUtilTest {
 
 	/**

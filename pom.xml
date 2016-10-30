@@ -11,7 +11,7 @@
 	<description>Library that implements the server side portions of the SQRL protocol.</description>
 	<url>https://github.com/sqrlserverjava/sqrl-server-base</url>
 	
-	<version>0.6.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<dependencies>

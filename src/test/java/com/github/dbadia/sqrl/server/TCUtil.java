@@ -19,10 +19,12 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
-import com.github.dbadia.sqrl.server.backchannel.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
+import com.github.dbadia.sqrl.server.util.SqrlConstants;
+import com.github.dbadia.sqrl.server.util.SqrlException;
+import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
 
 import junitx.util.PrivateAccessor;
 

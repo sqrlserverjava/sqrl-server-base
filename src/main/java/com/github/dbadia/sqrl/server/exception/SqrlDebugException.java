@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.data;
+package com.github.dbadia.sqrl.server.exception;
 
 /**
  * Exception that is created for the sole purpose of showing a call trace. This exception should never be thrown

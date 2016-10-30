@@ -12,6 +12,8 @@ import javax.xml.bind.Marshaller;
 
 import org.junit.Test;
 
+import com.github.dbadia.sqrl.server.util.SqrlConfigHelper;
+
 import junitx.framework.ObjectAssert;
 import junitx.framework.StringAssert;
 

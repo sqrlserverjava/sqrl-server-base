@@ -8,9 +8,9 @@ package com.github.dbadia.sqrl.server;
  * @author Dave Badia
  *
  */
-public interface ClientAuthStateUpdater {
+public interface SqrlClientAuthStateUpdater {
 	/**
-	 * Invoked during initialization so that the {@link ClientAuthStateUpdater} has access to the resources it may need
+	 * Invoked during initialization so that the {@link SqrlClientAuthStateUpdater} has access to the resources it may need
 	 */
 	public void initSqrl(final SqrlConfig sqrlConfig, SqrlAuthStateMonitor sqrlAuthStateMonitor);
 

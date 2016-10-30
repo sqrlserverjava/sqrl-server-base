@@ -14,10 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlConstants;
-import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.SqrlUtil;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+import com.github.dbadia.sqrl.server.util.SqrlConstants;
+import com.github.dbadia.sqrl.server.util.SqrlException;
+import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 /**
  * Parses a SQRL client request and validates all signatures

@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.util;
+package com.github.dbadia.sqrl.server.exception;
 
 public class SqrlConfigSettingException extends RuntimeException {
 	private static final long serialVersionUID = -7855553556234268204L;

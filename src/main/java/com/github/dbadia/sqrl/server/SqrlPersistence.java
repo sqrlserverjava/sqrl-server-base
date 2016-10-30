@@ -8,7 +8,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
-import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
+import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 
 /**
  * Bridge between the SQRL library and the persistence layer (database, etc)

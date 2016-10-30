@@ -19,9 +19,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlConstants;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.util.SqrlConstants;
 
 import junit.framework.TestCase;
 import junitx.framework.StringAssert;

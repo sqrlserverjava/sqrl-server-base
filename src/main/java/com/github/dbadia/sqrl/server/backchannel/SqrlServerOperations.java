@@ -29,24 +29,26 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.ClientAuthStateUpdater;
+import com.github.dbadia.sqrl.server.SqrlClientAuthStateUpdater;
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
 import com.github.dbadia.sqrl.server.SqrlAuthStateMonitor;
 import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlConstants;
-import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
-import com.github.dbadia.sqrl.server.SqrlUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceCleanupTask;
-import com.github.dbadia.sqrl.server.data.SqrlPersistenceException;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
+import com.github.dbadia.sqrl.server.util.SqrlConstants;
+import com.github.dbadia.sqrl.server.util.SqrlException;
+import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
+import com.github.dbadia.sqrl.server.util.SqrlUtil;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
@@ -106,17 +108,17 @@ public class SqrlServerOperations {
 				logger.info("Instantiating ClientAuthStateUpdater class of {}", classname);
 				@SuppressWarnings("rawtypes")
 				final Class clazz = Class.forName(classname);
-				final Constructor<ClientAuthStateUpdater> constructor = clazz.getConstructor();
+				final Constructor<SqrlClientAuthStateUpdater> constructor = clazz.getConstructor();
 				if (constructor == null) {
 					throw new IllegalStateException("SQRL AuthStateUpdaterClass of " + classname
 							+ " must have a no-arg constructor, but does not");
 				}
 				final Object object = constructor.newInstance();
-				if (!(object instanceof ClientAuthStateUpdater)) {
+				if (!(object instanceof SqrlClientAuthStateUpdater)) {
 					throw new IllegalStateException("SQRL AuthStateUpdaterClass of " + classname
 							+ " was not an instance of ClientAuthStateUpdater");
 				}
-				final ClientAuthStateUpdater clientAuthStateUpdater = (ClientAuthStateUpdater) object;
+				final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
 				authStateMonitor = new SqrlAuthStateMonitor(config, this, clientAuthStateUpdater);
 				clientAuthStateUpdater.initSqrl(config, authStateMonitor);
 				final long intervalInMilis = config.getAuthSyncCheckInMillis();

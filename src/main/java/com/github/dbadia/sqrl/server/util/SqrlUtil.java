@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.dbadia.sqrl.server.SqrlConfig;
 
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;

@@ -98,7 +98,7 @@ public class SqrlConfig {
 	private String correlatorCookieName = "sqrlcorrelator";
 
 	/**
-	 * The full classname of the {@link ClientAuthStateUpdater} that will push status updates to the client browser
+	 * The full classname of the {@link SqrlClientAuthStateUpdater} that will push status updates to the client browser
 	 */
 	@XmlElement
 	private String clientAuthStateUpdaterClass = null;

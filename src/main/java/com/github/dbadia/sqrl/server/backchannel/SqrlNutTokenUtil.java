@@ -13,11 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlConstants;
-import com.github.dbadia.sqrl.server.SqrlException;
-import com.github.dbadia.sqrl.server.SqrlNutTokenReplayedException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+import com.github.dbadia.sqrl.server.exception.SqrlNutTokenReplayedException;
+import com.github.dbadia.sqrl.server.util.SqrlConstants;
+import com.github.dbadia.sqrl.server.util.SqrlException;
 
 /**
  * Various util methods for the {@link SqrlNutToken}

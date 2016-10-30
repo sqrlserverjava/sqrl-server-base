@@ -23,6 +23,8 @@ import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.exception.SqrlDebugException;
+import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 
 /**
  * The default implementation of {@link SqrlPersistence} which uses JPA in order to provide SQL and no-SQL connectivity.

@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.util;
 
 import java.net.URL;
 import java.security.SecureRandom;
@@ -9,6 +9,8 @@ import javax.xml.bind.Unmarshaller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.dbadia.sqrl.server.SqrlConfig;
 
 public class SqrlConfigHelper {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlConfigHelper.class);

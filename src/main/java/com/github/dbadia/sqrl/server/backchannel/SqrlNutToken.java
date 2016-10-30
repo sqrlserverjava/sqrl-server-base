@@ -11,8 +11,8 @@ import javax.crypto.Cipher;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlException;
-import com.github.dbadia.sqrl.server.SqrlUtil;
+import com.github.dbadia.sqrl.server.util.SqrlException;
+import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 /**
  * The SQRL "Nut" one time use (nonce) token as described on https://www.grc.com/sqrl/server.htm<br/>

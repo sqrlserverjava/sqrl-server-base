@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
+import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
 
 @WebListener
 public class SqrlServiceExecutor implements ServletContextListener {

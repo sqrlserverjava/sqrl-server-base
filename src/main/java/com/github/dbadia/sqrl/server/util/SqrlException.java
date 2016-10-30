@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.util;
 
 /**
  * SQRL exception class

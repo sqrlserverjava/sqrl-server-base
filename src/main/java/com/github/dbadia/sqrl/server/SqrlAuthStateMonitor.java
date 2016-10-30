@@ -13,7 +13,7 @@ import com.github.dbadia.sqrl.server.util.SelfExpiringHashMap;
 public class SqrlAuthStateMonitor implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlAuthStateMonitor.class);
 
-	private final ClientAuthStateUpdater clientAuthStateUpdater;
+	private final SqrlClientAuthStateUpdater clientAuthStateUpdater;
 	private final SqrlServerOperations sqrlServerOperations;
 	/**
 	 * Table of correlators to be monitored for state changes. key is a correlator string, value is the auth status
@@ -22,7 +22,7 @@ public class SqrlAuthStateMonitor implements Runnable {
 	private final Map<String, SqrlAuthenticationStatus> monitorTable;
 
 	public SqrlAuthStateMonitor(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations,
-			final ClientAuthStateUpdater clientAuthStateUpdater) {
+			final SqrlClientAuthStateUpdater clientAuthStateUpdater) {
 		this.clientAuthStateUpdater = clientAuthStateUpdater;
 		this.sqrlServerOperations = sqrlServerOperations;
 		monitorTable = new SelfExpiringHashMap<>(TimeUnit.SECONDS.toMillis(sqrlConfig.getNutValidityInSeconds()));

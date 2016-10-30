@@ -15,6 +15,7 @@ import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 
 import junitx.framework.ObjectAssert;
 import junitx.framework.StringAssert;

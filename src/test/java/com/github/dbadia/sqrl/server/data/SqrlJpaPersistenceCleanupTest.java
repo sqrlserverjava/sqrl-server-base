@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 
 import junitx.framework.ObjectAssert;
 import junitx.util.PrivateAccessor;

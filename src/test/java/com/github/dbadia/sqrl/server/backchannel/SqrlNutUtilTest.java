@@ -15,10 +15,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.util.SqrlException;
 
 import junitx.framework.ArrayAssert;
 import junitx.framework.ObjectAssert;

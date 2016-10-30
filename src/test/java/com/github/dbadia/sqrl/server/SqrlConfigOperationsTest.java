@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlConstants;
+import com.github.dbadia.sqrl.server.util.SqrlConstants;
 
 import junit.framework.TestCase;
 import junitx.framework.StringAssert;
