@@ -285,6 +285,10 @@ public class SqrlUtil {
 			final String requestUrl = request.getRequestURL().toString();
 			domain = requestUrl.substring(requestUrl.indexOf("//") + 2);
 			domain = domain.substring(0, domain.indexOf('/'));
+			final int portIndex = domain.indexOf(':');
+			if (portIndex > -1) {
+				domain = domain.substring(0, portIndex);
+			}
 		}
 		return domain;
 	}
