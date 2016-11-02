@@ -270,6 +270,15 @@ public class SqrlUtil {
 		}
 	}
 
+	public static final String cookiesToString(final Cookie[] cookieArray) {
+		final StringBuilder buf = new StringBuilder("C[ ");
+		for (final Cookie cookie : cookieArray) {
+			buf.append(cookie.getName()).append("=").append(cookie.getValue()).append(", ");
+		}
+
+		return buf.substring(0, buf.length() - 2) + " ]";
+	}
+
 	public static String computeCookieDomain(final HttpServletRequest request, final SqrlConfig config) {
 		String domain = config.getCookieDomain();
 		if (domain == null) {
