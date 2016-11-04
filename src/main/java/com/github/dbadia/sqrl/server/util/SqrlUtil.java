@@ -223,17 +223,20 @@ public class SqrlUtil {
 		Cookie cookie = findCookie(request, name);
 		if (cookie == null) {
 			cookie = new Cookie(name, value);
-			cookie.setDomain(cookieDomain);
-			cookie.setHttpOnly(true);
-			if (request.getScheme().equals(SqrlConstants.SCHEME_HTTPS)) {
-				cookie.setSecure(true);
-			}
-			cookie.setMaxAge(-1);
-		} else {
-			cookie.setValue(value);
-			cookie.setMaxAge(-1);
 		}
+		cookie.setValue(value);
+		cookie.setMaxAge(-1);
+		applySettingsToCookie(cookie, cookieDomain, request);
 		return cookie;
+	}
+
+	private static void applySettingsToCookie(final Cookie cookie, final String cookieDomain,
+			final HttpServletRequest request) {
+		cookie.setDomain(cookieDomain);
+		cookie.setHttpOnly(true);
+		if (request.getScheme().equals(SqrlConstants.SCHEME_HTTPS)) {
+			cookie.setSecure(true);
+		}
 	}
 
 	private static Cookie findCookie(final HttpServletRequest request, final String toFind) {
@@ -256,6 +259,7 @@ public class SqrlUtil {
 	}
 
 	public static void deleteCookies(final HttpServletRequest request, final HttpServletResponse response,
+			final SqrlConfig sqrlConfig,
 			final String... cookiesToDelete) {
 		final List<String> cookieToDeleteList = Arrays.asList(cookiesToDelete);
 		if (request.getCookies() == null) {
@@ -264,7 +268,9 @@ public class SqrlUtil {
 		for (final Cookie cookie : request.getCookies()) {
 			if (cookieToDeleteList.contains(cookie.getName())) {
 				cookie.setMaxAge(0);
-				cookie.setValue(null);
+				cookie.setValue(""); // TODO: test, do I need to set secure set here?
+				final String cookieDomain = SqrlUtil.computeCookieDomain(request, sqrlConfig);
+				applySettingsToCookie(cookie, cookieDomain, request);
 				response.addCookie(cookie);
 			}
 		}

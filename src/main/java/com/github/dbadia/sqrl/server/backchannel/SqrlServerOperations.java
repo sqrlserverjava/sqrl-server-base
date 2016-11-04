@@ -29,10 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.SqrlClientAuthStateUpdater;
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
 import com.github.dbadia.sqrl.server.SqrlAuthStateMonitor;
 import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
+import com.github.dbadia.sqrl.server.SqrlClientAuthStateUpdater;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlFlag;
@@ -168,6 +168,7 @@ public class SqrlServerOperations {
 	 * @throws SqrlException
 	 *             if an error occurs
 	 */
+	// TODO: rename prepareSqrlAuthPageData
 	public SqrlAuthPageData buildQrCodeForAuthPage(final HttpServletRequest request, final HttpServletResponse response,
 			final InetAddress userInetAddress, final int qrCodeSizeInPixels) throws SqrlException {
 		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
@@ -566,7 +567,8 @@ public class SqrlServerOperations {
 	 *            the HTTP response
 	 */
 	public void deleteSqrlAuthCookies(final HttpServletRequest request, final HttpServletResponse response) {
-		SqrlUtil.deleteCookies(request, response, config.getCorrelatorCookieName(), config.getFirstNutCookieName());
+		SqrlUtil.deleteCookies(request, response, config, config.getCorrelatorCookieName(),
+				config.getFirstNutCookieName());
 	}
 
 	/**
