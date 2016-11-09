@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
 
 public class SqrlPersistenceCleanupTask implements Runnable {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlPersistenceCleanupTask.class);
-	private final SqrlPersistenceFactory persistenceFactory;
+	private static final Logger				logger	= LoggerFactory.getLogger(SqrlPersistenceCleanupTask.class);
+	private final SqrlPersistenceFactory	persistenceFactory;
 
 	public SqrlPersistenceCleanupTask(final SqrlPersistenceFactory persistenceFactory) {
 		super();

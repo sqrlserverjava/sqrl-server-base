@@ -68,7 +68,7 @@ public class SqrlRequest {
 					final SqrlClientOpt clientOpt = SqrlClientOpt.valueOf(optString);
 					optList.add(clientOpt);
 				} catch (IllegalArgumentException e) {
-					throw new SqrlException("Unknown SQRL client option '"+optString+"'", e);
+					throw new SqrlException("Unknown SQRL client option '" + optString + "'", e);
 				}
 			}
 		}
@@ -126,12 +126,12 @@ public class SqrlRequest {
 	}
 
 	/**
-	 * The correlator is our only key to determining which user this is, so it's critical we parse this out first 
+	 * The correlator is our only key to determining which user this is, so it's critical we parse this out first
 	 */
 	public static String parseCorrelatorOnly(HttpServletRequest servletRequest) throws SqrlException {
 		String serverParam = getRequiredParameter(servletRequest, "server");
 		// parse server - not a name value pair, just the query string we gave
-		return  extractFromSqrlCsvString(serverParam, SqrlConstants.CLIENT_PARAM_CORRELATOR);
+		return extractFromSqrlCsvString(serverParam, SqrlConstants.CLIENT_PARAM_CORRELATOR);
 	}
 
 	private static String getRequiredParameter(final HttpServletRequest servletRequest, final String requiredParamName)

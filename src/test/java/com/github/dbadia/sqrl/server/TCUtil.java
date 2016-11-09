@@ -193,17 +193,18 @@ public class TCUtil {
 		return new SqrlAutoCloseablePersistence(createSqrlPersistence());
 	}
 
-	static EntityManagerFactory extractEntityManagerFactory(final SqrlPersistence sqrlPersistence) throws NoSuchFieldException {
+	static EntityManagerFactory extractEntityManagerFactory(final SqrlPersistence sqrlPersistence)
+			throws NoSuchFieldException {
 		SqrlPersistence extracted = sqrlPersistence;
-		if(extracted instanceof SqrlAutoCloseablePersistence) {
-			extracted =  (SqrlPersistence) PrivateAccessor.getField(extracted, "sqrlPersistence");
+		if (extracted instanceof SqrlAutoCloseablePersistence) {
+			extracted = (SqrlPersistence) PrivateAccessor.getField(extracted, "sqrlPersistence");
 		}
 		return (EntityManagerFactory) PrivateAccessor.getField(extracted, "entityManagerFactory");
 	}
 
 	public static SqrlAutoCloseablePersistence createSqrlPersistence() {
-		return new SqrlAutoCloseablePersistence(new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()).getSqrlPersistenceFactory()
-				.createSqrlPersistence());
+		return new SqrlAutoCloseablePersistence(new SqrlConfigOperations(TCUtil.buildTestSqrlConfig())
+				.getSqrlPersistenceFactory().createSqrlPersistence());
 	}
 
 	/**

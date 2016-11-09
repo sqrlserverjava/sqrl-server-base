@@ -219,12 +219,11 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 		}
 	}
 
-
 	private class ExpiringKey<L> implements Delayed {
 
-		private long startTime = System.currentTimeMillis();
-		private final long maxLifeTimeMillis;
-		private final L key;
+		private long		startTime	= System.currentTimeMillis();
+		private final long	maxLifeTimeMillis;
+		private final L		key;
 
 		public ExpiringKey(final L key, final long maxLifeTimeMillis) {
 			this.maxLifeTimeMillis = maxLifeTimeMillis;

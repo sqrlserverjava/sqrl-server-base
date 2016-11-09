@@ -32,11 +32,11 @@ import com.github.dbadia.sqrl.server.util.SqrlUtil;
  *
  */
 public class SqrlConfigOperations {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlConfig.class);
+	private static final Logger			logger				= LoggerFactory.getLogger(SqrlConfig.class);
 	/**
 	 * Set automatically but only used if this class is set on {@link SqrlConfig#setSqrlPersistenceFactoryClass(String)}
 	 */
-	private static SqrlServiceExecutor sqrlServiceExecutor = null;
+	private static SqrlServiceExecutor	sqrlServiceExecutor	= null;
 
 	private enum BackchannelSettingType {
 		FULL_URL, FULL_PATH, PARTIAL_PATH
@@ -129,8 +129,7 @@ public class SqrlConfigOperations {
 			throw new SqrlConfigSettingException(
 					clazz.getName() + " must have a default no-arg constructor, but none was found", e);
 		} catch (final Exception e) {
-			throw new SqrlConfigSettingException("Error instantiating " + description + " of " + clazz.getName(),
-					e);
+			throw new SqrlConfigSettingException("Error instantiating " + description + " of " + clazz.getName(), e);
 		}
 	}
 

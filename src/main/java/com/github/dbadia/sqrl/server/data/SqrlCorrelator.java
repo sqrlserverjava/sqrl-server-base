@@ -37,7 +37,8 @@ public class SqrlCorrelator implements Serializable {
 	private static final long serialVersionUID = -670589151677266808L;
 
 	@Id
-	@TableGenerator(name = "correlator_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value", allocationSize = 1)
+	@TableGenerator(name = "correlator_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value",
+			allocationSize = 1)
 	@GeneratedValue(generator = "correlator_gen")
 	@Column(name = "id")
 	private long id;
@@ -54,7 +55,8 @@ public class SqrlCorrelator implements Serializable {
 	private Date expiryTime;
 
 	@ElementCollection(fetch = FetchType.EAGER)
-	@CollectionTable(name = "sqrl_transient_auth_data", joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
+	@CollectionTable(name = "sqrl_transient_auth_data",
+			joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
 	@MapKeyColumn(name = "name")
 	@Column(name = "value")
 	private final Map<String, String> transientAuthDataTable = new HashMap<>();
@@ -107,6 +109,7 @@ public class SqrlCorrelator implements Serializable {
 	public void setAuthenticatedIdentity(final SqrlIdentity authenticatedIdentity) {
 		this.authenticatedIdentity = authenticatedIdentity;
 	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();

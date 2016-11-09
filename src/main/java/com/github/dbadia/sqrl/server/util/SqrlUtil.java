@@ -259,8 +259,7 @@ public class SqrlUtil {
 	}
 
 	public static void deleteCookies(final HttpServletRequest request, final HttpServletResponse response,
-			final SqrlConfig sqrlConfig,
-			final String... cookiesToDelete) {
+			final SqrlConfig sqrlConfig, final String... cookiesToDelete) {
 		final List<String> cookieToDeleteList = Arrays.asList(cookiesToDelete);
 		if (request.getCookies() == null) {
 			return;

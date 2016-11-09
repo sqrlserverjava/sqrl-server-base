@@ -81,7 +81,7 @@ public class SqrlServerOperations {
 	private final SqrlPersistenceFactory	persistenceFactory;
 	private final SqrlConfigOperations		configOperations;
 	private final SqrlConfig				config;
-	private final SqrlAuthStateMonitor authStateMonitor;
+	private final SqrlAuthStateMonitor		authStateMonitor;
 
 	/**
 	 * Initializes the operations class with the given config, defaulting to the built in JPA persisentce provider.
@@ -451,7 +451,7 @@ public class SqrlServerOperations {
 			throw new SqrlException(
 					SqrlLoggingUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
 							+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
-							e);
+					e);
 		}
 	}
 
@@ -650,7 +650,8 @@ public class SqrlServerOperations {
 
 	public Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(final Set<String> correlatorStringSet) {
 		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
-			final Map<String, SqrlCorrelator> resultTable = sqrlPersistence.fetchSqrlCorrelatorsDetached(correlatorStringSet);
+			final Map<String, SqrlCorrelator> resultTable = sqrlPersistence
+					.fetchSqrlCorrelatorsDetached(correlatorStringSet);
 			sqrlPersistence.closeCommit();
 			return resultTable;
 		}

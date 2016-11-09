@@ -33,7 +33,8 @@ public class SqrlIdentity implements Serializable {
 	private static final long serialVersionUID = 8253431723090135998L;
 
 	@Id
-	@TableGenerator(name = "identity_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value", allocationSize = 1)
+	@TableGenerator(name = "identity_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value",
+			allocationSize = 1)
 	@GeneratedValue(generator = "identity_gen")
 	@Column(name = "id")
 	private long id;

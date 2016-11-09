@@ -90,7 +90,7 @@ public class SqrlAuthStateEventServletTest {
 
 		final List<String> stringList = Arrays.asList(abc, def, ghi, "xyz");
 
-		try(SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence()) {
 			sqrlPersistence.createCorrelator(abc, minutesFromNow(3));
 			sqrlPersistence.createCorrelator(def, minutesFromNow(3));
 			sqrlPersistence.createCorrelator(ghi, minutesFromNow(3));
@@ -100,7 +100,7 @@ public class SqrlAuthStateEventServletTest {
 		final List<SqrlMiniCorrelator> correlatorsToCheck = fetchCorrelatorIdsAndState(stringList);
 		// Correlaotr that got expired
 		correlatorsToCheck.add(new SqrlMiniCorrelator(5, "xyz", SqrlAuthenticationStatus.CORRELATOR_ISSUED));
-		try(SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
 			final SqrlCorrelator correlator = sqrlPersistence.fetchSqrlCorrelator(def);
 			correlator.setAuthenticationStatus(SqrlAuthenticationStatus.ERROR_BAD_REQUEST);
 			sqrlPersistence.closeCommit();
@@ -108,27 +108,28 @@ public class SqrlAuthStateEventServletTest {
 		monitorCorrelatorsForStateChange(correlatorsToCheck);
 	}
 
-
-	private void monitorCorrelatorsForStateChange(final List<SqrlMiniCorrelator> correaltorList) throws NoSuchFieldException {
-		try(SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
+	private void monitorCorrelatorsForStateChange(final List<SqrlMiniCorrelator> correaltorList)
+			throws NoSuchFieldException {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
 			final EntityManagerFactory entityManagerFactory = TCUtil.extractEntityManagerFactory(sqrlPersistence);
 			final EntityManager entityManager = entityManagerFactory.createEntityManager();
 			final StringBuilder buf = new StringBuilder(
 					"SELECT c.id, c.value, c.authenticationStatus FROM SqrlCorrelator AS c WHERE ");
-			for(final SqrlMiniCorrelator correlator : correaltorList) {
+			for (final SqrlMiniCorrelator correlator : correaltorList) {
 				buf.append(" (c.id = ").append(correlator.id).append(" AND c.authenticationStatus != :as")
-				.append(correlator.id).append(" )").append(" OR ");
+						.append(correlator.id).append(" )").append(" OR ");
 			}
 			final String queryString = buf.substring(0, buf.length() - 3);
 
 			final TypedQuery<Object[]> query = entityManager.createQuery(queryString, Object[].class);
-			for(final SqrlMiniCorrelator correlator : correaltorList) {
-				query.setParameter("as"+correlator.id, correlator.status);
+			for (final SqrlMiniCorrelator correlator : correaltorList) {
+				query.setParameter("as" + correlator.id, correlator.status);
 			}
 			final List<Object[]> results = query.getResultList();
 			System.err.println("Results:");
 			for (final Object[] result : results) {
-				System.err.println("id: " + result[0] + ", value = "+ result[1] + ", authenticationStatus: " + result[2]);
+				System.err.println(
+						"id: " + result[0] + ", value = " + result[1] + ", authenticationStatus: " + result[2]);
 			}
 			System.err.println(buf.toString());
 
@@ -139,38 +140,41 @@ public class SqrlAuthStateEventServletTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static List<SqrlMiniCorrelator> fetchCorrelatorIdsAndState(final List<String> correaltorStringList) throws NoSuchFieldException {
-		if(correaltorStringList.isEmpty()) {
+	private static List<SqrlMiniCorrelator> fetchCorrelatorIdsAndState(final List<String> correaltorStringList)
+			throws NoSuchFieldException {
+		if (correaltorStringList.isEmpty()) {
 			return Collections.emptyList();
 		}
-		try(SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
 			final EntityManagerFactory entityManagerFactory = TCUtil.extractEntityManagerFactory(sqrlPersistence);
 			final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-			final StringBuilder buf = new StringBuilder("SELECT c.id, c.value, c.authenticationStatus FROM SqrlCorrelator AS c WHERE ");
-			for(final String correlatorString : correaltorStringList) {
+			final StringBuilder buf = new StringBuilder(
+					"SELECT c.id, c.value, c.authenticationStatus FROM SqrlCorrelator AS c WHERE ");
+			for (final String correlatorString : correaltorStringList) {
 				buf.append(" c.value = '").append(correlatorString).append("' OR ");
 			}
 			final String queryString = buf.substring(0, buf.length() - 3);
-			final TypedQuery<SqrlMiniCorrelator> query = entityManager.createQuery(
-					queryString, SqrlMiniCorrelator.class);
+			final TypedQuery<SqrlMiniCorrelator> query = entityManager.createQuery(queryString,
+					SqrlMiniCorrelator.class);
 
 			@SuppressWarnings("rawtypes") // need to map to SqrlMiniCorrelator or Object[] below
 			final List results = query.getResultList();
 			List<SqrlMiniCorrelator> toReturn = null;
-			//Work around a JPA bug?
-			if(results.isEmpty()) {
+			// Work around a JPA bug?
+			if (results.isEmpty()) {
 				toReturn = Collections.emptyList();
-			}  else {
+			} else {
 				final Object firstOne = results.get(0);
-				if(firstOne instanceof SqrlMiniCorrelator) {
+				if (firstOne instanceof SqrlMiniCorrelator) {
 					toReturn = results;
-				} else if(firstOne.getClass().isArray()) {
+				} else if (firstOne.getClass().isArray()) {
 					// We got List<Object[]>
-					toReturn= new ArrayList<>();
+					toReturn = new ArrayList<>();
 					for (int i = 0; i < results.size(); i++) {
 						final Object[] objectArray = (Object[]) results.get(i);
-						toReturn.add(new SqrlMiniCorrelator((long)objectArray[0], (String)objectArray[1], (SqrlAuthenticationStatus)objectArray[2]));
+						toReturn.add(new SqrlMiniCorrelator((long) objectArray[0], (String) objectArray[1],
+								(SqrlAuthenticationStatus) objectArray[2]));
 					}
 				}
 			}
@@ -182,9 +186,10 @@ public class SqrlAuthStateEventServletTest {
 	}
 
 	private static class SqrlMiniCorrelator {
-		private final long id;
-		private final String value;
-		private final SqrlAuthenticationStatus status;
+		private final long						id;
+		private final String					value;
+		private final SqrlAuthenticationStatus	status;
+
 		public SqrlMiniCorrelator(final long id, final String value, final SqrlAuthenticationStatus status) {
 			super();
 			this.id = id;

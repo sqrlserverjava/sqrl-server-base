@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 
 public class SqrlConfigHelper {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlConfigHelper.class);
-	private static JAXBContext jaxbContext;
+	private static final Logger	logger	= LoggerFactory.getLogger(SqrlConfigHelper.class);
+	private static JAXBContext	jaxbContext;
 
 	private SqrlConfigHelper() {
 		// util class

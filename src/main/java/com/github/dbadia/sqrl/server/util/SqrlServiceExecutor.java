@@ -27,8 +27,8 @@ public class SqrlServiceExecutor implements ServletContextListener {
 	 * DB cleanup may be slow running, so ensure another thread is always available to check for status updates from
 	 * SQRL clients
 	 */
-	private static final int THREAD_COUNT = 2;
-	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(THREAD_COUNT,
+	private static final int						THREAD_COUNT		= 2;
+	private static final ScheduledExecutorService	EXECUTOR_SERVICE	= Executors.newScheduledThreadPool(THREAD_COUNT,
 			new SqrlThreadFactory());
 
 	@SuppressWarnings("rawtypes")
@@ -57,7 +57,6 @@ public class SqrlServiceExecutor implements ServletContextListener {
 		}
 		EXECUTOR_SERVICE.shutdown();
 	}
-
 
 	/**
 	 * The only reason for this is to give our threads meaningful names

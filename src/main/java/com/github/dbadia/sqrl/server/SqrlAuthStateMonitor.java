@@ -13,13 +13,13 @@ import com.github.dbadia.sqrl.server.util.SelfExpiringHashMap;
 public class SqrlAuthStateMonitor implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlAuthStateMonitor.class);
 
-	private final SqrlClientAuthStateUpdater clientAuthStateUpdater;
-	private final SqrlServerOperations sqrlServerOperations;
+	private final SqrlClientAuthStateUpdater			clientAuthStateUpdater;
+	private final SqrlServerOperations					sqrlServerOperations;
 	/**
 	 * Table of correlators to be monitored for state changes. key is a correlator string, value is the auth status
 	 * reported by the browser. Entries in this table expire automatically
 	 */
-	private final Map<String, SqrlAuthenticationStatus> monitorTable;
+	private final Map<String, SqrlAuthenticationStatus>	monitorTable;
 
 	public SqrlAuthStateMonitor(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations,
 			final SqrlClientAuthStateUpdater clientAuthStateUpdater) {
@@ -70,8 +70,7 @@ public class SqrlAuthStateMonitor implements Runnable {
 					oldStatus = monitorTable.get(correlator);
 				}
 				if (oldStatus == null) {
-					logger.error("Extracted null oldStatus from monitorTable for correlator {}",
-							correlator);
+					logger.error("Extracted null oldStatus from monitorTable for correlator {}", correlator);
 				} else {
 					clientAuthStateUpdater.pushStatusUpdateToBrowser(correlator, oldStatus, entry.getValue());
 				}
