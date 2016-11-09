@@ -616,6 +616,9 @@ public class SqrlServerOperations {
 
 	public SqrlCorrelator fetchSqrlCorrelator(final HttpServletRequest request) {
 		final String correlatorString = extractSqrlCorrelatorStringFromRequestCookie(request);
+		if (correlatorString == null) {
+			return null;
+		}
 		return fetchSqrlCorrelator(correlatorString);
 	}
 
@@ -668,5 +671,14 @@ public class SqrlServerOperations {
 			sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);
 			sqrlPersistence.closeCommit();
 		}
+	}
+
+	/**
+	 * Clears SQRL auth one time use data from the browser and database
+	 */
+	public void cleanSqrlAuthData(final HttpServletRequest request, final HttpServletResponse response) {
+		final SqrlCorrelator sqrlCorrelator = fetchSqrlCorrelator(request);
+		deleteSqrlAuthCookies(request, response);
+		deleteSqrlCorrelator(sqrlCorrelator);
 	}
 }
