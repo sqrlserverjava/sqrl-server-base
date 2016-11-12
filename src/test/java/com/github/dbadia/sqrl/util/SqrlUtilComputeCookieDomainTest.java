@@ -24,9 +24,15 @@ public class SqrlUtilComputeCookieDomainTest {
 	@Parameters(name = "{index}: SqrlClientOpt=({0})")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{ "https://sqrljava.tech/blah", "sqrljava.tech" },
-			{ "https://sqrljava.tech:20165/blah", "sqrljava.tech" },
-			{ "https://sqrl.sqrljava.tech:20165/blah", "sqrl.sqrljava.tech" },
+			{ "sqrljava.tech", "https://sqrljava.tech/blah" },
+			{ "sqrljava.tech", "https://sqrljava.tech/blah/more" },
+			{ "sqrljava.tech", "https://sqrljava.tech" },
+			{ "sqrljava.tech", "https://sqrljava.tech/" },
+			{ "sqrljava.tech", "https://sqrljava.tech:20165/blah" },
+			{ "sqrl.sqrljava.tech", "https://sqrl.sqrljava.tech:20165/blah" },
+			{ "sqrl.sqrljava.tech", "https://sqrl.sqrljava.tech" },
+			{ "sqrl.sqrljava.tech", "https://sqrl.sqrljava.tech/" },
+			{ null, "https://localhost:8081/sqrlexample",  },
 		});
 	}
 
@@ -41,10 +47,12 @@ public class SqrlUtilComputeCookieDomainTest {
 		assertEquals(expected, result);
 	}
 
+
 	@Parameter(value = 0)
-	public /* NOT private */ String input;
+	public /* NOT private */ String expected;
 
 	@Parameter(value = 1)
-	public /* NOT private */ String expected;
+	public /* NOT private */ String input;
+
 
 }

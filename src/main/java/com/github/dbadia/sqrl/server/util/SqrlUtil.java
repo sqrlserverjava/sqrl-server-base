@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +36,9 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
  *
  */
 public class SqrlUtil {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlUtil.class);
+	private static final Logger					logger				= LoggerFactory.getLogger(SqrlUtil.class);
+	private static final Map<String, String>	cookieDomainCache	= new ConcurrentHashMap<>();
+	private static final Map<String, String>	cookiePathCache		= new ConcurrentHashMap<>();
 
 	private SqrlUtil() {
 		// Util class
@@ -291,11 +295,19 @@ public class SqrlUtil {
 		String domain = config.getCookieDomain();
 		if (domain == null) {
 			final String requestUrl = request.getRequestURL().toString();
-			domain = requestUrl.substring(requestUrl.indexOf("//") + 2);
-			domain = domain.substring(0, domain.indexOf('/'));
-			final int portIndex = domain.indexOf(':');
-			if (portIndex > -1) {
-				domain = domain.substring(0, portIndex);
+			domain = cookieDomainCache.get(requestUrl);
+			if (domain == null) {
+				// compute the value and store in the cache
+				domain = requestUrl.substring(requestUrl.indexOf("//") + 2);
+				final int index = domain.indexOf('/');
+				if (index > 0) {
+					domain = domain.substring(0, index);
+				}
+				final int portIndex = domain.indexOf(':');
+				if (portIndex > -1) {
+					domain = domain.substring(0, portIndex);
+				}
+				cookieDomainCache.put(requestUrl, domain);
 			}
 			if ("localhost".equals(domain)) {
 				return null;
@@ -303,4 +315,29 @@ public class SqrlUtil {
 		}
 		return domain;
 	}
+
+	public static String computeCookiePath(final HttpServletRequest request, final SqrlConfig config) {
+		String path = config.getCookiePath();
+		if (path == null) {
+			final String requestUrl = request.getRequestURL().toString();
+			path = cookiePathCache.get(requestUrl);
+			if (path == null) {
+				path = requestUrl;
+				// Remove http://
+				path = path.substring(path.indexOf("://") + 3);
+				// Remove trailing slash
+				if (path.endsWith("/")) {
+					path = path.substring(0, path.length() - 1);
+				}
+				// Take everything starting with the first /
+				final int index = path.indexOf('/');
+				if (index > -1) {
+					path = path.substring(index);
+				}
+				cookiePathCache.put(requestUrl, path);
+			}
+		}
+		return path;
+	}
+
 }

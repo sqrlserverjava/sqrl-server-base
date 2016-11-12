@@ -127,11 +127,17 @@ public class SqrlConfig {
 	private String firstNutCookieName = "sqrlfirstnut";
 
 	/**
-	 * The domain to set on cookies via cookie name to use for the SQRL first nut during authentication; defaults to the
-	 * domain (including subdomain) that the browser request came in on
+	 * The domain to set on SQRL cookies ; defaults to the domain (including subdomain) that the browser request came in
+	 * on
 	 */
 	@XmlElement
 	private String cookieDomain = null;
+
+	/**
+	 * The path to set on SQRL cookies ; defaults to the path that was in the request
+	 */
+	@XmlElement
+	private String cookiePath = null;
 
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;
@@ -281,6 +287,14 @@ public class SqrlConfig {
 
 	public void setCookieDomain(final String cookieDomain) {
 		this.cookieDomain = cookieDomain;
+	}
+
+	public String getCookiePath() {
+		return cookiePath;
+	}
+
+	public void setCookiePath(final String cookiePath) {
+		this.cookiePath = cookiePath;
 	}
 
 	public long getAuthSyncCheckInMillis() {
