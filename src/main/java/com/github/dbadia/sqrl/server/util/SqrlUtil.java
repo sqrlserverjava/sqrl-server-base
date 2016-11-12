@@ -223,23 +223,23 @@ public class SqrlUtil {
 	}
 
 	public static Cookie createOrUpdateCookie(final HttpServletRequest request, final String cookieDomain,
-			final String name, final String value) {
+			final String name, final String value, final int maxAgeInSeconds, final SqrlConfig config) {
 		Cookie cookie = findCookie(request, name);
 		if (cookie == null) {
 			cookie = new Cookie(name, value);
 		}
 		cookie.setValue(value);
-		cookie.setMaxAge(-1);
-		applySettingsToCookie(cookie, cookieDomain, request);
+		cookie.setMaxAge(maxAgeInSeconds);
+		applySettingsToCookie(cookie, cookieDomain, request, config);
 		return cookie;
 	}
 
 	private static void applySettingsToCookie(final Cookie cookie, final String cookieDomain,
-			final HttpServletRequest request) {
+			final HttpServletRequest request, final SqrlConfig config) {
 		if (cookieDomain != null) {
 			cookie.setDomain(cookieDomain);
 		}
-		// TODO: setPath
+		cookie.setPath(config.getCookiePath());
 		cookie.setHttpOnly(true);
 		if (request.getScheme().equals(SqrlConstants.SCHEME_HTTPS)) {
 			cookie.setSecure(true);
@@ -276,7 +276,7 @@ public class SqrlUtil {
 				cookie.setMaxAge(0);
 				cookie.setValue(""); // TODO: test, do I need to set secure set here?
 				final String cookieDomain = SqrlUtil.computeCookieDomain(request, sqrlConfig);
-				applySettingsToCookie(cookie, cookieDomain, request);
+				applySettingsToCookie(cookie, cookieDomain, request, sqrlConfig);
 				response.addCookie(cookie);
 			}
 		}

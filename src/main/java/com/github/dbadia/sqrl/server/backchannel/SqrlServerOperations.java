@@ -202,10 +202,12 @@ public class SqrlServerOperations {
 					SqrlUtil.sqrlBase64UrlEncode(url));
 			sqrlPersistence.closeCommit();
 			final String cookieDomain = SqrlUtil.computeCookieDomain(request, config);
-			response.addCookie(
-					SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getCorrelatorCookieName(), correlator));
+			// Correlator outlives the nut so extend the cookie expiry
+			final int correlatorCookieAgeInSeconds = config.getNutValidityInSeconds() + 120;
+			response.addCookie(SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getCorrelatorCookieName(),
+					correlator, correlatorCookieAgeInSeconds, config));
 			response.addCookie(SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getFirstNutCookieName(),
-					nut.asSqrlBase64EncryptedNut()));
+					nut.asSqrlBase64EncryptedNut(), config.getNutValidityInSeconds(), config));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
@@ -451,7 +453,7 @@ public class SqrlServerOperations {
 			throw new SqrlException(
 					SqrlLoggingUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
 							+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
-					e);
+							e);
 		}
 	}
 
