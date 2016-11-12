@@ -46,6 +46,8 @@ public class SqrlConfig {
 	@XmlElement
 	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toSeconds(15);
 
+	private long nutValidityInMillis = nutValidityInSeconds * 1000;
+
 	/**
 	 * The image format to generate QR codes in; default is PNG
 	 */
@@ -143,6 +145,10 @@ public class SqrlConfig {
 		return nutValidityInSeconds;
 	}
 
+	public long getNutValidityInMillis() {
+		return nutValidityInMillis;
+	}
+
 	/**
 	 * Set the length of time (in seconds) that the nut will be valid for
 	 *
@@ -155,7 +161,9 @@ public class SqrlConfig {
 			throw new IllegalArgumentException("nutValidityInSeconds must be greater than zero");
 		}
 		this.nutValidityInSeconds = nutValidityInSeconds;
+		this.nutValidityInMillis = nutValidityInSeconds * 1000;
 	}
+
 
 	public ImageFormat getQrCodeFileType() {
 		return qrCodeFileType;

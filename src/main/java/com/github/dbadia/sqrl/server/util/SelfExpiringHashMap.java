@@ -9,6 +9,9 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * As described in http://stackoverflow.com/a/30681018/2863942
  * https://gist.github.com/pcan/16faf4e59942678377e0#file-selfexpiringhashmap-java
@@ -23,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  *            the Value type
  */
 public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
+	private static final Logger logger = LoggerFactory.getLogger(SelfExpiringHashMap.class);
 
 	private final Map<K, V> internalMap;
 
@@ -213,6 +217,7 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 	private void cleanup() {
 		ExpiringKey<K> delayedKey = delayQueue.poll();
 		while (delayedKey != null) {
+			logger.debug("SelfExpiringHashMap cleanup, removing " + delayedKey.getKey());
 			internalMap.remove(delayedKey.getKey());
 			expiringKeys.remove(delayedKey.getKey());
 			delayedKey = delayQueue.poll();

@@ -232,7 +232,10 @@ public class SqrlUtil {
 
 	private static void applySettingsToCookie(final Cookie cookie, final String cookieDomain,
 			final HttpServletRequest request) {
-		cookie.setDomain(cookieDomain);
+		if (cookieDomain != null) {
+			cookie.setDomain(cookieDomain);
+		}
+		// TODO: setPath
 		cookie.setHttpOnly(true);
 		if (request.getScheme().equals(SqrlConstants.SCHEME_HTTPS)) {
 			cookie.setSecure(true);
@@ -293,6 +296,9 @@ public class SqrlUtil {
 			final int portIndex = domain.indexOf(':');
 			if (portIndex > -1) {
 				domain = domain.substring(0, portIndex);
+			}
+			if ("localhost".equals(domain)) {
+				return null;
 			}
 		}
 		return domain;

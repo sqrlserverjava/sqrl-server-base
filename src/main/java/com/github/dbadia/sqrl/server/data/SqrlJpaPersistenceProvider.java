@@ -80,7 +80,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		return (SqrlIdentity) returnOneOrNull(
 				entityManager.createQuery("SELECT i FROM SqrlIdentity i WHERE i.idk = :sqrlIdk")
-						.setParameter("sqrlIdk", sqrlIdk).getResultList());
+				.setParameter("sqrlIdk", sqrlIdk).getResultList());
 	}
 
 	private SqrlIdentity fetchRequiredSqrlIdentity(final String sqrlIdk) {
@@ -98,7 +98,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		return (SqrlIdentity) returnOneOrNull(
 				entityManager.createQuery("SELECT i FROM SqrlIdentity i WHERE i.nativeUserXref = :userXref")
-						.setParameter("userXref", userXref).getResultList());
+				.setParameter("userXref", userXref).getResultList());
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		return (SqrlCorrelator) returnOneOrNull(
 				entityManager.createQuery("SELECT i FROM SqrlCorrelator i WHERE i.value = :correlator")
-						.setParameter(PARAM_CORRELATOR, sqrlCorrelatorString).getResultList());
+				.setParameter(PARAM_CORRELATOR, sqrlCorrelatorString).getResultList());
 	}
 
 	@Override
@@ -334,6 +334,9 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	@Override
 	public void deleteSqrlCorrelator(final SqrlCorrelator sqrlCorrelator) {
+		if (sqrlCorrelator == null) {
+			return;
+		}
 		SqrlCorrelator toRemove = sqrlCorrelator;
 		updateLastUsed(entityManager);
 		if (!entityManager.contains(sqrlCorrelator)) {
