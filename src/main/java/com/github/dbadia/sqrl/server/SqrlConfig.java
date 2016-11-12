@@ -134,10 +134,10 @@ public class SqrlConfig {
 	private String cookieDomain = null;
 
 	/**
-	 * The path to set on SQRL cookies ; defaults to the path that was in the request
+	 * The path to set on SQRL cookies; defaults to "/"
 	 */
 	@XmlElement
-	private String cookiePath = null;
+	private String cookiePath = "/";
 
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;

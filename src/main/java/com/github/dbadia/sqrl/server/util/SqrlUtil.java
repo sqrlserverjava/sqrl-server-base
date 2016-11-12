@@ -38,7 +38,6 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 public class SqrlUtil {
 	private static final Logger					logger				= LoggerFactory.getLogger(SqrlUtil.class);
 	private static final Map<String, String>	cookieDomainCache	= new ConcurrentHashMap<>();
-	private static final Map<String, String>	cookiePathCache		= new ConcurrentHashMap<>();
 
 	private SqrlUtil() {
 		// Util class
@@ -315,29 +314,4 @@ public class SqrlUtil {
 		}
 		return domain;
 	}
-
-	public static String computeCookiePath(final HttpServletRequest request, final SqrlConfig config) {
-		String path = config.getCookiePath();
-		if (path == null) {
-			final String requestUrl = request.getRequestURL().toString();
-			path = cookiePathCache.get(requestUrl);
-			if (path == null) {
-				path = requestUrl;
-				// Remove http://
-				path = path.substring(path.indexOf("://") + 3);
-				// Remove trailing slash
-				if (path.endsWith("/")) {
-					path = path.substring(0, path.length() - 1);
-				}
-				// Take everything starting with the first /
-				final int index = path.indexOf('/');
-				if (index > -1) {
-					path = path.substring(index);
-				}
-				cookiePathCache.put(requestUrl, path);
-			}
-		}
-		return path;
-	}
-
 }
