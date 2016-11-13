@@ -189,21 +189,24 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		int counter = 0;
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
 			buf.append(" (i.value = :correlator").append(counter);
+			// If current state is AUTH_COMPLETE, always return the result
 			if (entry.getValue() != SqrlAuthenticationStatus.AUTH_COMPLETE) {
-				buf.append(" AND i.authenticationStatus <> :authenticationStatus");
+				buf.append(" AND i.authenticationStatus <> :authenticationStatus").append(counter);
 			}
-			buf.append(counter).append(" ) OR");
+			buf.append(" ) OR");
 			counter++;
 		}
-		buf.replace(buf.length() - 3, buf.length(), ""); // Remove OR
+		buf.replace(buf.length() - 2, buf.length(), ""); // Remove "OR"
 		final TypedQuery<SqrlCorrelator> query = entityManager.createQuery(buf.toString(), SqrlCorrelator.class);
 		counter = 0;
 		final StringBuilder debugBuf = new StringBuilder(buf);
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
 			query.setParameter(PARAM_CORRELATOR + counter, entry.getKey());
-			query.setParameter("authenticationStatus" + counter, entry.getValue());
 			updateDebugBuf(debugBuf, ":correlator" + counter, entry.getKey());
-			updateDebugBuf(debugBuf, ":authenticationStatus" + counter, entry.getValue().toString());
+			if (entry.getValue() != SqrlAuthenticationStatus.AUTH_COMPLETE) {
+				query.setParameter("authenticationStatus" + counter, entry.getValue());
+				updateDebugBuf(debugBuf, ":authenticationStatus" + counter, entry.getValue().toString());
+			}
 			counter++;
 		}
 
