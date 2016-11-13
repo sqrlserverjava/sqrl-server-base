@@ -168,8 +168,7 @@ public class SqrlServerOperations {
 	 * @throws SqrlException
 	 *             if an error occurs
 	 */
-	// TODO: rename prepareSqrlAuthPageData
-	public SqrlAuthPageData buildQrCodeForAuthPage(final HttpServletRequest request, final HttpServletResponse response,
+	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest request, final HttpServletResponse response,
 			final InetAddress userInetAddress, final int qrCodeSizeInPixels) throws SqrlException {
 		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString());

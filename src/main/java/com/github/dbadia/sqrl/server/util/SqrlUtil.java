@@ -273,7 +273,7 @@ public class SqrlUtil {
 		for (final Cookie cookie : request.getCookies()) {
 			if (cookieToDeleteList.contains(cookie.getName())) {
 				cookie.setMaxAge(0);
-				cookie.setValue(""); // TODO: test, do I need to set secure set here?
+				cookie.setValue("");
 				final String cookieDomain = SqrlUtil.computeCookieDomain(request, sqrlConfig);
 				applySettingsToCookie(cookie, cookieDomain, request, sqrlConfig);
 				response.addCookie(cookie);
@@ -282,11 +282,12 @@ public class SqrlUtil {
 	}
 
 	public static final String cookiesToString(final Cookie[] cookieArray) {
-		final StringBuilder buf = new StringBuilder("C[ ");
-		for (final Cookie cookie : cookieArray) {
-			buf.append(cookie.getName()).append("=").append(cookie.getValue()).append(", ");
+		final StringBuilder buf = new StringBuilder("[ ");
+		if (cookieArray != null) {
+			for (final Cookie cookie : cookieArray) {
+				buf.append(cookie.getName()).append("=").append(cookie.getValue()).append(", ");
+			}
 		}
-
 		return buf.substring(0, buf.length() - 2) + " ]";
 	}
 
@@ -313,5 +314,34 @@ public class SqrlUtil {
 			}
 		}
 		return domain;
+	}
+
+	public static String logEnterServlet(final HttpServletRequest request) {
+		if (!logger.isInfoEnabled()) {
+			return "";
+		}
+		final StringBuilder buf = new StringBuilder("In ");
+		buf.append(request.getRequestURI()).append(" with params: ");
+		buf.append(parameterMapToString(request.getParameterMap())).append(" and  cookies: ");
+		buf.append(cookiesToString(request.getCookies()));
+		return buf.toString();
+	}
+
+	public static String parameterMapToString(final Map<String, String[]> parameterMap) {
+		final StringBuilder buf = new StringBuilder("{");
+		// {c=12850, 38.6=386540,
+		for (final Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
+			buf.append(entry.getKey()).append(":");
+			for (final String aValue : entry.getValue()) {
+				buf.append(aValue).append(",");
+			}
+			buf.append(" ");
+		}
+		// remove the trailing comma
+		if (buf.toString().endsWith(", ")) {
+			buf.delete(buf.length() - 2, buf.length());
+		}
+		buf.append("}");
+		return buf.toString();
 	}
 }
