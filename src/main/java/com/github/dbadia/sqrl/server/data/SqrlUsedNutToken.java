@@ -11,7 +11,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Table(name = "sqrl_used_nut_token_v1")
+@Table(name = "sqrl_used_nut_token")
 public class SqrlUsedNutToken implements Serializable {
 	private static final long serialVersionUID = 9159251149539334522L;
 
