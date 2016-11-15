@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  * Internal use only.
  * <p/>
  * SQRL Logging util class to include transaction data on SQRL logging statements
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -29,13 +29,13 @@ public class SqrlLoggingUtil {
 
 	static void initLoggingHeader(final HttpServletRequest servletRequest) {
 		final String sqrlAgentString = servletRequest.getHeader("user-agent");
-		logger.info("sqrlagent={}", sqrlAgentString);
+		logger.trace("setting sqrlagent on thread local to {}", sqrlAgentString);
 		threadLocalLogHeader.set(sqrlAgentString);
 	}
 
 	/**
 	 * Internal use only.
-	 * 
+	 *
 	 * @param logHeader
 	 *            the data to be appended to the current log header
 	 * @return the updated logHeader for convience

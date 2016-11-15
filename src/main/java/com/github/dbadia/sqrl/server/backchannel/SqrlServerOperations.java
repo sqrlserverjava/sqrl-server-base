@@ -234,9 +234,6 @@ public class SqrlServerOperations {
 	public void handleSqrlClientRequest(final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse) throws IOException {
 		SqrlLoggingUtil.initLoggingHeader(servletRequest);
-		if (logger.isInfoEnabled()) {
-			logger.info("Processing SQRL client request: {}", SqrlUtil.buildRequestParamList(servletRequest));
-		}
 		String correlator = "unknown";
 		final TifBuilder tifBuilder = new TifBuilder();
 		boolean idkExistsInDataStore = false;
