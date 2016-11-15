@@ -217,9 +217,11 @@ public class SelfExpiringHashMap<K, V> implements SelfExpiringMap<K, V> {
 	private void cleanup() {
 		ExpiringKey<K> delayedKey = delayQueue.poll();
 		while (delayedKey != null) {
-			logger.debug("SelfExpiringHashMap cleanup, removing " + delayedKey.getKey());
-			internalMap.remove(delayedKey.getKey());
-			expiringKeys.remove(delayedKey.getKey());
+			if(delayedKey.getKey() != null) {
+				logger.debug("SelfExpiringHashMap cleanup, removing " + delayedKey.getKey());
+				internalMap.remove(delayedKey.getKey());
+				expiringKeys.remove(delayedKey.getKey());
+			}
 			delayedKey = delayQueue.poll();
 		}
 	}
