@@ -344,4 +344,14 @@ public class SqrlUtil {
 		buf.append("}");
 		return buf.toString();
 	}
+
+	public static String buildLogMessageForSqrlClientRequest(final HttpServletRequest request) {
+		final StringBuilder buf = new StringBuilder("== Received from SQRL client ");
+		final String sqrlAgentString = request.getHeader("user-agent");
+		buf.append("'").append(sqrlAgentString).append("'   ");
+		for (final Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+			buf.append(entry.getKey()).append("=").append(Arrays.toString(entry.getValue())).append("   ");
+		}
+		return buf.toString();
+	}
 }
