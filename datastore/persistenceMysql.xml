@@ -9,6 +9,8 @@
         <class>com.github.dbadia.sqrl.server.data.SqrlUsedNutToken</class>
         <properties>
             <property name="eclipselink.logging.level" value="INFO" />
+     		<!-- eclipselink.logging.parameters is required so we can see the bound params when a failure occurs -->
+			<property name="eclipselink.logging.parameters" value="true"/>
             <property name="eclipselink.target-database" value="MYSQL" />
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://yourmysqlserver/sqrl?serverTimezone=America/New_York&amp;character_set_server=utf8mb4" />
