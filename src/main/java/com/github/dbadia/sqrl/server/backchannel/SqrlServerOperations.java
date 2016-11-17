@@ -234,6 +234,9 @@ public class SqrlServerOperations {
 	public void handleSqrlClientRequest(final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse) throws IOException {
 		SqrlLoggingUtil.initLoggingHeader(servletRequest);
+		if (logger.isInfoEnabled()) {
+			logger.info(SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString());
+		}
 		String correlator = "unknown";
 		final TifBuilder tifBuilder = new TifBuilder();
 		boolean idkExistsInDataStore = false;
@@ -266,11 +269,15 @@ public class SqrlServerOperations {
 				if (e instanceof SqrlInvalidRequestException) { // NOSONAR: don't want to duplicate all other logic in a
 					// separate try block
 					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
-					logger.error(SqrlLoggingUtil.getLogHeader() + "Received invalid SQRL request: " + e.getMessage(),
-							e);
+					// TODO: use StringBuilder
+					logger.error(
+							SqrlLoggingUtil.getLogHeader() + "{} Received invalid SQRL request: " + e.getMessage()
+					+ " of " + SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString(),
+					e);
 				} else {
 					logger.error(SqrlLoggingUtil.getLogHeader() + "General exception processing SQRL request: "
-							+ e.getMessage(), e);
+							+ e.getMessage() + " of "
+							+ SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString(), e);
 				}
 				// The SQRL spec is unclear about HTTP return codes. It mentions returning a 404 for an invalid request
 				// but 404 is for page not found. We leave the use of 404 for an actual page not found condition and use
