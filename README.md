@@ -14,11 +14,11 @@ The intent is that additional libraries will be built on top of this for popular
 #### Interoperability
  * This library is fully functional for basic authentication.  Advanced operations such as SQRL identity replacement are not yet implemented
  * As of June 2016, the SQRL protocol has been declared ["done with caveats"](https://www.grc.com/sn/sn-562.txt) by it's creator.  SQRL clients built prior to this may still be using an older version of the protocol and may not be compatible
-* There is a sample application using this library at the url below.  You <b>must</b> install a SQRL client before authenticating:
+* There is a example application using this library at the url below.  You <b>must</b> install a SQRL client (such as sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl/) before running the demo:
  https://sqrljava.tech:20000/sqrlexample
 
 #### Design Goals
- * Make integration as easy as possible - There is only 
+ * Make integration with existing applications as easy as possible
  * Secure - see [Security Considerations](#security-considerations) 
 
 #### Dependencies
@@ -27,11 +27,12 @@ The intent is that additional libraries will be built on top of this for popular
  * [slf4j](http://www.slf4j.org//) for logging
  * [ed25519-java](https://github.com/str4d/ed25519-java) for fast   Ed25519 EC crypto
  * [JPA 2.1 provider](http://www.oracle.com/technetwork/java/javaee/tech/persistence-jsp-140049.html) for integration with SQL and NOSQL databases.  Example providers are [eclipselink](https://www.eclipse.org/eclipselink/) and [hibernate](https://docs.jboss.org/hibernate/orm/3.6/quickstart/en-US/html/hibernate-gsg-tutorial-jpa.html).  JPA is used in a manner in which the JEE container does __not__ need to have JPA support.  This library can be used in lightweight servlet containers such as Jetty and Tomcat.
+ * Servlet container supporting [JEE6](https://en.wikipedia.org/wiki/Java_EE_version_history#Java_EE_6_.28December_10.2C_2009.29) or higher
 
 #### Integration Requirements
 The SQRL protocol requires 2 interaction points with the user: 1) the web browser and 2) the SQRL client.  Even if both of these are running on the same device, they are distinct processes which communicate to different server endpoints.
 
-A persistence layer (typically a database) is required for the 2 endpoints to communicate state and to store various information about the SQRL users.  One of the SQRL database tables will include a foreign key reference to existing user data table.  Used SQRL nonces ("nuts") are stored in another table.  These nonces can be purged as soon as they expire.
+A persistence layer (typically a database) is required for the 2 endpoints to communicate state and to store various information about the SQRL users.  One of the SQRL database tables will include a soft foreign key reference to existing user data table.  Used SQRL nonces ("nuts") are stored in another table.  These nonces are be purged shortly after they expire.
 
 #### Integration Overview
 1. Select a JPA provider and add the required jars to your classpath.  For example, to use eclipse link you would add: https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink
@@ -57,7 +58,7 @@ Traditionally, displaying an authentication page is an inexpensive operation.  D
 
 However to display the SQRL QR code, the authentication page must poll the server to understand when a SQRL authentication is in progress and complete.  This polling is required once the SQRL QR code is displayed, even it the user is ends up invoking a non-SQRL authentication method.  The polling is required to have the page auto-refresh when the SQRL authentication is complete.
 
-Both of these requirements result in a more process/resource intesive authentication page.  Here are 2 approaches that will  minimize such impact:
+Both of these requirements result in a more process/resource intensive authentication page.  Here are 2 approaches that will  minimize such impact:
 * Do not display the SQRL QR code on the login page; instead, display the [SQRL logo](https://www.grc.com/sqrl/logo.htm)  or some other indicator of SQRL support.  When/if the user clicks/taps the logo, generate the SQRL QR code and display
 * Host the SQRL server logic on it's own infrastructure and load the SQRL QR code in the background as the page is loaded.  This isolates the more intensive SQRL support logic. 
 
