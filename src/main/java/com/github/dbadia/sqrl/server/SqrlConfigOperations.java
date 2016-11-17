@@ -48,7 +48,6 @@ public class SqrlConfigOperations {
 	private final Key						aesKey;
 	private final BackchannelSettingType	backchannelSettingType;
 
-	private URI		backchannelRequestUrl;
 	private String	subsequentRequestPath;
 
 	/**
@@ -119,10 +118,11 @@ public class SqrlConfigOperations {
 		}
 	}
 
-	private static Object createInstanceFromNoArgConstructor(final Class clazz, final String description) {
+	private static Object createInstanceFromNoArgConstructor(@SuppressWarnings("rawtypes") final Class clazz,
+			final String description) {
 		try {
 			System.out.println("Constructors: " + Arrays.toString(clazz.getConstructors()));
-			@SuppressWarnings("rawtypes")
+			@SuppressWarnings({ "rawtypes", "unchecked" })
 			final Constructor constructor = clazz.getConstructor();
 			return constructor.newInstance();
 		} catch (final NoSuchMethodException e) {
@@ -158,36 +158,34 @@ public class SqrlConfigOperations {
 	public URI getBackchannelRequestUrl(final HttpServletRequest loginPageRequest) throws SqrlException {
 		// No synchronization as worst case is we compute the value a few times
 		String backchannelRequestString = null; // NOSONAR: false positive dead store
-		if (this.backchannelRequestUrl == null) {
-			final String requestUrl = loginPageRequest.getRequestURL().toString();
-			if (backchannelSettingType == BackchannelSettingType.FULL_PATH) {
-				// Chop off the URI, then add our path
-				final String baseUrl = requestUrl.substring(0,
-						requestUrl.length() - loginPageRequest.getRequestURI().length());
-				backchannelRequestString = baseUrl + config.getBackchannelServletPath();
-			} else if (backchannelSettingType == BackchannelSettingType.PARTIAL_PATH) {
-				// Replace the last path with ours
-				String workingCopy = requestUrl;
-				if (workingCopy.endsWith(SqrlConstants.FORWARD_SLASH)) {
-					workingCopy = workingCopy.substring(0, workingCopy.length() - 1);
-				}
-				final int lastIndex = workingCopy.lastIndexOf('/');
-				workingCopy = workingCopy.substring(0, lastIndex + 1);
-				backchannelRequestString = workingCopy + config.getBackchannelServletPath();
-			} else if (backchannelSettingType == BackchannelSettingType.FULL_URL) {
-				backchannelRequestString = config.getBackchannelServletPath();
-			} else {
-				throw new SqrlException("Don't know how to handle BackchannelSettingType: " + backchannelSettingType);
+		final String requestUrl = loginPageRequest.getRequestURL().toString();
+		if (backchannelSettingType == BackchannelSettingType.FULL_PATH) {
+			// Chop off the URI, then add our path
+			final String baseUrl = requestUrl.substring(0,
+					requestUrl.length() - loginPageRequest.getRequestURI().length());
+			backchannelRequestString = baseUrl + config.getBackchannelServletPath();
+		} else if (backchannelSettingType == BackchannelSettingType.PARTIAL_PATH) {
+			// Replace the last path with ours
+			String workingCopy = requestUrl;
+			if (workingCopy.endsWith(SqrlConstants.FORWARD_SLASH)) {
+				workingCopy = workingCopy.substring(0, workingCopy.length() - 1);
 			}
-			// Some SQRL clients require a dotted ip, so replace localhost with 127.0.0.1
-			if (backchannelRequestString.contains(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST)) {
-				backchannelRequestString = backchannelRequestString.replace(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST,
-						SqrlConstants.FORWARD_SLASH_X2_127_0_0_1);
-			}
-			this.backchannelRequestUrl = changeToSqrlScheme(backchannelRequestString);
-			logger.info("backchannelRequestUrl set to: " + this.backchannelRequestUrl);
+			final int lastIndex = workingCopy.lastIndexOf('/');
+			workingCopy = workingCopy.substring(0, lastIndex + 1);
+			backchannelRequestString = workingCopy + config.getBackchannelServletPath();
+		} else if (backchannelSettingType == BackchannelSettingType.FULL_URL) {
+			backchannelRequestString = config.getBackchannelServletPath();
+		} else {
+			throw new SqrlException("Don't know how to handle BackchannelSettingType: " + backchannelSettingType);
 		}
-		return this.backchannelRequestUrl;
+		// Some SQRL clients require a dotted ip, so replace localhost with 127.0.0.1
+		if (backchannelRequestString.contains(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST)) {
+			backchannelRequestString = backchannelRequestString.replace(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST,
+					SqrlConstants.FORWARD_SLASH_X2_127_0_0_1);
+		}
+		final URI backchannelRequestUrl = changeToSqrlScheme(backchannelRequestString);
+		logger.trace("backchannelRequestUrl: " + backchannelRequestUrl);
+		return backchannelRequestUrl;
 	}
 
 	/**
