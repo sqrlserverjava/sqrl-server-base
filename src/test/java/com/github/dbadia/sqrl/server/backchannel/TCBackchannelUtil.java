@@ -8,9 +8,9 @@ import org.mockito.Mockito;
 
 public class TCBackchannelUtil {
 
-	public static SqrlRequest buildMockSqrlRequest(final String idk, final String command,
+	public static SqrlClientRequest buildMockSqrlRequest(final String idk, final String command,
 			final boolean hasUrsSignature, final SqrlClientOpt... optArray) {
-		final SqrlRequest mock = Mockito.mock(SqrlRequest.class);
+		final SqrlClientRequest mock = Mockito.mock(SqrlClientRequest.class);
 		Mockito.when(mock.containsUrs()).thenReturn(false);
 		Mockito.when(mock.getIdk()).thenReturn(idk);
 		Mockito.when(mock.getClientCommand()).thenReturn(command);

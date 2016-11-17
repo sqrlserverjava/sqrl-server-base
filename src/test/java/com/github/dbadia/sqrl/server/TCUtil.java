@@ -18,7 +18,6 @@ import javax.persistence.EntityManagerFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
-import com.github.dbadia.sqrl.server.backchannel.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;

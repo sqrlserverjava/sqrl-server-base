@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server;
 
 import static org.junit.Assert.assertTrue;
 
@@ -10,7 +10,13 @@ import org.junit.Test;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
+import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTifTest;
+import com.github.dbadia.sqrl.server.backchannel.TCBackchannelUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 
 public class SqrlServerOperationsClientOptsTest {
@@ -37,7 +43,7 @@ public class SqrlServerOperationsClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", false, SqrlClientOpt.cps);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", false, SqrlClientOpt.cps);
 
 		// Execute
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
@@ -57,7 +63,7 @@ public class SqrlServerOperationsClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", false,
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", false,
 				SqrlClientOpt.hardlock);
 
 		// Execute
@@ -78,7 +84,7 @@ public class SqrlServerOperationsClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", false,
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", false,
 				SqrlClientOpt.sqrlonly);
 
 		// Execute

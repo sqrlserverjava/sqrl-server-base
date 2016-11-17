@@ -27,7 +27,7 @@ public class SqrlLoggingUtil {
 		// util class
 	}
 
-	static void initLoggingHeader(final HttpServletRequest servletRequest) {
+	public static void initLoggingHeader(final HttpServletRequest servletRequest) {
 		final String sqrlAgentString = servletRequest.getHeader("user-agent");
 		logger.trace("setting sqrlagent on thread local to {}", sqrlAgentString);
 		threadLocalLogHeader.set(sqrlAgentString);
@@ -40,12 +40,12 @@ public class SqrlLoggingUtil {
 	 *            the data to be appended to the current log header
 	 * @return the updated logHeader for convience
 	 */
-	static String updateLogHeader(final String logHeader) {
+	public static String updateLogHeader(final String logHeader) {
 		threadLocalLogHeader.set(threadLocalLogHeader.get() + " " + logHeader);
 		return logHeader;
 	}
 
-	static void clearLogHeader() {
+	public static void clearLogHeader() {
 		threadLocalLogHeader.remove();
 	}
 

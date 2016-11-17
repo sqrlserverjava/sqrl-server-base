@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server;
 
 import static junit.framework.TestCase.assertTrue;
 
@@ -15,7 +15,13 @@ import org.junit.runners.Parameterized.Parameters;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
+import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTifTest;
+import com.github.dbadia.sqrl.server.backchannel.TCBackchannelUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 
 import junit.framework.TestCase;
@@ -49,7 +55,7 @@ public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.createEmptySqrlPersistence();
 		TCUtil.setupIdk(idk, "abc", "123");
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", false, opt);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", false, opt);
 
 		// Execute
 		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);

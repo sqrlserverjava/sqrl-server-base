@@ -12,7 +12,7 @@ import com.github.dbadia.sqrl.server.util.SqrlUtil;
  *
  */
 // @formatter:on
-public class SqrlServerReply {
+public class SqrlClientReply {
 	private static final String	VERSION_1	= "1";
 	public static final String	SEPARATOR	= "\r\n";
 
@@ -25,7 +25,7 @@ public class SqrlServerReply {
 	// @formatter:off
 	/**
 	 * From GRC trace
-	 * 
+	 *
 	 * ver=1
 		nut=AIOdvc0F3RTAOF8pfIV_ug
 		tif=5
@@ -33,8 +33,7 @@ public class SqrlServerReply {
 		suk=mC5wBKDXPkbk3J5ohpkM1ksgv0l996DG2BWWOvOXmF4
 
 	 */
-	// @formatter:on
-	SqrlServerReply(final String nut, final SqrlTif tif, final String queryWithoutNut, final String correlator,
+	public SqrlClientReply(final String nut, final SqrlTif tif, final String queryWithoutNut, final String correlator,
 			final Map<String, String> additionalDataTable) {
 		super();
 		this.nut = nut;
@@ -44,7 +43,7 @@ public class SqrlServerReply {
 		this.additionalDataTable = additionalDataTable;
 	}
 
-	String toBase64() {
+	public String toBase64() {
 		final StringBuilder buf = new StringBuilder();
 		buf.append("ver=").append(VERSION_1).append(SEPARATOR);
 		buf.append("nut=").append(nut).append(SEPARATOR);

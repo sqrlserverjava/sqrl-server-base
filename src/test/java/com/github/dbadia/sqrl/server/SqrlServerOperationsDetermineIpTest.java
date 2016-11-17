@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
+import com.github.dbadia.sqrl.server.SqrlServerOperations;
 
 @RunWith(Parameterized.class)
 public class SqrlServerOperationsDetermineIpTest {

@@ -2,6 +2,8 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 import org.junit.Test;
 
+import com.github.dbadia.sqrl.server.SqrlServerOperations;
+
 import junit.framework.TestCase;
 
 public class SqrlServerOperationsTest {

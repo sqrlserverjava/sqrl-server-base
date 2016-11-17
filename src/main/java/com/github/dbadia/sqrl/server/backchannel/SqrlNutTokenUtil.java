@@ -22,7 +22,7 @@ import com.github.dbadia.sqrl.server.util.SqrlException;
 
 /**
  * Various util methods for the {@link SqrlNutToken}
- * 
+ *
  * @author Dave Badia
  */
 public class SqrlNutTokenUtil {
@@ -33,8 +33,9 @@ public class SqrlNutTokenUtil {
 		// Util class, all static methods
 	}
 
-	static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress, final SqrlConfig config)
-			throws SqrlException {
+	public static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress,
+			final SqrlConfig config)
+					throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
 		// perform a match/no-match comparison to detect same-device phishing attacks. Therefore, any 128-bit IPv6
@@ -58,7 +59,8 @@ public class SqrlNutTokenUtil {
 		}
 	}
 
-	static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt, final SqrlConfig config)
+	public static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt,
+			final SqrlConfig config)
 			throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
@@ -102,19 +104,19 @@ public class SqrlNutTokenUtil {
 	}
 
 	/**
-	 * Validates the {@link SqrlNutToken} from the {@link SqrlRequest} by:<br/>
+	 * Validates the {@link SqrlNutToken} from the {@link SqrlClientRequest} by:<br/>
 	 * <li>1. check the timestamp embedded in the Nut has expired
 	 * <li>2. call {@link SqrlPersistence} to see if the Nut has been replayed
-	 * 
+	 *
 	 * @param correlator
-	 * 
+	 *
 	 * @param nutToken
 	 *            the Nut to be validated
 	 * @param tifBuilder
 	 * @throws SqrlException
 	 *             if any validation fails or if persistence fails
 	 */
-	static void validateNut(final String correlator, final SqrlNutToken nutToken, final SqrlConfig config,
+	public static void validateNut(final String correlator, final SqrlNutToken nutToken, final SqrlConfig config,
 			final SqrlPersistence sqrlPersistence, final TifBuilder tifBuilder) throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		final long now = System.currentTimeMillis();
@@ -140,7 +142,7 @@ public class SqrlNutTokenUtil {
 
 	/**
 	 * Computes when a given SQRL "nut" nonce token will expire
-	 * 
+	 *
 	 * @param nutToken
 	 *            the token for which expiration time will be computed
 	 * @param config

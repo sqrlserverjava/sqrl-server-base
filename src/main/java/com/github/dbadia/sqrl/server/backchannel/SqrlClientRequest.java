@@ -22,12 +22,12 @@ import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 /**
  * Parses a SQRL client request and validates all signatures
- * 
+ *
  * @author Dave Badia
  *
  */
-public class SqrlRequest {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlRequest.class);
+public class SqrlClientRequest {
+	private static final Logger logger = LoggerFactory.getLogger(SqrlClientRequest.class);
 
 	private static final String NUT_EQUALS = "nut=";
 
@@ -43,7 +43,7 @@ public class SqrlRequest {
 	private final String				serverParam;
 	private final String				correlator;
 
-	SqrlRequest(final HttpServletRequest servletRequest, final SqrlPersistence persistence,
+	public SqrlClientRequest(final HttpServletRequest servletRequest, final SqrlPersistence persistence,
 			final SqrlConfigOperations configOps) throws SqrlException {
 		this.servletRequest = servletRequest;
 		clientParam = getRequiredParameter(servletRequest, "client");
@@ -67,7 +67,7 @@ public class SqrlRequest {
 				try {
 					final SqrlClientOpt clientOpt = SqrlClientOpt.valueOf(optString);
 					optList.add(clientOpt);
-				} catch (IllegalArgumentException e) {
+				} catch (final IllegalArgumentException e) {
 					throw new SqrlException("Unknown SQRL client option '" + optString + "'", e);
 				}
 			}
@@ -93,8 +93,8 @@ public class SqrlRequest {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Server parrot mismatch, possible tampering.  Nut compare: Expected={}, Received={}",
 						new SqrlNutToken(configOps,
-								SqrlRequest.extractFromSqrlCsvString(expectedServerValue, NUT_EQUALS)),
-						new SqrlNutToken(configOps, SqrlRequest.extractFromSqrlCsvString(serverParam, NUT_EQUALS)));
+								SqrlClientRequest.extractFromSqrlCsvString(expectedServerValue, NUT_EQUALS)),
+						new SqrlNutToken(configOps, SqrlClientRequest.extractFromSqrlCsvString(serverParam, NUT_EQUALS)));
 			}
 			if (logger.isInfoEnabled()) {
 				logger.info("Server parrot mismatch, possible tampering.  Expected={}, Received={}",
@@ -128,8 +128,8 @@ public class SqrlRequest {
 	/**
 	 * The correlator is our only key to determining which user this is, so it's critical we parse this out first
 	 */
-	public static String parseCorrelatorOnly(HttpServletRequest servletRequest) throws SqrlException {
-		String serverParam = getRequiredParameter(servletRequest, "server");
+	public static String parseCorrelatorOnly(final HttpServletRequest servletRequest) throws SqrlException {
+		final String serverParam = getRequiredParameter(servletRequest, "server");
 		// parse server - not a name value pair, just the query string we gave
 		return extractFromSqrlCsvString(serverParam, SqrlConstants.CLIENT_PARAM_CORRELATOR);
 	}
@@ -158,7 +158,7 @@ public class SqrlRequest {
 		String value = toSearch.substring(index + toFind.length());
 		// Need to find the end of the nut string - could be & if from our login page URL or SqrlServerReply.SEPARATOR
 		// if from a server reply
-		index = value.indexOf(SqrlServerReply.SEPARATOR);
+		index = value.indexOf(SqrlClientReply.SEPARATOR);
 		if (index > -1) {
 			value = value.substring(0, index);
 		}
@@ -211,34 +211,34 @@ public class SqrlRequest {
 		}
 	}
 
-	String getClientCommand() {
+	public String getClientCommand() {
 		return clientCommand;
 	}
 
-	SqrlNutToken getNut() {
+	public SqrlNutToken getNut() {
 		return nut;
 	}
 
-	Map<String, String> getKeysToBeStored() {
+	public Map<String, String> getKeysToBeStored() {
 		final Map<String, String> toBeStored = new ConcurrentHashMap<>(clientKeysBsse64);
 		toBeStored.remove(SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
 		toBeStored.remove(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 		return toBeStored;
 	}
 
-	String getIdk() {
+	public String getIdk() {
 		return clientKeysBsse64.get(SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
 	}
 
-	boolean hasPidk() {
+	public boolean hasPidk() {
 		return clientKeysBsse64.containsKey(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 	}
 
-	String getPidk() {
+	public String getPidk() {
 		return clientKeysBsse64.get(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 	}
 
-	List<SqrlClientOpt> getOptList() {
+	public List<SqrlClientOpt> getOptList() {
 		return optList;
 	}
 

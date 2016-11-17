@@ -56,7 +56,7 @@ public class SqrlTifTest {
 	}
 
 	/* **************** Util methods *****************/
-	static final void assertTif(final SqrlTif tif, final int... expectedTifArray) {
+	public static final void assertTif(final SqrlTif tif, final int... expectedTifArray) {
 		for (final int expectedTifInt : expectedTifArray) {
 			assertTifPresent(tif, expectedTifInt);
 		}

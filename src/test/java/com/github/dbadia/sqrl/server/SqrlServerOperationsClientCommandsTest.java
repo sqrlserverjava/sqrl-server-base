@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
@@ -13,7 +13,12 @@ import org.junit.Test;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTifTest;
+import com.github.dbadia.sqrl.server.backchannel.TCBackchannelUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 
@@ -45,7 +50,7 @@ public class SqrlServerOperationsClientCommandsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
 		sqrlPersistence.closeCommit();
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", true);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", true);
 
 		// Execute - call start/commit since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
@@ -78,7 +83,7 @@ public class SqrlServerOperationsClientCommandsTest {
 		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
 		sqrlPersistence.closeCommit();
 
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", false); // No urs
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", false); // No urs
 
 		// Execute
 		try {
@@ -107,7 +112,7 @@ public class SqrlServerOperationsClientCommandsTest {
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", true);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", true);
 		sqrlPersistence.closeCommit();
 
 		// Execute all start/commit manually since it is usually done by the caller
@@ -128,7 +133,7 @@ public class SqrlServerOperationsClientCommandsTest {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", false); // No urs
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", false); // No urs
 
 		// Execute
 		try {
@@ -149,7 +154,7 @@ public class SqrlServerOperationsClientCommandsTest {
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 		;
 		TCUtil.setupIdk(idk, correlator, "123");
-		final SqrlRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "disable", true);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "disable", true);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 
 		// Execute - call start/commit since it is usually done by the caller

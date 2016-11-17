@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -29,15 +29,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.SqrlAuthPageData;
-import com.github.dbadia.sqrl.server.SqrlAuthStateMonitor;
-import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
-import com.github.dbadia.sqrl.server.SqrlClientAuthStateUpdater;
-import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlFlag;
-import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
+import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
@@ -243,13 +241,13 @@ public class SqrlServerOperations {
 		String requestState = "invalid";
 		try {
 			String logHeader = "";
-			SqrlRequest request = null;
+			SqrlClientRequest request = null;
 			SqrlPersistence sqrlPersistence = createSqrlPersistence();
 			Exception exception = null;
 			try {
 				// Get the correlator first. Then, if the request is invalid, we can update the auth page saying so
-				correlator = SqrlRequest.parseCorrelatorOnly(servletRequest);
-				request = new SqrlRequest(servletRequest, sqrlPersistence, configOperations);
+				correlator = SqrlClientRequest.parseCorrelatorOnly(servletRequest);
+				request = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
 				logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
 						.append(request.getClientCommand()).append(":: ").toString());
 				if (checkIfIpsMatch(request.getNut(), servletRequest)) {
@@ -322,7 +320,7 @@ public class SqrlServerOperations {
 	}
 
 	// protected to ease unit testing
-	protected boolean processClientCommand(final SqrlRequest request, final SqrlNutToken nutToken,
+	protected boolean processClientCommand(final SqrlClientRequest request, final SqrlNutToken nutToken,
 			final TifBuilder tifBuilder, final String correlator) throws SqrlException {
 		final String logHeader = SqrlLoggingUtil.getLogHeader();
 		final String command = request.getClientCommand();
@@ -398,7 +396,7 @@ public class SqrlServerOperations {
 		}
 	}
 
-	private void processNonSukOptions(final SqrlRequest sqrlRequest, final TifBuilder tifBuilder,
+	private void processNonSukOptions(final SqrlClientRequest sqrlRequest, final TifBuilder tifBuilder,
 			final String logHeader) {
 		for (final SqrlClientOpt clientOption : sqrlRequest.getOptList()) {
 			switch (clientOption) {
@@ -423,18 +421,18 @@ public class SqrlServerOperations {
 	}
 
 	private String buildReply(final boolean isInErrorState, final HttpServletRequest servletRequest,
-			final SqrlRequest sqrlRequest, final boolean idkExistsInDataStore, final SqrlTif tif,
+			final SqrlClientRequest sqrlRequest, final boolean idkExistsInDataStore, final SqrlTif tif,
 			final String correlator) throws SqrlException {
 		final String logHeader = SqrlLoggingUtil.getLogHeader();
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
 		try {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());
 			final String subsequentRequestPath = configOperations.getSubsequentRequestPath(servletRequest);
-			SqrlServerReply reply;
+			SqrlClientReply reply;
 			if (isInErrorState) {
 				// Send the error flag as nut and correlator, so if the client mistakenly sends a followup request it be
 				// obvious to us
-				reply = new SqrlServerReply(SqrlConstants.ERROR, tif, subsequentRequestPath, SqrlConstants.ERROR,
+				reply = new SqrlClientReply(SqrlConstants.ERROR, tif, subsequentRequestPath, SqrlConstants.ERROR,
 						Collections.emptyMap());
 			} else {
 				// Nut is one time use, so generate a new one for the reply
@@ -443,7 +441,7 @@ public class SqrlServerOperations {
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
 						idkExistsInDataStore, sqrlPersistence);
 				// Build the final reply object
-				reply = new SqrlServerReply(replyNut.asSqrlBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
+				reply = new SqrlClientReply(replyNut.asSqrlBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
 						additionalDataTable);
 			}
 
@@ -460,7 +458,7 @@ public class SqrlServerOperations {
 		}
 	}
 
-	private Map<String, String> buildReplyAdditionalDataTable(final SqrlRequest sqrlRequest,
+	private Map<String, String> buildReplyAdditionalDataTable(final SqrlClientRequest sqrlRequest,
 			final boolean idkExistsInDataStore, final SqrlPersistence sqrlPersistence) {
 		// TreeMap to keep the items in order. Order is required as as the SQRL client will ignore everything
 		// after an unrecognized option

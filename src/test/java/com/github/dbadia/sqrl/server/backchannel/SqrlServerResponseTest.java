@@ -26,7 +26,7 @@ public class SqrlServerResponseTest extends TestCase {
 		final String nut = "R_IssQQyl-LB-sB1PiIFGw";
 		final String query = "/sqrl?nut=R_IssQQyl-LB-sB1PiIFGw";
 		final String correlator = "alkfjaliejilsf";
-		final SqrlServerReply reply = new SqrlServerReply(nut, tif, query, correlator, Collections.emptyMap());
+		final SqrlClientReply reply = new SqrlClientReply(nut, tif, query, correlator, Collections.emptyMap());
 		System.out.println(reply.toBase64());
 		final String expected = "dmVyPTENCm51dD1SX0lzc1FReWwtTEItc0IxUGlJRkd3DQp0aWY9NQ0KcXJ5PS9zcXJsP251dD1SX0lzc1FReWwtTEItc0IxUGlJRkd3P251dD1SX0lzc1FReWwtTEItc0IxUGlJRkd3JmNvcj1hbGtmamFsaWVqaWxzZg0K";
 		assertEquals(expected, reply.toBase64());

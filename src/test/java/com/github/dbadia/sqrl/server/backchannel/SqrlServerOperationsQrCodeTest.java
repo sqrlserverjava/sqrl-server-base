@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
 import com.github.dbadia.sqrl.server.SqrlConfig;
+import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.SqrlConfig.ImageFormat;
 import com.github.dbadia.sqrl.server.TCUtil;
 
