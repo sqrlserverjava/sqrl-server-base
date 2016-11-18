@@ -44,7 +44,8 @@ public class SqrlAuthStateMonitor implements Runnable {
 
 	public void stopMonitoringCorrelator(final String correlatorString) {
 		if (correlatorString != null && monitorTable.remove(correlatorString) == null) {
-			logger.warn("Tried to remove browserSessionId {} from monitorTable but it wasn't present",
+			logger.debug(
+					"Tried to remove correlator {} from monitorTable but it wasn't present, was probably already removed",
 					correlatorString);
 		}
 	}

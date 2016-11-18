@@ -18,6 +18,8 @@ import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlException;
+import com.github.dbadia.sqrl.server.util.SqrlIllegalDataException;
+import com.github.dbadia.sqrl.server.util.SqrlSanitize;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 /**
@@ -135,12 +137,13 @@ public class SqrlClientRequest {
 	}
 
 	private static String getRequiredParameter(final HttpServletRequest servletRequest, final String requiredParamName)
-			throws SqrlInvalidRequestException {
+			throws SqrlInvalidRequestException, SqrlIllegalDataException {
 		final String value = servletRequest.getParameter(requiredParamName);
 		if (value == null || value.trim().length() == 0) {
 			throw new SqrlInvalidRequestException("Missing required parameter " + requiredParamName
 					+ ".  Request contained: " + SqrlUtil.buildRequestParamList(servletRequest));
 		}
+		SqrlSanitize.inspectIncomingSqrlData(value);
 		return value;
 	}
 
@@ -166,6 +169,7 @@ public class SqrlClientRequest {
 		if (index > -1) {
 			value = value.substring(0, index);
 		}
+		SqrlSanitize.inspectIncomingSqrlData(value);
 		return value;
 	}
 

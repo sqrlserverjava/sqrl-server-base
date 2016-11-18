@@ -13,6 +13,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,8 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 public class SqrlUtil {
 	private static final Logger					logger				= LoggerFactory.getLogger(SqrlUtil.class);
 	private static final Map<String, String>	cookieDomainCache	= new ConcurrentHashMap<>();
+	static final Pattern				REGEX_PATTERN_REGEX_BASE64_URL	= Pattern
+			.compile(SqrlConstants.REGEX_BASE64_URL);
 
 	private SqrlUtil() {
 		// Util class

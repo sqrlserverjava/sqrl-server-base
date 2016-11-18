@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * SQRL constants
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -45,6 +45,12 @@ public class SqrlConstants {
 	private static final Map<String, String>	SIGNATURE_TO_KEY_PARAM_TABLE	= new ConcurrentHashMap<>();
 	public static final String					TRANSIENT_NAME_SERVER_PARROT	= "lastServerParam";
 	public static final String					ERROR							= "error";
+
+	public static final String	REGEX_BASE64_URL	= "[a-zA-Z0-9_-]+";
+	/**
+	 * Token being any request param, correlator, nut token, etc
+	 */
+	public static final int		MAX_SQRL_TOKEN_SIZE	= 30000;
 
 	private SqrlConstants() {
 		// Constants class

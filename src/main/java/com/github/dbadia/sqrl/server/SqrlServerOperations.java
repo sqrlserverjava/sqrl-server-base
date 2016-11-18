@@ -30,11 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
 import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
-import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
@@ -267,15 +267,12 @@ public class SqrlServerOperations {
 				if (e instanceof SqrlInvalidRequestException) { // NOSONAR: don't want to duplicate all other logic in a
 					// separate try block
 					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
-					// TODO: use StringBuilder
-					logger.error(
-							SqrlLoggingUtil.getLogHeader() + "{} Received invalid SQRL request: " + e.getMessage()
-					+ " of " + SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString(),
-					e);
+					logger.error("{}Received invalid SQRL request: {} of {}", SqrlLoggingUtil.getLogHeader(),
+							e.getMessage(), SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest), e);
 				} else {
-					logger.error(SqrlLoggingUtil.getLogHeader() + "General exception processing SQRL request: "
-							+ e.getMessage() + " of "
-							+ SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString(), e);
+					logger.error("{}Generate exception processing SQRL request: {} of {}",
+							SqrlLoggingUtil.getLogHeader(), e.getMessage(),
+							SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest), e);
 				}
 				// The SQRL spec is unclear about HTTP return codes. It mentions returning a 404 for an invalid request
 				// but 404 is for page not found. We leave the use of 404 for an actual page not found condition and use
