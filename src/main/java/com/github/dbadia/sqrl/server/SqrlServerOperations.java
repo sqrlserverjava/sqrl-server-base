@@ -41,6 +41,7 @@ import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceCleanupTask;
+import com.github.dbadia.sqrl.server.exception.SqrlDisabledUserException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
@@ -294,6 +295,8 @@ public class SqrlServerOperations {
 					SqrlAuthenticationStatus authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL;
 					if (exception instanceof SqrlInvalidRequestException) {
 						authErrorState = SqrlAuthenticationStatus.ERROR_BAD_REQUEST;
+					} else if (exception instanceof SqrlDisabledUserException) {
+						authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_USER_DISABLED;
 					}
 					sqrlCorrelator.setAuthenticationStatus(authErrorState);
 				} else {
@@ -378,7 +381,8 @@ public class SqrlServerOperations {
 				} else { // sqrl disabled for identity
 					tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
 					tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
-					throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user", null);
+					throw new SqrlDisabledUserException(
+							SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user");
 				}
 			} else {
 				tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);

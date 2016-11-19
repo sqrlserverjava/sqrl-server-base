@@ -1,7 +1,7 @@
 package com.github.dbadia.sqrl.server;
 
 public enum SqrlAuthenticationStatus {
-	CORRELATOR_ISSUED, COMMUNICATING, AUTH_COMPLETE, ERROR_BAD_REQUEST, ERROR_SQRL_INTERNAL;
+	CORRELATOR_ISSUED, COMMUNICATING, AUTH_COMPLETE, ERROR_BAD_REQUEST, ERROR_SQRL_INTERNAL, ERROR_SQRL_USER_DISABLED;
 
 	public boolean isErrorStatus() {
 		return this.toString().startsWith("ERROR_");
