@@ -10,7 +10,7 @@
 	<description>Library that implements the server side portions of the SQRL protocol.</description>
 	<url>https://github.com/sqrlserverjava/sqrl-server-base</url>
 	
-	<version>0.9.2</version>
+	<version>0.9.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<dependencies>
@@ -55,7 +55,7 @@
 		<connection>scm:git:git@github.com:sqrlserverjava/sqrl-server-base.git</connection>
 		<developerConnection>scm:git:git@github.com:sqrlserverjava/sqrl-server-base.git</developerConnection>
 		<url>git@github.com:sqrlserverjava/sqrl-server-base.git</url>
-	  <tag>sqrl-server-base-0.9.2</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 	<repositories>
