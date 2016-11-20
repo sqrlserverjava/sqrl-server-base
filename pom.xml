@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.github.sqrlserverjava</groupId>
 		<artifactId>sqrl-server-parent</artifactId>
-		<version>1.2.2-SNAPSHOT</version>
+		<version>1.2.2</version>
 	</parent>
 	<artifactId>sqrl-server-base</artifactId>
 	<name>SQRL Server Base Library</name>
