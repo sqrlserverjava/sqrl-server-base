@@ -1,5 +1,6 @@
 <!--- http://dillinger.io/ --->
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.sqrlserverjava/sqrl-server-base/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.sqrlserverjava/sqrl-server-base)
 [![Build Status](https://travis-ci.org/sqrlserverjava/sqrl-server-base.svg?branch=master)](https://travis-ci.org/sqrlserverjava/sqrl-server-base)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/204/badge)](https://bestpractices.coreinfrastructure.org/projects/204)
 # sqrl-server-base
@@ -17,10 +18,6 @@ The intent is that additional libraries will be built on top of this for popular
 * There is a example application using this library at the url below.  You <b>must</b> install a SQRL client (such as sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl/) before running the demo:
  https://sqrljava.tech:20000/sqrlexample
 
-#### Design Goals
- * Make integration with existing applications as easy as possible
- * Secure - see [Security Considerations](#security-considerations) 
-
 #### Dependencies
  * Java 1.8
  * [Zxing](https://github.com/zxing/zxing) for QR code generation
@@ -35,6 +32,20 @@ The SQRL protocol requires 2 interaction points with the user: 1) the web browse
 A persistence layer (typically a database) is required for the 2 endpoints to communicate state and to store various information about the SQRL users.  One of the SQRL database tables will include a soft foreign key reference to existing user data table.  Used SQRL nonces ("nuts") are stored in another table.  These nonces are be purged shortly after they expire.
 
 #### Integration Overview
+
+1. Add the following dependencies to your pom:
+```<dependency>
+        <groupId>com.github.sqrlserverjava</groupId>
+        <artifactId>sqrl-server-base</artifactId>
+        <version>0.9.2</version>
+    </dependency>
+    <dependency>
+        <groupId>com.github.sqrlserverjava</groupId>
+        <artifactId>sqrl-server-atmosphere</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+```
+
 1. Select a JPA provider and add the required jars to your classpath.  For example, to use eclipse link you would add: https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink
 2. Add META-INF/persistence.xml to your classpath.  You can start with an in memory database by using [derby](jpa-examples/derby/META-INF/persistence.xml).  When you ready to use a real DB, here is the [visual db design](datastore/sqrl-db-design.png), [ddl](datastore/sqrl.ddl), and [mysql](persistenceMysql.xml) persistence.xml.  Other databases can be supported simply by editing persistence.xml accordingly.  
 1. Define `com.github.dbadia.sqrl.server.SQRLConfig` and set the the 2 required fields accordingly (see javadoc).  You can store your settings on the classpath in a file named sqrl.xml and call `com.github.dbadia.sqrl.server.SQRLConfigHelper#loadFromClasspath()`  Or inject the bean via Spring, etc.  
@@ -71,10 +82,10 @@ There is a correlation ID that is set in a cookie on that auth page and is also 
 
 
 ## Security Considerations
-NOTE: This section applies to this library only,it is not a security assessment of the SQRL protocol in general
+NOTE: This section applies to this library only, it is not a security assessment of the SQRL protocol in general
 
 
 ###### Nut Collisions
-The SQRL protocol defines the size of SQRL token ("Nut").  Each authentication page should get a unique nut, but due to size limitations, this is not guaranteed in a mutli server environment.  To help avoid the likelihood of 2 clients receiving the same nut, additional entropy is added to the Secure Random instance with a UUID, which, by definition, should be unique to the JVM instance.
+The SQRL protocol dethe size of SQRL token ("Nut").  Each authentication page should get a unique nut, but due to size limitations, this is not guaranteed in a mutli server environment.  To help avoid the likelihood of 2 clients receiving the same nut, additional entropy is added to the Secure Random instance with a UUID, which, by definition, should be unique to the JVM instance.
 
 Assume that, by great chance, a SQRL Nut collision does occur with users foo and bar and assume that foo's SQRL client contacts the server first.  Foo will be authenticated and allowed in as usual.  When bar's SQRL client contacts the server, the SQRL library will reject the token as already used.  Bar should be shown a new authentication page with a new Nut.
