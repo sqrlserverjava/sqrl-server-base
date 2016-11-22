@@ -1,5 +1,7 @@
 #!/bin/bash
-
+echo $TRAVIS_REPO_SLUG
+echo $TRAVIS_JDK_VERSION
+echo $TRAVISH_BRANCH
 if [ "$TRAVIS_REPO_SLUG" == "sqrlserverjava/sqrl-server-base" ] && [ "$TRAVIS_JDK_VERSION" == "oraclejdk8" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
 
   echo -e "Publishing javadoc...\n"
