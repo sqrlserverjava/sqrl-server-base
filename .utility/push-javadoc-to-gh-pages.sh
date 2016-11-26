@@ -6,7 +6,7 @@ if [ "$TRAVIS_REPO_SLUG" == "sqrlserverjava/sqrl-server-base" ] && [ "$TRAVIS_JD
 
   echo -e "Publishing javadoc...\n"
 
-  cp -R build/docs/javadoc $HOME/javadoc-latest
+  cp -R target/api-docs $HOME/javadoc-latest
 
   cd $HOME
   git config --global user.email "travis@travis-ci.org"
