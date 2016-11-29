@@ -34,7 +34,8 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 #### Integration Overview
 
 1. Add the following dependencies to your pom:
-```<dependency>
+```
+    <dependency>
         <groupId>com.github.sqrlserverjava</groupId>
         <artifactId>sqrl-server-base</artifactId>
         <version>0.9.2</version>
