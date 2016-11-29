@@ -326,6 +326,8 @@ public class SqrlServerOperations {
 		final String command = request.getClientCommand();
 		logger.debug("{}Processing {} command for nut {}", logHeader, command, nutToken);
 		final String idk = request.getIdk();
+		// Per the spec, SQRL transactions are atomic; so we create our persistence here and only commit after all
+		// processing is completed successfully
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
 		try {
 			boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
