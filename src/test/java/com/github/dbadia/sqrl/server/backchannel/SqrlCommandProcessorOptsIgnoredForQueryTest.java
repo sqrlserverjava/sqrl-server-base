@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.backchannel;
 
 import static junit.framework.TestCase.assertTrue;
 
@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,28 +17,23 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
-import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
-import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
-import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTifTest;
-import com.github.dbadia.sqrl.server.backchannel.TCBackchannelUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 
 import junit.framework.TestCase;
 
 /**
  * Some opts are to be <b>ignored</b> on a query command, test it
- * 
+ *
  * @author Dave Badia
  *
  */
 @RunWith(Parameterized.class)
-public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
+public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 
 	@Parameters(name = "{index}: SqrlClientOpt=({0})")
 	public static Collection<Object[]> data() {
-	// @formatter:off
+		// @formatter:off
 		// return all SqrlClientOpt which are nonQuery only
 		final List<Object[]> data = new ArrayList<>();
 		for(final SqrlClientOpt opt : SqrlClientOpt.values()) {
@@ -55,10 +51,12 @@ public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.createEmptySqrlPersistence();
 		TCUtil.setupIdk(idk, "abc", "123");
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", false, opt);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", correlator, false,
+				opt);
 
 		// Execute
-		final boolean idkExists = sqrlServerOps.processClientCommand(sqrlRequest, nutToken, tifBuilder, correlator);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+		final boolean idkExists = processor.processClientCommand();
 
 		// Validate - everything should be normal since these flags are ignored on a query command
 		TestCase.assertTrue(idkExists);
@@ -68,23 +66,28 @@ public class SqrlServerOperationsClientOptsIgnoredForQueryTest {
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 
+	@After
+	public void tearDown() throws Exception {
+		sqrlPersistence.closeCommit();
+	}
+
 	// In parameterized tests, the instance variables and constructor are boilerplate so keep them out of the way
 	private final String				correlator	= "abc";
 	private final SqrlConfig			config;
 	private final SqrlPersistence		sqrlPersistence;
 	private final SqrlServerOperations	sqrlServerOps;
-	private final TifBuilder			tifBuilder;
+	private final SqrlTifBuilder			tifBuilder;
 	private final SqrlNutToken			nutToken;
 	private final SqrlClientOpt			opt;
 
-	public SqrlServerOperationsClientOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws Exception {
+	public SqrlCommandProcessorOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws Exception {
 		super();
 		this.opt = opt;
 		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		sqrlServerOps = new SqrlServerOperations(config);
-		tifBuilder = new TifBuilder();
+		tifBuilder = new SqrlTifBuilder();
 		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}
 }

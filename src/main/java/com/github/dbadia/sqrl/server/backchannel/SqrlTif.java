@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Valid values for the SQRL tif indicator, see https://www.grc.com/sqrl/semantics.htm
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -63,7 +63,7 @@ public class SqrlTif {
 	 * processing the client's query. In any such case, no change will be made to the user's account status. All SQRL
 	 * server-side actions are atomic. This means that either everything succeeds or nothing is changed. This is
 	 * important since clients can request multiple updates and changes at once.
-	 * 
+	 *
 	 * If this bit is set without the 80h bit set (see below) the trouble was not with the client's provided data,
 	 * protocol, etc. but with some other aspect of completing the client's request. With the exception of the following
 	 * “Client failure” status bit, the SQRL semantics do not attempt to enumerate every conceivable web server failure
@@ -93,7 +93,7 @@ public class SqrlTif {
 
 	/**
 	 * DEPRECATED NO LONGER DEFINED - DO NOT USE
-	 * 
+	 *
 	 * @deprecated per SQRL spec: NO LONGER DEFINED - DO NOT USE
 	 */
 	@Deprecated
@@ -101,7 +101,7 @@ public class SqrlTif {
 
 	/**
 	 * DEPRECATED NO LONGER DEFINED - DO NOT USE
-	 * 
+	 *
 	 * @deprecated per SQRL spec: NO LONGER DEFINED - DO NOT USE
 	 */
 	@Deprecated
@@ -139,19 +139,19 @@ public class SqrlTif {
 		return Integer.valueOf(Integer.toString(tifInt), 16);
 	}
 
-	public static class TifBuilder {
+	public static class SqrlTifBuilder {
 		private int builderTifInt;
 
-		public TifBuilder(final boolean ipsMatched) {
+		public SqrlTifBuilder(final boolean ipsMatched) {
 			if (ipsMatched) {
 				addFlag(TIF_IPS_MATCHED);
 			}
 		}
 
-		public TifBuilder() {
+		public SqrlTifBuilder() {
 		}
 
-		public TifBuilder addFlag(final int tifFlag) {
+		public SqrlTifBuilder addFlag(final int tifFlag) {
 			builderTifInt |= tifFlag;
 			return this;
 		}
@@ -159,7 +159,7 @@ public class SqrlTif {
 		/**
 		 * Removes all flags that are set
 		 */
-		public TifBuilder clearAllFlags() {
+		public SqrlTifBuilder clearAllFlags() {
 			builderTifInt = 0;
 			return this;
 		}

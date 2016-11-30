@@ -49,7 +49,7 @@ public interface SqrlPersistence {
 
 	/**
 	 * The user has updated their SQRL ID but this application is still using the old one. The application must lookup
-	 * the user by previousSqrlIdk, and replace that SQRL ID with nnewSqrlIdk
+	 * the user by previousSqrlIdk, and replace that SQRL ID with newSqrlIdk
 	 *
 	 * @param previousSqrlIdk
 	 *            the old SQRL ID, which is present in persistence
@@ -102,15 +102,15 @@ public interface SqrlPersistence {
 	public void userAuthenticatedViaSqrl(String sqrlIdk, String correlator);
 
 	/**
-	 * Invoked to determine if SQRL auth is enabled for a user
+	 * Invoked to determine if SQRL a given flag is set or unset for a user
 	 *
 	 * @param sqrlIdk
 	 *            the SQRL ID which represents the user.
-	 * @return the auth state of the SQRL user or {@link SqrlEaabledState#NOT_EXIST} if there is none
+	 * @return true if the flag is currently set, false if unset
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
-	public Boolean fetchSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToFetch);
+	public boolean fetchSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToFetch);
 
 	/**
 	 * Invoked when the user chooses to temporarily disable SQRL authentication for this site
@@ -168,7 +168,7 @@ public interface SqrlPersistence {
 	 * Mark the given token as used in persistence. After this call, any subsequent calls to
 	 * {@link #hasTokenBeenUsed(SqrlNutToken)} must return true for this token until expiryTime. Once the expiryTime has
 	 * been reached, persistence cleanup can occur and this token can be deleted from persistence
-	 * 
+	 *
 	 * @param nutTokenString
 	 *            the {@link SqrlNutToken} token in sqbase64 format as received from the client
 	 * @param expiryTime

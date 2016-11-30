@@ -23,7 +23,7 @@ import com.github.dbadia.sqrl.server.SqrlFlag;
 
 /**
  * Represents a users SQRL identity including a String id the users native app identity
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -34,7 +34,7 @@ public class SqrlIdentity implements Serializable {
 
 	@Id
 	@TableGenerator(name = "identity_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value",
-			allocationSize = 1)
+	allocationSize = 1)
 	@GeneratedValue(generator = "identity_gen")
 	@Column(name = "id")
 	private long id;
@@ -59,6 +59,7 @@ public class SqrlIdentity implements Serializable {
 	@MapKeyColumn(name = "name")
 	@MapKeyEnumerated(EnumType.STRING)
 	@Column(name = "value")
+	// TODO: change to EnumSet
 	private final Map<SqrlFlag, Boolean> flagTable = new EnumMap<>(SqrlFlag.class);
 
 	public SqrlIdentity() {
@@ -105,8 +106,8 @@ public class SqrlIdentity implements Serializable {
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("SqrlIdentity [id=").append(id).append(", idk=").append(idk).append(", nativeUserXref=")
-				.append(nativeUserXref).append(", identityDataTable=").append(identityDataTable).append(", flagTable=")
-				.append(flagTable).append("]");
+		.append(nativeUserXref).append(", identityDataTable=").append(identityDataTable).append(", flagTable=")
+		.append(flagTable).append("]");
 		return builder.toString();
 	}
 

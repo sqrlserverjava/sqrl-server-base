@@ -17,7 +17,7 @@ import org.junit.Test;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 import com.github.dbadia.sqrl.server.util.SqrlException;
 
 import junitx.framework.ArrayAssert;
@@ -224,7 +224,7 @@ public class SqrlNutUtilTest {
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
 		final SqrlNutToken nutToken = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
-		final TifBuilder tifBuilder = new TifBuilder();
+		final SqrlTifBuilder tifBuilder = new SqrlTifBuilder();
 		try {
 			SqrlNutTokenUtil.validateNut("123", nutToken, config, persistence, tifBuilder);
 			fail("Exception expected");

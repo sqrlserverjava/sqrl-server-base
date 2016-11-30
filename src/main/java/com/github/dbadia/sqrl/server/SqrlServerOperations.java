@@ -32,11 +32,12 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestProcessor;
 import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
@@ -81,6 +82,7 @@ public class SqrlServerOperations {
 	private final SqrlConfigOperations		configOperations;
 	private final SqrlConfig				config;
 	private final SqrlAuthStateMonitor		authStateMonitor;
+	private final boolean					cpsEnabled;
 
 	/**
 	 * Initializes the operations class with the given config, defaulting to the built in JPA persisentce provider.
@@ -139,9 +141,11 @@ public class SqrlServerOperations {
 		} else {
 			logger.info("Persistence cleanup task registered to run every {} minutes", cleanupIntervalInMinutes);
 			final SqrlPersistenceCleanupTask cleanupRunnable = new SqrlPersistenceCleanupTask(persistenceFactory);
-			sqrlServiceExecutor.scheduleAtFixedRate(cleanupRunnable, cleanupIntervalInMinutes, cleanupIntervalInMinutes,
+			sqrlServiceExecutor.scheduleAtFixedRate(cleanupRunnable, 0, cleanupIntervalInMinutes,
 					TimeUnit.MINUTES);
 		}
+		// TODO: set cpsEnabled
+		cpsEnabled = false;
 	}
 
 	/**
@@ -219,6 +223,7 @@ public class SqrlServerOperations {
 		return new SqrlNutToken(inetInt, configOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
 	}
 
+
 	/**
 	 * The backchannel servlet which is accepting requests from SQRL clients should call this method to process the
 	 * request
@@ -237,27 +242,29 @@ public class SqrlServerOperations {
 			logger.info(SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString());
 		}
 		String correlator = "unknown";
-		final TifBuilder tifBuilder = new TifBuilder();
+		final SqrlTifBuilder tifBuilder = new SqrlTifBuilder();
 		boolean idkExistsInDataStore = false;
 		String requestState = "invalid";
 		try {
 			String logHeader = "";
-			SqrlClientRequest request = null;
+			SqrlClientRequest sqrlClientRequest = null;
 			SqrlPersistence sqrlPersistence = createSqrlPersistence();
 			Exception exception = null;
 			try {
 				// Get the correlator first. Then, if the request is invalid, we can update the auth page saying so
 				correlator = SqrlClientRequest.parseCorrelatorOnly(servletRequest);
-				request = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
+				sqrlClientRequest = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
+				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest, sqrlPersistence, tifBuilder);
+
 				logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
-						.append(request.getClientCommand()).append(":: ").toString());
-				if (checkIfIpsMatch(request.getNut(), servletRequest)) {
+						.append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
+
+				if (checkIfIpsMatch(sqrlClientRequest.getNut(), servletRequest)) {
 					tifBuilder.addFlag(SqrlTif.TIF_IPS_MATCHED);
 				}
-				final SqrlNutToken nutToken = request.getNut();
-
-				SqrlNutTokenUtil.validateNut(correlator, nutToken, config, sqrlPersistence, tifBuilder);
-				idkExistsInDataStore = processClientCommand(request, nutToken, tifBuilder, correlator);
+				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence,
+						tifBuilder);
+				idkExistsInDataStore = processor.processClientCommand();
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
 				sqrlPersistence.closeCommit();
@@ -265,6 +272,7 @@ public class SqrlServerOperations {
 				exception = e;
 				sqrlPersistence.closeRollback();
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
+				// TODO: handle all tif error flags here based on exception type - extract to method
 				if (e instanceof SqrlInvalidRequestException) { // NOSONAR: don't want to duplicate all other logic in a
 					// separate try block
 					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
@@ -287,7 +295,7 @@ public class SqrlServerOperations {
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
 				final boolean isInErrorState = exception != null;
-				serverReplyString = buildReply(isInErrorState, servletRequest, request, idkExistsInDataStore, tif,
+				serverReplyString = buildReply(isInErrorState, servletRequest, sqrlClientRequest, idkExistsInDataStore, tif,
 						correlator);
 				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
 				if (isInErrorState) {
@@ -299,6 +307,12 @@ public class SqrlServerOperations {
 						authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_USER_DISABLED;
 					}
 					sqrlCorrelator.setAuthenticationStatus(authErrorState);
+					// There should be no further requests so remove the parrot value
+					if (sqrlCorrelator.getTransientAuthDataTable()
+							.remove(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT) == null) {
+						logger.warn("{}Tried to remove server parrot since we are in error state but it doesn't exist",
+								SqrlLoggingUtil.getLogHeader());
+					}
 				} else {
 					// Store the serverReplyString in the server parrot value so we can validate it on the clients next
 					// request
@@ -307,7 +321,7 @@ public class SqrlServerOperations {
 				}
 				sqrlPersistence.closeCommit();
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
-				logger.info("{}Processed sqrl client request replying with tif {}", logHeader, tif);
+				logger.info("{}Processed sqrl client request replied with tif {}", logHeader, tif);
 			} catch (final SqrlException e) {
 				sqrlPersistence.closeRollback();
 				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
@@ -316,110 +330,6 @@ public class SqrlServerOperations {
 			}
 		} finally {
 			SqrlLoggingUtil.clearLogHeader();
-		}
-	}
-
-	// protected to ease unit testing
-	protected boolean processClientCommand(final SqrlClientRequest request, final SqrlNutToken nutToken,
-			final TifBuilder tifBuilder, final String correlator) throws SqrlException {
-		final String logHeader = SqrlLoggingUtil.getLogHeader();
-		final String command = request.getClientCommand();
-		logger.debug("{}Processing {} command for nut {}", logHeader, command, nutToken);
-		final String idk = request.getIdk();
-		// Per the spec, SQRL transactions are atomic; so we create our persistence here and only commit after all
-		// processing is completed successfully
-		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
-		try {
-			boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(idk);
-			// Set IDK /PIDK Tifs
-			if (idkExistsInDataStore) {
-				tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
-			} else if (request.hasPidk()) {
-				final String result = sqrlPersistence.fetchSqrlIdentityDataItem(idk, request.getPidk());
-				if (result == null) {
-					sqrlPersistence.updateIdkForSqrlIdentity(request.getPidk(), idk);
-					tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
-				}
-			}
-			processNonSukOptions(request, tifBuilder, logHeader);
-			// Now process the command
-			if (COMMAND_QUERY.equals(command)) {
-				// Nothing else to do
-			} else if (COMMAND_ENABLE.equals(command)) {
-				final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(idk,
-						SqrlFlag.SQRL_AUTH_ENABLED);
-				if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
-					if (request.containsUrs()) {
-						sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, true);
-					} else {
-						throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader()
-								+ "Request was to enable SQRL but didn't contain urs signature");
-					}
-				} else {
-					logger.warn("{}Received request to ENABLE but it already is");
-				}
-			} else if (COMMAND_REMOVE.equals(command)) {
-				if (request.containsUrs()) {
-					sqrlPersistence.deleteSqrlIdentity(idk);
-				} else {
-					throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader()
-							+ "Request was to enable SQRL but didn't contain urs signature");
-				}
-			} else if (COMMAND_DISABLE.equals(command)) {
-				sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
-			} else if (COMMAND_IDENT.equals(command)) {
-				if (!idkExistsInDataStore) {
-					// First time seeing this SQRL identity, store it and enable it
-					sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
-				}
-				final boolean sqrlEnabledForIdentity = Boolean.TRUE
-						.equals(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
-				if (!idkExistsInDataStore || sqrlEnabledForIdentity) {
-					final Map<String, String> keysToBeStored = request.getKeysToBeStored();
-					sqrlPersistence.storeSqrlDataForSqrlIdentity(idk, keysToBeStored);
-					idkExistsInDataStore = true;
-					logger.info("{}User SQRL authenticated idk={}", logHeader, idk);
-					sqrlPersistence.userAuthenticatedViaSqrl(idk, correlator);
-				} else { // sqrl disabled for identity
-					tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
-					tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
-					throw new SqrlDisabledUserException(
-							SqrlLoggingUtil.getLogHeader() + "SQRL is disabled for this user");
-				}
-			} else {
-				tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
-				tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
-				throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Unsupported client command " + command, null);
-			}
-			sqrlPersistence.closeCommit();
-			return idkExistsInDataStore;
-		} catch (final SqrlException e) {
-			sqrlPersistence.closeRollback();
-			throw e;
-		}
-	}
-
-	private void processNonSukOptions(final SqrlClientRequest sqrlRequest, final TifBuilder tifBuilder,
-			final String logHeader) {
-		for (final SqrlClientOpt clientOption : sqrlRequest.getOptList()) {
-			switch (clientOption) {
-				case suk:
-					// Nothing to do, handled in buildReply
-					break;
-				case cps:
-				case hardlock:
-				case sqrlonly:
-					logger.warn("{}The SQRL client option {} is not yet supported", logHeader, clientOption);
-					// Some flags are to be ignored on query commands, check for that case here
-					if (!clientOption.isNonQueryOnly() || !COMMAND_QUERY.equals(sqrlRequest.getClientCommand())) {
-						tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
-					}
-					break;
-				default:
-					logger.error("{}Don't know how to reply to SQRL client opt {}", logHeader, clientOption);
-					tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
-					break;
-			}
 		}
 	}
 

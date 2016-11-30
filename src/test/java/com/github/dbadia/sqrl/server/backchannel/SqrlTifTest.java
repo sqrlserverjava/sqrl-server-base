@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 
 @RunWith(Parameterized.class)
 public class SqrlTifTest {
@@ -30,7 +30,7 @@ public class SqrlTifTest {
 
 	@Test
 	public void testIt() throws Exception {
-		final TifBuilder builder = new TifBuilder(ipsMatched);
+		final SqrlTifBuilder builder = new SqrlTifBuilder(ipsMatched);
 		final List<Integer> absentTifList = SqrlTif.getAllTifs();
 		if (ipsMatched) {
 			absentTifList.remove(Integer.valueOf(SqrlTif.TIF_IPS_MATCHED));

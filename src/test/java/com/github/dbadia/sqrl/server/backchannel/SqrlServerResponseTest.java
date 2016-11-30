@@ -4,7 +4,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 
 import junit.framework.TestCase;
 
@@ -22,7 +22,7 @@ public class SqrlServerResponseTest extends TestCase {
 	// @formatter:on
 	@Test
 	public void testBuildReply() throws Exception {
-		final SqrlTif tif = new TifBuilder(true).addFlag(SqrlTif.TIF_CURRENT_ID_MATCH).createTif();
+		final SqrlTif tif = new SqrlTifBuilder(true).addFlag(SqrlTif.TIF_CURRENT_ID_MATCH).createTif();
 		final String nut = "R_IssQQyl-LB-sB1PiIFGw";
 		final String query = "/sqrl?nut=R_IssQQyl-LB-sB1PiIFGw";
 		final String correlator = "alkfjaliejilsf";

@@ -227,6 +227,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	@Override
 	public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore) {
+		// TODO: what is the difference between this and the one below?
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
 		if (sqrlIdentity == null) {
@@ -308,8 +309,10 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	}
 
 	@Override
-	public Boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch) {
-		return fetchRequiredSqrlIdentity(sqrlIdk).getFlagTable().get(flagToFetch);
+	public boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch) {
+		final Boolean result = fetchRequiredSqrlIdentity(sqrlIdk).getFlagTable().get(flagToFetch);
+		// Null or false both indicate false
+		return result != null && result.booleanValue();
 	}
 
 	@Override

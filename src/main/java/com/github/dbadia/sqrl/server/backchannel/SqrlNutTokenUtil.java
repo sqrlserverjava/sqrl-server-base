@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.exception.SqrlNutTokenReplayedException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
@@ -117,7 +117,7 @@ public class SqrlNutTokenUtil {
 	 *             if any validation fails or if persistence fails
 	 */
 	public static void validateNut(final String correlator, final SqrlNutToken nutToken, final SqrlConfig config,
-			final SqrlPersistence sqrlPersistence, final TifBuilder tifBuilder) throws SqrlException {
+			final SqrlPersistence sqrlPersistence, final SqrlTifBuilder tifBuilder) throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		final long now = System.currentTimeMillis();
 		if (logger.isDebugEnabled()) {

@@ -2,7 +2,7 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 /**
  * Valid values for the opt parameter
- * 
+ *
  * @author Dave Badia
  */
 public enum SqrlClientOpt {
@@ -78,6 +78,11 @@ public enum SqrlClientOpt {
 		this.nonQueryOnly = nonQueryOnly;
 	}
 
+	/**
+	 * Per the spec, some flags are to be processed during non-query calls only; account for that here
+	 * 
+	 * @return
+	 */
 	public boolean isNonQueryOnly() {
 		return nonQueryOnly;
 	}

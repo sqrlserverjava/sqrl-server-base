@@ -77,7 +77,7 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	}
 
 	@Override
-	public Boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch) {
+	public boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch) {
 		return sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk, flagToFetch);
 	}
 
@@ -157,6 +157,7 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 		return sqrlPersistence.fetchSqrlCorrelatorStatusUpdates(correlatorToCurrentStatusTable);
 	}
 
+	// TODO: is this used?
 	@Override
 	public void deleteSqrlCorrelator(final SqrlCorrelator sqrlCorrelator) {
 		sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);

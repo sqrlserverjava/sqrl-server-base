@@ -6,20 +6,20 @@ import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.TifBuilder;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 
 public class SqrlTifConstructorTest {
 
 	@Test
 	public void testTif_IpsMatched() throws Exception {
-		final SqrlTif tif = new TifBuilder(true).createTif();
+		final SqrlTif tif = new SqrlTifBuilder(true).createTif();
 		assertTrue(isTifPresent(tif, SqrlTif.TIF_IPS_MATCHED));
 		assertEquals(4, tif.toHexInt());
 	}
 
 	@Test
 	public void testTif_IpsNotMatched() throws Exception {
-		final SqrlTif tif = new TifBuilder(false).createTif();
+		final SqrlTif tif = new SqrlTifBuilder(false).createTif();
 		assertTrue(isTifAbsent(tif, SqrlTif.TIF_IPS_MATCHED));
 		assertEquals(0, tif.toHexInt());
 	}
