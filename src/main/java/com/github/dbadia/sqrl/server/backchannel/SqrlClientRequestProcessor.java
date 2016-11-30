@@ -43,9 +43,6 @@ public class SqrlClientRequestProcessor {
 		this.tifBuilder = tifBuilder;
 		this.correlator = sqrlClientRequest.getCorrelator();
 	}
-	// TODO: move this to whereever persistence is created
-	// Per the spec, SQRL transactions are atomic; so we create our persistence here and only commit after all
-	// processing is completed successfully
 
 	public boolean processClientCommand() throws SqrlException {
 		final boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlIdk);

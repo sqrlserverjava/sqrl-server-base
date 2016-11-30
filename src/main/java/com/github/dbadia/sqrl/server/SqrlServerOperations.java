@@ -248,6 +248,8 @@ public class SqrlServerOperations {
 		try {
 			String logHeader = "";
 			SqrlClientRequest sqrlClientRequest = null;
+			// Per the spec, SQRL transactions are atomic; so we create our persistence here and only commit after all
+			// processing is completed successfully
 			SqrlPersistence sqrlPersistence = createSqrlPersistence();
 			Exception exception = null;
 			try {
