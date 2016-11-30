@@ -384,25 +384,35 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	 *
 	 */
 	public static final class SqrlJpaEntityManagerMonitorTask implements Runnable {
-		private static final long	ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES	= 5;
-		private static final long	ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MS		= TimeUnit.MINUTES
-				.toMillis(ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES);
 
 		public SqrlJpaEntityManagerMonitorTask() {
 			// As required by
 		}
 
+		public long computeThresholdInMillis() {
+			if (logger.isDebugEnabled()) {
+				return TimeUnit.MINUTES.toMillis(5);
+			} else {
+				return TimeUnit.SECONDS.toMillis(10);
+			}
+		}
+
+		private void removeFromTrackingTable(final Iterator<EntityManager> iter, final EntityManager entityManager) {
+			iter.remove();
+			LAST_USED_TIME_TABLE.remove(entityManager); // May or may not exist, ok
+		}
+
 		@Override
 		public void run() {
 			try {
+				final long threshold = computeThresholdInMillis();
 				logger.debug("Running EntityManagerMonitorTimerTask");
 				final Iterator<EntityManager> iter = CREATED_BY_STACK_TABLE.keySet().iterator();
 				while (iter.hasNext()) {
 					final EntityManager entityManager = iter.next();
 					if (!entityManager.isOpen()) {
-						logger.debug("entityManager closed, removing from monitor table");
-						iter.remove();
-						LAST_USED_TIME_TABLE.remove(entityManager); // May or may not exist, ok
+						logger.trace("entityManager closed, removing from monitor table");
+						removeFromTrackingTable(iter, entityManager);
 					} else {
 						final Long lastUsed = LAST_USED_TIME_TABLE.get(entityManager);
 						if (lastUsed == null) {
@@ -410,10 +420,12 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 									"EntityManagerMonitorTask found null lastUsedTime for entityManager which was created at",
 									CREATED_BY_STACK_TABLE.get(entityManager));
 						} else {
-							if (System.currentTimeMillis() - lastUsed > ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MS) {
+							if (System.currentTimeMillis() - lastUsed > threshold) {
 								logger.error("Entity Manager is still open and has not been used for "
-										+ ENTITY_MANAGER_IDLE_WARN_THRESHOLD_MINUTES + " minutes.  Was created from",
+										+ threshold + "ms.  Closing now.  Was created from",
 										CREATED_BY_STACK_TABLE.get(entityManager));
+								entityManager.close();
+								removeFromTrackingTable(iter, entityManager);
 							}
 						}
 					}
