@@ -55,7 +55,7 @@ public class SqrlClientRequestProcessor {
 		} else if (sqrlClientRequest.hasPidk() // PIDK check TODO: move too identity command area
 				&& sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlClientRequest.getPidk())) {
 			sqrlPersistence.updateIdkForSqrlIdentity(sqrlClientRequest.getPidk(), sqrlIdk);
-			// TODO audit
+			// TODO AUDIT
 			tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
 		}
 
@@ -74,7 +74,7 @@ public class SqrlClientRequestProcessor {
 				logger.debug("{}Updating SQRL flag {} from {} to {}", SqrlLoggingUtil.getLogHeader(), opt, dbValue,
 						clientValue);
 				sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, flag, clientValue);
-				// TODO: audit, client updated value to clientSet
+				// TODO: AUDIT, client updated value to clientSet
 			}
 		}
 	}

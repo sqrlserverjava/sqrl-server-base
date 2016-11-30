@@ -101,7 +101,7 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		// TODO chagne to EXPECTED_TIF_BAD_CLIENT_REQUEST
+		// TODO AT chagne to EXPECTED_TIF_BAD_CLIENT_REQUEST
 		assertEquals("C0", responseDataTable.get("tif"));
 	}
 
