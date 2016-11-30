@@ -20,10 +20,11 @@ public class SqrlTifTest {
 	public static Collection<Object[]> data() {
 		// @formatter:off
 		return Arrays.asList(new Object[][] {
-			{ false, 1, new int[]{SqrlTif.TIF_CURRENT_ID_MATCH }},
-			{ true, 4, new int[]{}},
-			{ true, 5, new int[]{SqrlTif.TIF_CURRENT_ID_MATCH }},
-			{ true, 196, new int[]{SqrlTif.TIF_COMMAND_FAILED, SqrlTif.TIF_CLIENT_FAILURE} },
+			{ false, "1", new int[]{SqrlTif.TIF_CURRENT_ID_MATCH }},
+			{ true, "4", new int[]{}},
+			{ true, "5", new int[]{SqrlTif.TIF_CURRENT_ID_MATCH }},
+			{ false, "C0", new int[]{SqrlTif.TIF_COMMAND_FAILED, SqrlTif.TIF_CLIENT_FAILURE} },
+			{ true, "C4", new int[]{SqrlTif.TIF_COMMAND_FAILED, SqrlTif.TIF_CLIENT_FAILURE} },
 		});
 	}
 	// @formatter:on
@@ -45,11 +46,14 @@ public class SqrlTifTest {
 		if (ipsMatched) {
 			assertTrue(isTifPresent(tif, SqrlTif.TIF_IPS_MATCHED));
 		}
+		assertEquals(expectedValue, tif.toHexString());
+
+		// Check present
 		for (final int expectedTif : tifList) {
 			assertTrue(expectedTif + " not found in int" + tif, isTifPresent(tif, expectedTif));
 		}
-		assertEquals(expectedValue, tif.toInt());
 
+		// Check absent
 		for (final int shouldBeAbsent : absentTifList) {
 			assertTrue("Found " + shouldBeAbsent + " in tif " + tif + " but shouldn't have",
 					isTifAbsent(tif, shouldBeAbsent));
@@ -84,7 +88,8 @@ public class SqrlTifTest {
 	}
 
 	static final boolean isTifPresent(final SqrlTif tif, final int tifToLookFor) {
-		return (tif.toInt() & tifToLookFor) == tifToLookFor;
+		final int tifInt = Integer.parseInt(tif.toHexString(), 16);
+		return (tifInt & tifToLookFor) == tifToLookFor;
 	}
 
 	static final boolean isTifAbsent(final SqrlTif tif, final int tifToLookFor) {
@@ -93,10 +98,11 @@ public class SqrlTifTest {
 
 	// Instance variables and constructor are all boilerplate for Parameterized test, so put them at the bottom
 	private final boolean	ipsMatched;
-	private final int		expectedValue;
+	// hex string without 0x
+	private final String	expectedValue;
 	private final int[]		tifList;
 
-	public SqrlTifTest(final boolean ipsMatched, final int expectedValue, final int... tifList) {
+	public SqrlTifTest(final boolean ipsMatched, final String expectedValue, final int... tifList) {
 		super();
 		this.ipsMatched = ipsMatched;
 		this.expectedValue = expectedValue;

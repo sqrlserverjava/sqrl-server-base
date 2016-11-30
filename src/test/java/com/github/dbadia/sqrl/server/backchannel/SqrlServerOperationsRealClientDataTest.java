@@ -29,7 +29,7 @@ import junitx.framework.StringAssert;
 
 /**
  * Uses real data captured from the SQRL reference client
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -166,7 +166,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("100", responseDataTable.get("tif"));
+		assertEquals("40", responseDataTable.get("tif"));
 		// suk should not be present as transactions are atomic and it did not exist before
 		assertEquals(null, responseDataTable.get(SqrlConstants.KEY_TYPE_SUK));
 	}
@@ -219,7 +219,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		// Store the server parrot so request validation will pass
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 		sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorFromServerParam).getTransientAuthDataTable()
-				.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
+		.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		sqrlPersistence.closeCommit();
 
 		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);

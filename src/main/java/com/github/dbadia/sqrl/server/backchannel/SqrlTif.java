@@ -3,12 +3,19 @@ package com.github.dbadia.sqrl.server.backchannel;
 import java.util.ArrayList;
 import java.util.List;
 
+// @formatter:off
 /**
  * Valid values for the SQRL tif indicator, see https://www.grc.com/sqrl/semantics.htm
+ *
+ * This library uses these flags in the following manner, which is understood to be compliant with the SQRL spec
+ *
+ * Server side errors:   	TIF_COMMAND_FAILED
+ * Invalid client request:  TIF_COMMAND_FAILED & TIF_CLIENT_FAILURE
  *
  * @author Dave Badia
  *
  */
+//@formatter:on
 public class SqrlTif {
 	/**
 	 * (Current) ID match: When set, this bit indicates that the web server has found an identity association for the
@@ -131,12 +138,13 @@ public class SqrlTif {
 		return new ArrayList<Integer>(ALL_TIF_LIST);
 	}
 
-	protected int toInt() {
-		return tifInt;
+	public String toHexString() {
+		return Integer.toHexString(tifInt).toUpperCase();
 	}
 
-	protected int toHexInt() {
-		return Integer.valueOf(Integer.toString(tifInt), 16);
+	@Override
+	public String toString() {
+		return toHexString();
 	}
 
 	public static class SqrlTifBuilder {
@@ -167,10 +175,5 @@ public class SqrlTif {
 		public SqrlTif createTif() {
 			return new SqrlTif(builderTifInt);
 		}
-	}
-
-	@Override
-	public String toString() {
-		return Integer.toString(tifInt);
 	}
 }

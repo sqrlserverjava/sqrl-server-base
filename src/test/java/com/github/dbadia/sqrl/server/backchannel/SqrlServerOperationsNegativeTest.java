@@ -23,6 +23,13 @@ import junitx.framework.StringAssert;
 public class SqrlServerOperationsNegativeTest {
 	private static final String CLIENT_DATA_1_CORRELATOR = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
 
+	private static final SqrlTif.SqrlTifBuilder	TIF_BUILDER	= new SqrlTif.SqrlTifBuilder(false);
+	// TODO: refactor error handling then enable this
+	// private static final String EXPECTED_TIF_BAD_CLIENT_REQUEST = TIF_BUILDER.clearAllFlags()
+	// .addFlag(SqrlTif.TIF_COMMAND_FAILED).addFlag(SqrlTif.TIF_CLIENT_FAILURE).createTif().toHexString();
+	private static final String					EXPECTED_TIF_BAD_CLIENT_REQUEST	= TIF_BUILDER.clearAllFlags()
+			.addFlag(SqrlTif.TIF_COMMAND_FAILED).createTif().toHexString();
+
 	@Test
 	public void testNutReplayed() throws Throwable {
 		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
@@ -54,8 +61,7 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		// 100 hex
-		assertEquals("100", responseDataTable.get("tif"));
+		assertEquals(EXPECTED_TIF_BAD_CLIENT_REQUEST, responseDataTable.get("tif"));
 	}
 
 	@Test
@@ -95,7 +101,8 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("402", responseDataTable.get("tif"));
+		// TODO chagne to EXPECTED_TIF_BAD_CLIENT_REQUEST
+		assertEquals("C0", responseDataTable.get("tif"));
 	}
 
 	@Test
@@ -140,7 +147,6 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		// 100 hex
-		assertEquals("100", responseDataTable.get("tif"));
+		assertEquals(EXPECTED_TIF_BAD_CLIENT_REQUEST, responseDataTable.get("tif"));
 	}
 }
