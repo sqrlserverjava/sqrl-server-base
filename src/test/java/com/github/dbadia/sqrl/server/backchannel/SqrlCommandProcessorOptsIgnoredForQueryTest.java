@@ -2,7 +2,6 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 import static junit.framework.TestCase.assertTrue;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,9 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 
 import junit.framework.TestCase;
 
@@ -36,7 +33,7 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 		// @formatter:off
 		// return all SqrlClientOpt which are nonQuery only
 		final List<Object[]> data = new ArrayList<>();
-		for(final SqrlClientOpt opt : SqrlClientOpt.values()) {
+		for(final SqrlRequestOpt opt : SqrlRequestOpt.values()) {
 			if(opt.isNonQueryOnly()) {
 				data.add(new Object[]{opt});
 			}
@@ -51,7 +48,8 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.createEmptySqrlPersistence();
 		TCUtil.setupIdk(idk, "abc", "123");
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "query", correlator, false,
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.QUERY,
+				correlator, false,
 				opt);
 
 		// Execute
@@ -73,19 +71,13 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 	private final String				correlator	= "abc";
 	private final SqrlConfig			config;
 	private final SqrlPersistence		sqrlPersistence;
-	private final SqrlServerOperations	sqrlServerOps;
-	private final SqrlTifBuilder			tifBuilder;
-	private final SqrlNutToken			nutToken;
-	private final SqrlClientOpt			opt;
+	private final SqrlRequestOpt			opt;
 
-	public SqrlCommandProcessorOptsIgnoredForQueryTest(final SqrlClientOpt opt) throws Exception {
+	public SqrlCommandProcessorOptsIgnoredForQueryTest(final SqrlRequestOpt opt) throws Exception {
 		super();
 		this.opt = opt;
 		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		sqrlServerOps = new SqrlServerOperations(config);
-		tifBuilder = new SqrlTifBuilder();
-		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}
 }

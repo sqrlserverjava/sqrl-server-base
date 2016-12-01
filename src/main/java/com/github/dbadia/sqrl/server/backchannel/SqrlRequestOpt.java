@@ -1,11 +1,14 @@
 package com.github.dbadia.sqrl.server.backchannel;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Valid values for the opt parameter
  *
  * @author Dave Badia
  */
-public enum SqrlClientOpt {
+public enum SqrlRequestOpt {
 	/**
 	 * “suk” is the abbreviation for Server Unlock Key. The presence of this flag instructs the SQRL server to return
 	 * the stored server unlock key (SUK) associated with whichever identity matches the identity supplied by the SQRL
@@ -20,7 +23,7 @@ public enum SqrlClientOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	suk(false),
+	suk(false, true),
 
 	/**
 	 * When present, this option requests the web server to set a flag on this user's account to disable any alternative
@@ -34,7 +37,7 @@ public enum SqrlClientOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	sqrlonly(true),
+	sqrlonly(true, false),
 
 	/**
 	 * When present, this option requests the web server to set a flag on this user's account to disable any alternative
@@ -49,7 +52,7 @@ public enum SqrlClientOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	hardlock(true),
+	hardlock(true, false),
 
 	/**
 	 * “cps” is the abbreviation for Client Provided Session. The presence of this flag alters the system's final
@@ -68,22 +71,34 @@ public enum SqrlClientOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	cps(true),
+	cps(true, false),
 
 	;
 
 	private boolean nonQueryOnly;
+	private boolean	keyOpt;
 
-	private SqrlClientOpt(final boolean nonQueryOnly) {
+	private SqrlRequestOpt(final boolean nonQueryOnly, final boolean keyOpt) {
 		this.nonQueryOnly = nonQueryOnly;
+		this.keyOpt = keyOpt;
 	}
 
 	/**
 	 * Per the spec, some flags are to be processed during non-query calls only; account for that here
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isNonQueryOnly() {
 		return nonQueryOnly;
+	}
+
+	public static Set<SqrlRequestOpt> getKeyOpts() {
+		final Set<SqrlRequestOpt> keyOptSet = new HashSet<>();
+		for(final SqrlRequestOpt opt : values()) {
+			if (opt.keyOpt) {
+				keyOptSet.add(opt);
+			}
+		}
+		return keyOptSet;
 	}
 }

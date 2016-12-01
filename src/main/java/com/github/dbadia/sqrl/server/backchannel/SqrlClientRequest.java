@@ -37,10 +37,10 @@ public class SqrlClientRequest {
 
 	private final String				sqrlProtocolVersion;
 	private final SqrlNutToken			nut;
-	private final String				clientCommand;
+	private final SqrlRequestCommand	clientCommand;
 	private final Map<String, byte[]>	clientKeys			= new ConcurrentHashMap<>();
 	private final Map<String, String>	clientKeysBsse64	= new ConcurrentHashMap<>();
-	private final List<SqrlClientOpt>	optList				= new ArrayList<>();
+	private final List<SqrlRequestOpt>	optList				= new ArrayList<>();
 
 	private final HttpServletRequest	servletRequest;
 	private final String				clientParam;
@@ -71,7 +71,7 @@ public class SqrlClientRequest {
 		if (SqrlUtil.isNotBlank(optListString)) {
 			for (final String optString : optListString.split("~")) {
 				try {
-					final SqrlClientOpt clientOpt = SqrlClientOpt.valueOf(optString);
+					final SqrlRequestOpt clientOpt = SqrlRequestOpt.valueOf(optString);
 					if(!optList.add(clientOpt)) {
 						logger.warn("{}Client sent opt {} more than once in clientParam of {}", logHeader, clientOpt, clientParam);
 					}
@@ -122,7 +122,16 @@ public class SqrlClientRequest {
 					"ids was missing in SQRL client request: " + clientNameValuePairTable);
 		}
 
-		clientCommand = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_CMD);
+		final String clientCommandString = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_CMD);
+		try {
+			this.clientCommand = SqrlRequestCommand.valueOf(clientCommandString.toUpperCase());
+		} catch (final IllegalArgumentException e) {
+			// We handle all SQRL v1 verbs, so don't set TIF_FUNCTIONS_NOT_SUPPORTED, treat it as an invalid
+			// request
+			// instead
+			throw new SqrlInvalidRequestException(
+					logHeader + "Recevied invalid SQRL command from client: '" + clientCommandString + "'");
+		}
 	}
 
 	/**
@@ -215,7 +224,7 @@ public class SqrlClientRequest {
 		}
 	}
 
-	public String getClientCommand() {
+	public SqrlRequestCommand getClientCommand() {
 		return clientCommand;
 	}
 
@@ -242,7 +251,7 @@ public class SqrlClientRequest {
 		return clientKeysBsse64.get(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
 	}
 
-	public List<SqrlClientOpt> getOptList() {
+	public List<SqrlRequestOpt> getOptList() {
 		return optList;
 	}
 

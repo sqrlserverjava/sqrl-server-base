@@ -12,34 +12,29 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 public class SqrlClientRequestProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 
-	private static final String	COMMAND_QUERY	= "query";
-	private static final String	COMMAND_IDENT	= "ident";
-	private static final String	COMMAND_DISABLE	= "disable";
-	private static final String	COMMAND_ENABLE	= "enable";
-	private static final String	COMMAND_REMOVE	= "remove";
-
 	private final SqrlClientRequest			sqrlClientRequest;
 	private final String			sqrlIdk;
-	private final String					command;
+	private final SqrlRequestCommand	command;
 	private final String			logHeader;
 	private final String			correlator;
 	private final SqrlPersistence	sqrlPersistence;
 	private SqrlInternalUserState	sqrlInternalUserState	= NONE_EXIST;
 
 	public SqrlClientRequestProcessor(final SqrlClientRequest sqrlClientRequest,
-			final SqrlPersistence sqrlPersistence) {
+			final SqrlPersistence sqrlPersistence) throws SqrlInvalidRequestException {
 		super();
 		// Cache the logHeader since we use it a lot and it won't change here
 		this.logHeader = SqrlLoggingUtil.getLogHeader();
 		this.sqrlPersistence = sqrlPersistence;
 		this.sqrlClientRequest = sqrlClientRequest;
-		this.command = sqrlClientRequest.getClientCommand();
 		this.sqrlIdk = sqrlClientRequest.getIdk();
+		this.command = sqrlClientRequest.getClientCommand();
 		this.correlator = sqrlClientRequest.getCorrelator();
 	}
 
@@ -50,6 +45,7 @@ public class SqrlClientRequestProcessor {
 	 */
 	public SqrlInternalUserState processClientCommand() throws SqrlException {
 		sqrlInternalUserState = NONE_EXIST;
+
 		final boolean idkExistsInPersistence = sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlIdk);
 		// Set IDK /PIDK Tifs
 		if (idkExistsInPersistence) {
@@ -60,14 +56,14 @@ public class SqrlClientRequestProcessor {
 		}
 
 		processCommand();
-		if (!COMMAND_REMOVE.equals(command) && !COMMAND_QUERY.equals(command)) {
+		if (command.shouldProcessOpts()) {
 			processNonKeyOptions();
 		}
 		return sqrlInternalUserState;
 	}
 
-	private void updateOptValueAsNeeded(final SqrlFlag flag, final SqrlClientOpt opt) {
-		if (opt != null && !opt.isNonQueryOnly() || !COMMAND_QUERY.equals(sqrlClientRequest.getClientCommand())) {
+	private void updateOptValueAsNeeded(final SqrlFlag flag, final SqrlRequestOpt opt) {
+		if (opt != null) {
 			final boolean clientValue = sqrlClientRequest.getOptList().contains(opt);
 			final boolean dbValue = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk, flag);
 			if (clientValue != dbValue) { // update it
@@ -84,15 +80,18 @@ public class SqrlClientRequestProcessor {
 	 */
 	private void processNonKeyOptions() {
 		// Create a copy so we can track which flags we have processed
-		final List<SqrlClientOpt> optList = sqrlClientRequest.getOptList();
+		final List<SqrlRequestOpt> optList = sqrlClientRequest.getOptList();
 
-		// Remove the key opts from the list
+		// Remove the key opts from the list since they are processed in SqrlServerOperations
+		for (final SqrlRequestOpt keyOpt : SqrlRequestOpt.getKeyOpts()) {
+			optList.remove(keyOpt);
+		}
 
 		// The absence of given flags means they should be disabled. So loop through all known flags and take the
 		// appropriate action
 		for (final SqrlFlag flag : SqrlFlag.values()) {
 			if (flag.hasOptEquivalent()) {
-				final SqrlClientOpt opt = flag.getSqrlClientOpt();
+				final SqrlRequestOpt opt = flag.getSqrlClientOpt();
 				updateOptValueAsNeeded(flag, opt);
 				// Remove the item from the list since we have processed it
 				if (!optList.remove(flag.getSqrlClientOpt())) {
@@ -111,37 +110,42 @@ public class SqrlClientRequestProcessor {
 	}
 
 	private void processCommand() throws SqrlException {
-		if (COMMAND_QUERY.equals(command)) {
-			// Nothing to do
-		} else if (COMMAND_IDENT.equals(command)) {
-			processIdentCommand();
-		} else if (COMMAND_ENABLE.equals(command)) {
-			final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
-					SqrlFlag.SQRL_AUTH_ENABLED);
-			if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
-				if (sqrlClientRequest.containsUrs()) {
-					sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, true);
+		switch (command) {
+			case QUERY:
+				// Nothing to do
+				return;
+			case IDENT:
+				processIdentCommand();
+				return;
+			case ENABLE:
+				final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
+						SqrlFlag.SQRL_AUTH_ENABLED);
+				if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
+					if (sqrlClientRequest.containsUrs()) {
+						sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, true);
+					} else {
+						throw new SqrlInvalidRequestException(
+								logHeader + "Request was to enable SQRL but didn't contain urs signature");
+					}
 				} else {
-					throw new SqrlInvalidRequestException(logHeader
-							+ "Request was to enable SQRL but didn't contain urs signature");
+					logger.warn("{}Received request to ENABLE but it already is");
 				}
-			} else {
-				logger.warn("{}Received request to ENABLE but it already is");
-			}
-		} else if (COMMAND_REMOVE.equals(command)) {
-			if (sqrlClientRequest.containsUrs()) {
-				sqrlPersistence.deleteSqrlIdentity(sqrlIdk);
-			} else {
-				throw new SqrlInvalidRequestException(
-						logHeader + "Request was to remove SQRL but didn't contain urs signature");
-			}
-		} else if (COMMAND_DISABLE.equals(command)) {
-			sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, false);
-		} else {
-			// We handle all SQRL v1 verbs, so don't set TIF_FUNCTIONS_NOT_SUPPORTED, treat it as an invalid request
-			// instead
-			throw new SqrlInvalidRequestException(
-					logHeader + "Recevied invalid SQRL command from client" + command);
+				return;
+			case DISABLE:
+				sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, false);
+				return;
+			case REMOVE:
+				if (sqrlClientRequest.containsUrs()) {
+					sqrlPersistence.deleteSqrlIdentity(sqrlIdk);
+				} else {
+					throw new SqrlInvalidRequestException(
+							logHeader + "Request was to remove SQRL but didn't contain urs signature");
+				}
+				return;
+			default:
+				// This should have been caught before here
+				throw new SqrlClientRequestProcessingException(SqrlTif.TIF_COMMAND_FAILED,
+						logHeader + "Don't know how to process SQRL command " + command);
 		}
 	}
 
@@ -171,7 +175,7 @@ public class SqrlClientRequestProcessor {
 			performCpsCheck = true;
 		}
 		if (performCpsCheck) {
-			final boolean cpsRequested = sqrlClientRequest.getOptList().contains(SqrlClientOpt.cps);
+			final boolean cpsRequested = sqrlClientRequest.getOptList().contains(SqrlRequestOpt.cps);
 			final boolean cpsEnabled = false; // TODOCPS: have SSO pass SqrlCpsGenerator instances and check for
 			// non-null
 			if (cpsRequested && cpsEnabled) {

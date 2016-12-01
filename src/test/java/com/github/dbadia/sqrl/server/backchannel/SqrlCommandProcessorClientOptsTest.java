@@ -3,8 +3,6 @@ package com.github.dbadia.sqrl.server.backchannel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.time.LocalDateTime;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,14 +16,12 @@ public class SqrlCommandProcessorClientOptsTest {
 	final String					correlator	= "abc";
 	private SqrlConfig				config;
 	private SqrlPersistence			sqrlPersistence;
-	private SqrlNutToken	nutToken;
 
 	@Before
 	public void setUp() throws Exception {
 		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}
 
 	@After
@@ -39,8 +35,9 @@ public class SqrlCommandProcessorClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", correlator, false,
-				SqrlClientOpt.cps);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+				correlator, false,
+				SqrlRequestOpt.cps);
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
@@ -59,8 +56,9 @@ public class SqrlCommandProcessorClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", correlator, false,
-				SqrlClientOpt.hardlock);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+				correlator, false,
+				SqrlRequestOpt.hardlock);
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
@@ -79,8 +77,9 @@ public class SqrlCommandProcessorClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TCUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "ident", correlator, false,
-				SqrlClientOpt.sqrlonly);
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+				correlator, false,
+				SqrlRequestOpt.sqrlonly);
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);

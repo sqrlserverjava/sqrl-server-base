@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
+import com.github.dbadia.sqrl.server.backchannel.SqrlRequestOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestProcessor;
@@ -41,6 +41,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState;
 import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlRequestCommand;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
@@ -70,12 +71,6 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
  */
 public class SqrlServerOperations {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
-
-	private static final String	COMMAND_QUERY	= "query";
-	private static final String	COMMAND_IDENT	= "ident";
-	private static final String	COMMAND_DISABLE	= "disable";
-	private static final String	COMMAND_ENABLE	= "enable";
-	private static final String	COMMAND_REMOVE	= "remove";
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
@@ -260,6 +255,7 @@ public class SqrlServerOperations {
 			try {
 				// Get the correlator first. Then, if the request is invalid, we can update the auth page saying so
 				correlator = SqrlClientRequest.parseCorrelatorOnly(servletRequest);
+
 				sqrlClientRequest = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
 				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest,
 						sqrlPersistence);
@@ -393,7 +389,7 @@ public class SqrlServerOperations {
 		// suk?
 		if (shouldIncludeSukInReply(sqrlRequest, sqrlInternalUserState)
 				&& (sqrlInternalUserState == IDK_EXISTS || sqrlInternalUserState == PIDK_EXISTS)) {
-			final String sukSring = SqrlClientOpt.suk.toString();
+			final String sukSring = SqrlRequestOpt.suk.toString();
 			final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), sukSring);
 			if (sukValue != null) {
 				additionalDataTable.put(sukSring, sukValue);
@@ -404,13 +400,13 @@ public class SqrlServerOperations {
 	}
 
 	private boolean shouldIncludeSukInReply(final SqrlClientRequest sqrlRequest, final SqrlInternalUserState sqrlInternalUserState) {
-		return sqrlRequest.getOptList().contains(SqrlClientOpt.suk)
+		return sqrlRequest.getOptList().contains(SqrlRequestOpt.suk)
 				// https://www.grc.com/sqrl/semantics.htm says
 				// The SQRL specification requires the SQRL server to automatically return the account's matching SUK whenever
 				// it is able to anticipate that the client is likely to require it, such as when the server contains a previous
 				// identity key, or when the account is disabled
 				|| sqrlInternalUserState == DISABLED
-				|| (sqrlRequest.getClientCommand().equals(COMMAND_QUERY)
+				|| (sqrlRequest.getClientCommand() == SqrlRequestCommand.QUERY
 						&& sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS);
 	}
 
