@@ -13,7 +13,11 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	private final int			tifToAdd;
 
 	public SqrlClientRequestProcessingException(final int tifToAdd, final String message) {
-		super(new StringBuilder(SqrlLoggingUtil.getLogHeader()).append(message).toString());
+		this(tifToAdd, message, null);
+	}
+
+	public SqrlClientRequestProcessingException(final int tifToAdd, final String message, final Throwable cause) {
+		super(new StringBuilder(SqrlLoggingUtil.getLogHeader()).append(message).toString(), cause);
 		this.tifToAdd = tifToAdd;
 	}
 

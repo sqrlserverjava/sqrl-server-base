@@ -13,7 +13,11 @@ public class SqrlInvalidRequestException extends SqrlClientRequestProcessingExce
 	private static final long serialVersionUID = -1136919442400493773L;
 
 	public SqrlInvalidRequestException(final String message) {
-		super(SqrlTif.TIF_CLIENT_FAILURE, message);
+		this(message, null);
+	}
+
+	public SqrlInvalidRequestException(final String message, final Throwable cause) {
+		super(SqrlTif.TIF_CLIENT_FAILURE, message, cause);
 	}
 
 }
