@@ -14,9 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlIllegalDataException;
 import com.github.dbadia.sqrl.server.util.SqrlSanitize;

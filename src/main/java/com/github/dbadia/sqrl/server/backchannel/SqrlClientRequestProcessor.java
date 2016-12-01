@@ -11,10 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlFlag;
-import com.github.dbadia.sqrl.server.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 public class SqrlClientRequestProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 

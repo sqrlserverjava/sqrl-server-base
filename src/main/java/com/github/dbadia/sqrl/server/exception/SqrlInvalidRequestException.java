@@ -1,7 +1,6 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.exception;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
-import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 
 /**
  * Indicates that a SQRL client send us an invalid request and will trigger the setting of

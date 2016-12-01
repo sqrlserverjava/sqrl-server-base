@@ -49,6 +49,7 @@ import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceCleanupTask;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
