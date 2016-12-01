@@ -11,7 +11,9 @@ import javax.crypto.Cipher;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
+import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 /**
@@ -77,21 +79,23 @@ public class SqrlNutToken {
 		}
 	}
 
-	public SqrlNutToken(final SqrlConfigOperations configOps, final String sqBase64EncryptedNut) throws SqrlException {
+	public SqrlNutToken(final SqrlConfigOperations configOps, final String sqBase64EncryptedNut)
+			throws SqrlClientRequestProcessingException {
 		this.base64UrlEncryptedNut = sqBase64EncryptedNut;
 		// Decrypt the nut
 		byte[] cleartextBytes = null;
 		try {
 			final Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
 			cipher.init(Cipher.DECRYPT_MODE, configOps.getAESKey());
-			final byte[] cipherbytes = SqrlUtil.base64UrlDecode(sqBase64EncryptedNut);
+			final byte[] cipherbytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(sqBase64EncryptedNut);
 			cleartextBytes = cipher.doFinal(cipherbytes);
 		} catch (final GeneralSecurityException e) {
-			throw new SqrlException("Error during nut decryption for " + sqBase64EncryptedNut, e);
+			throw new SqrlInvalidRequestException("Error during nut decryption for " + sqBase64EncryptedNut, e);
 		}
 
 		try (final ByteArrayInputStream bais = new ByteArrayInputStream(cleartextBytes);
 				final DataInputStream nutIs = new DataInputStream(bais)) {
+			// Nut format is taken from the spec except for D2 (see below)
 			// A) 32 bits: user's connection IP address if secured, 0.0.0.0 if non-secured.
 			this.inetInt = nutIs.readInt();
 			// B) 32 bits: UNIX-time timestamp incrementing once per second.
@@ -104,9 +108,11 @@ public class SqrlNutToken {
 			// D) 31 bits: pseudo-random noise from system source.
 			this.randomInt = nutIs.readInt();
 
-			// D2) FUTURE: 1 bit: flag bit to indicate source: QRcode or URL click
+			// D2) SQRL spec says "1 bit: flag bit to indicate source: QRcode or URL click"
+			// but there is no way we can know this when we issue the first nut and there are better
+			// ways to track this, so we ignored it
 		} catch (final IOException e) {
-			throw new SqrlException("IO exception during read", e);
+			throw new SqrlClientRequestProcessingException(SqrlTif.TIF_COMMAND_FAILED, "IO exception during read", e);
 		}
 	}
 

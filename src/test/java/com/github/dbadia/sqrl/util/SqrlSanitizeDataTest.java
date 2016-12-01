@@ -9,8 +9,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
-import com.github.dbadia.sqrl.server.util.SqrlIllegalDataException;
 import com.github.dbadia.sqrl.server.util.SqrlSanitize;
 
 import junit.framework.TestCase;
@@ -47,7 +47,7 @@ public class SqrlSanitizeDataTest {
 			TestCase.assertFalse("Exception was expected, but none was thrown", exceptionExpected);
 		} catch (final Exception e) {
 			if (exceptionExpected) {
-				ObjectAssert.assertInstanceOf(SqrlIllegalDataException.class, e);
+				ObjectAssert.assertInstanceOf(SqrlInvalidRequestException.class, e);
 			} else {
 				// Wasn't expected, just throw it
 				throw e;

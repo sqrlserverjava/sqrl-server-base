@@ -26,8 +26,6 @@ public class SqrlServerOperationsNegativeTest {
 	private static final SqrlTif.SqrlTifBuilder	TIF_BUILDER	= new SqrlTif.SqrlTifBuilder(false);
 	private static final String					EXPECTED_TIF_BAD_CLIENT_REQUEST	= TIF_BUILDER.clearAllFlags()
 			.addFlag(SqrlTif.TIF_COMMAND_FAILED).addFlag(SqrlTif.TIF_CLIENT_FAILURE).createTif().toHexString();
-	private static final String					EXPECTED_TIF_ERROR				= TIF_BUILDER.clearAllFlags()
-			.addFlag(SqrlTif.TIF_COMMAND_FAILED).createTif().toHexString();
 
 	@Test
 	public void testNutReplayed() throws Throwable {
@@ -60,7 +58,7 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals(EXPECTED_TIF_ERROR, responseDataTable.get("tif"));
+		assertEquals(EXPECTED_TIF_BAD_CLIENT_REQUEST, responseDataTable.get("tif"));
 	}
 
 	@Test
@@ -145,6 +143,6 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals(EXPECTED_TIF_ERROR, responseDataTable.get("tif"));
+		assertEquals(EXPECTED_TIF_BAD_CLIENT_REQUEST, responseDataTable.get("tif"));
 	}
 }

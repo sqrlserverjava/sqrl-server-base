@@ -5,6 +5,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dbadia.sqrl.server.util.SqrlUtil;
+
 /**
  * Internal use only.
  * <p/>
@@ -28,9 +30,13 @@ public class SqrlLoggingUtil {
 	}
 
 	public static void initLoggingHeader(final HttpServletRequest servletRequest) {
-		final String sqrlAgentString = servletRequest.getHeader("user-agent");
-		logger.trace("setting sqrlagent on thread local to {}", sqrlAgentString);
-		threadLocalLogHeader.set(sqrlAgentString);
+		String sqrlAgentString = "unknown";
+		final String header = servletRequest.getHeader("user-agent");
+		if (SqrlUtil.isNotBlank(header)) {
+			sqrlAgentString = header;
+			logger.trace("setting sqrlagent on thread local to {}", sqrlAgentString);
+		}
+		threadLocalLogHeader.set(new StringBuilder(sqrlAgentString).append(" ").toString());
 	}
 
 	/**

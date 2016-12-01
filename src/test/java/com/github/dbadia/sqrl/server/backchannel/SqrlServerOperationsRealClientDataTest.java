@@ -166,7 +166,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("40", responseDataTable.get("tif"));
+		assertEquals("C0", responseDataTable.get("tif"));
 		// suk should not be present as transactions are atomic and it did not exist before
 		assertEquals(null, responseDataTable.get(SqrlConstants.KEY_TYPE_SUK));
 	}

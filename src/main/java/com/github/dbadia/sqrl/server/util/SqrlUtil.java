@@ -23,7 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
+import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 
 import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
@@ -77,7 +79,7 @@ public class SqrlUtil {
 		try {
 			return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8));
 		} catch (final UnsupportedEncodingException e) {
-			throw new IllegalStateException("UnsupportedEncodingException ", e);
+			throw new IllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
 		}
 	}
 
@@ -88,13 +90,31 @@ public class SqrlUtil {
 	 *            the data to be decoded
 	 * @return the decoded byte array
 	 * @throws SqrlException
-	 *             if an error occurs
+	 *             if an error occurs during the base64 decode
 	 */
 	public static byte[] base64UrlDecode(final String toDecodeParam) throws SqrlException {
 		try {
 			return Base64.getUrlDecoder().decode(toDecodeParam.getBytes());
 		} catch (final IllegalArgumentException e) {
 			throw new SqrlException("Error base64 decoding: " + toDecodeParam, e);
+		}
+	}
+
+	/**
+	 * Convenience method which performs the SQRL required base64URL decoding but throws SqrlInvalidRequestException
+	 * since the assumption is that the data originated from a SQRL client
+	 *
+	 * @param toDecodeParam
+	 *            the data to be decoded
+	 * @return the decoded byte array
+	 * @throws SqrlInvalidRequestException
+	 *             if an error occurs during the base64 decode
+	 */
+	public static byte[] base64UrlDecodeDataFromSqrlClient(final String toDecodeParam) throws SqrlInvalidRequestException {
+		try {
+			return base64UrlDecode(toDecodeParam);
+		} catch (final SqrlException e) {
+			throw new SqrlInvalidRequestException(e.getMessage(), e.getCause());
 		}
 	}
 
@@ -112,9 +132,32 @@ public class SqrlUtil {
 			return new String(base64UrlDecode(toDecode), SqrlConstants.UTF8);
 		} catch (final UnsupportedEncodingException e) {
 			// This should never happen as the java specification requires that all JVMs support UTF8
-			throw new SqrlException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
+			throw new IllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
 		}
 	}
+
+	/**
+	 * Convenience method which performs the SQRL required base64URL decoding but throws SqrlInvalidRequestException
+	 * since the assumption is that the data originated from a SQRL client
+	 *
+	 * @param toDecodeParam
+	 *            the data to be decoded
+	 * @return the decoded data as a string using the UTF-8 character set
+	 * @throws SqrlInvalidRequestException
+	 *             if the data was not in base64url format
+	 * @throws IllegalStateException
+	 *             if UTF8 is not supported
+	 */
+	public static String base64UrlDecodeDataFromSqrlClientToString(final String toDecode)
+			throws SqrlInvalidRequestException {
+		try {
+			return base64UrlDecodeToString(toDecode);
+		} catch (final SqrlException e) {
+			throw new SqrlInvalidRequestException(e.getMessage(), e.getCause());
+		}
+	}
+
+
 
 	public static String base64UrlDecodeToStringOrErrorMessage(final String toDecode) {
 		try {
@@ -350,9 +393,7 @@ public class SqrlUtil {
 	}
 
 	public static String buildLogMessageForSqrlClientRequest(final HttpServletRequest request) {
-		final StringBuilder buf = new StringBuilder("== Received from SQRL client ");
-		final String sqrlAgentString = request.getHeader("user-agent");
-		buf.append("'").append(sqrlAgentString).append("'   ");
+		final StringBuilder buf = new StringBuilder(SqrlLoggingUtil.getLogHeader()).append("SQRL client sent");
 		for (final Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
 			buf.append(entry.getKey()).append("=").append(Arrays.toString(entry.getValue())).append("   ");
 		}

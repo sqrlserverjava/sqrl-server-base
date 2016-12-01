@@ -60,8 +60,8 @@ public class SqrlClientRequestProcessor {
 		}
 
 		processCommand();
-		if (!COMMAND_REMOVE.equals(command)) {
-			processNonSukOptions();
+		if (!COMMAND_REMOVE.equals(command) && !COMMAND_QUERY.equals(command)) {
+			processNonKeyOptions();
 		}
 		return sqrlInternalUserState;
 	}
@@ -79,9 +79,14 @@ public class SqrlClientRequestProcessor {
 		}
 	}
 
-	private void processNonSukOptions() {
+	/**
+	 * Processes all SQRL opt items, except those which request previously stored keys (suk, vuk, etc)
+	 */
+	private void processNonKeyOptions() {
 		// Create a copy so we can track which flags we have processed
 		final List<SqrlClientOpt> optList = sqrlClientRequest.getOptList();
+
+		// Remove the key opts from the list
 
 		// The absence of given flags means they should be disabled. So loop through all known flags and take the
 		// appropriate action

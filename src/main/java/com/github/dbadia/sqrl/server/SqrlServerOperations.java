@@ -333,7 +333,7 @@ public class SqrlServerOperations {
 				}
 				sqrlPersistence.closeCommit();
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
-				logger.info("{}Processed sqrl client request replied with tif {}", logHeader, tif);
+				logger.info("{}Processed sqrl client request replied with tif 0x{}", logHeader, tif.toHexString());
 			} catch (final SqrlException e) {
 				sqrlPersistence.closeRollback();
 				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
