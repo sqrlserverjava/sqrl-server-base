@@ -143,7 +143,6 @@ public class SqrlClientRequestProcessor {
 	private void processIdentCommand() throws SqrlException {
 		if (!sqrlInternalUserState.idExistsInPersistence()) {
 			// First time seeing this SQRL identity, store it and enable it
-			// TODO: remove 2nd arg if it's always null? or pass request.getKeysToBeStored()
 			sqrlPersistence.createAndEnableSqrlIdentity(sqrlIdk);
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBeStored());
 		}
