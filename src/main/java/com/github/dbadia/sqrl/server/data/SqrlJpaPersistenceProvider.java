@@ -309,15 +309,22 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	@Override
 	public boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch) {
-		final Boolean result = fetchRequiredSqrlIdentity(sqrlIdk).getFlagTable().get(flagToFetch);
-		// Null or false both indicate false
-		return result != null && result.booleanValue();
+		return fetchRequiredSqrlIdentity(sqrlIdk).getEnabledFlagList().contains(flagToFetch);
 	}
 
 	@Override
-	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToSet, final boolean valueToSet) {
+	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToSet, final boolean enableOrDisable) {
 		final SqrlIdentity sqrlIdentity = fetchRequiredSqrlIdentity(sqrlIdk);
-		sqrlIdentity.getFlagTable().put(flagToSet, valueToSet);
+		final Set<SqrlFlag> enabledFlagSet = sqrlIdentity.getEnabledFlagList();
+		if (enableOrDisable && !enabledFlagSet.add(flagToSet)) {
+			logger.warn("INFO-ONLY-STACK: Attempt to enable flag " + flagToSet + " that is already present",
+					new SqrlDebugException());
+			return; // Don't call entityManager.persist(sqrlIdentity);
+		} else if (!enabledFlagSet.remove(flagToSet)) {
+			logger.warn("INFO-ONLY-STACK: Attempt to remove flag " + flagToSet + " that wasn't present",
+					new SqrlDebugException());
+			return; // Don't call entityManager.persist(sqrlIdentity);
+		}
 		entityManager.persist(sqrlIdentity);
 	}
 
@@ -325,7 +332,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	public void createAndEnableSqrlIdentity(final String sqrlIdk, final Map<String, String> identityDataTable) {
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = new SqrlIdentity(sqrlIdk);
-		sqrlIdentity.getFlagTable().put(SqrlFlag.SQRL_AUTH_ENABLED, true);
+		sqrlIdentity.getEnabledFlagList().add(SqrlFlag.SQRL_AUTH_ENABLED);
 		sqrlIdentity.getIdentityDataTable().putAll(identityDataTable);
 		entityManager.persist(sqrlIdentity);
 	}

@@ -1,8 +1,8 @@
 package com.github.dbadia.sqrl.server.data;
 
 import java.io.Serializable;
-import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.persistence.CollectionTable;
@@ -10,12 +10,12 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
-import javax.persistence.MapKeyEnumerated;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
@@ -56,11 +56,9 @@ public class SqrlIdentity implements Serializable {
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "sqrl_identity_flag", joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
-	@MapKeyColumn(name = "name")
-	@MapKeyEnumerated(EnumType.STRING)
-	@Column(name = "value")
-	// TODO: change to EnumSet
-	private final Map<SqrlFlag, Boolean> flagTable = new EnumMap<>(SqrlFlag.class);
+	@Enumerated(EnumType.STRING)
+	@Column(name = "name")
+	private final HashSet<SqrlFlag> enabledFlagList = new HashSet<SqrlFlag>();
 
 	public SqrlIdentity() {
 		// Required by JPA
@@ -98,8 +96,8 @@ public class SqrlIdentity implements Serializable {
 		return identityDataTable;
 	}
 
-	public Map<SqrlFlag, Boolean> getFlagTable() {
-		return flagTable;
+	public HashSet<SqrlFlag> getEnabledFlagList() {
+		return enabledFlagList;
 	}
 
 	@Override
@@ -107,7 +105,7 @@ public class SqrlIdentity implements Serializable {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("SqrlIdentity [id=").append(id).append(", idk=").append(idk).append(", nativeUserXref=")
 		.append(nativeUserXref).append(", identityDataTable=").append(identityDataTable).append(", flagTable=")
-		.append(flagTable).append("]");
+		.append(enabledFlagList).append("]");
 		return builder.toString();
 	}
 
@@ -115,7 +113,7 @@ public class SqrlIdentity implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((flagTable == null) ? 0 : flagTable.hashCode());
+		result = prime * result + ((enabledFlagList == null) ? 0 : enabledFlagList.hashCode());
 		result = prime * result + (int) (id ^ (id >>> 32));
 		result = prime * result + ((identityDataTable == null) ? 0 : identityDataTable.hashCode());
 		result = prime * result + ((idk == null) ? 0 : idk.hashCode());
@@ -135,11 +133,11 @@ public class SqrlIdentity implements Serializable {
 			return false;
 		}
 		final SqrlIdentity other = (SqrlIdentity) obj;
-		if (flagTable == null) {
-			if (other.flagTable != null) {
+		if (enabledFlagList == null) {
+			if (other.enabledFlagList != null) {
 				return false;
 			}
-		} else if (!flagTable.equals(other.flagTable)) {
+		} else if (!enabledFlagList.equals(other.enabledFlagList)) {
 			return false;
 		}
 		if (id != other.id) {
@@ -168,5 +166,4 @@ public class SqrlIdentity implements Serializable {
 		}
 		return true;
 	}
-
 }
