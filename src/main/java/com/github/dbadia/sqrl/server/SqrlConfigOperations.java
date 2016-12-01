@@ -157,7 +157,7 @@ public class SqrlConfigOperations {
 	 */
 	public URI getBackchannelRequestUrl(final HttpServletRequest loginPageRequest) throws SqrlException {
 		// No synchronization as worst case is we compute the value a few times
-		String backchannelRequestString = null; // NOSONAR: false positive dead store
+		String backchannelRequestString = null;
 		final String requestUrl = loginPageRequest.getRequestURL().toString();
 		if (backchannelSettingType == BackchannelSettingType.FULL_PATH) {
 			// Chop off the URI, then add our path
@@ -196,7 +196,7 @@ public class SqrlConfigOperations {
 	 */
 	private static URI changeToSqrlScheme(final String fullBackChannelUrl) throws SqrlException {
 		// Compute the proper protocol
-		StringBuilder urlBuf = null; // NOSONAR: false positive dead store
+		StringBuilder urlBuf = null;
 		if (fullBackChannelUrl.startsWith(SqrlConstants.SCHEME_HTTPS_COLON)) {
 			urlBuf = new StringBuilder(
 					fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTPS, SqrlConstants.SCHEME_SQRL));
@@ -240,7 +240,7 @@ public class SqrlConfigOperations {
 	 * backchannelServletPath can be: 1) full URL, 2) full path ("/sqrlbc") or 3) partial path ("sqrlbc")
 	 */
 	private static BackchannelSettingType validateBackchannelSetting(final String backchannelServletPath) {
-		BackchannelSettingType type = null; // NOSONAR: false postive dead store
+		BackchannelSettingType type = null;
 		if (backchannelServletPath == null) {
 			throw new IllegalArgumentException("SqrlConfig object must have backchannelServletPath set", null);
 		} else if (backchannelServletPath.startsWith("/")) {

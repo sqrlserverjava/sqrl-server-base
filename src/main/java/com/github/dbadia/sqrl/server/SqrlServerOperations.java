@@ -483,7 +483,7 @@ public class SqrlServerOperations {
 
 			for (int i = 0; i < crunchifyWidth; i++) {
 				for (int j = 0; j < crunchifyWidth; j++) {
-					if (byteMatrix.get(i, j)) { // NOSONAR: if count
+					if (byteMatrix.get(i, j)) {
 						graphics.fillRect(i, j, 1, 1);
 					}
 				}
