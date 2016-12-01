@@ -13,13 +13,11 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 
 public class SqrlCommandProcessorClientOptsTest {
 	final String					correlator	= "abc";
 	private SqrlConfig				config;
 	private SqrlPersistence			sqrlPersistence;
-	private SqrlTifBuilder				tifBuilder;
 	private SqrlNutToken	nutToken;
 
 	@Before
@@ -27,7 +25,6 @@ public class SqrlCommandProcessorClientOptsTest {
 		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
 		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		tifBuilder = new SqrlTifBuilder();
 		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}
 
@@ -46,13 +43,11 @@ public class SqrlCommandProcessorClientOptsTest {
 				SqrlClientOpt.cps);
 
 		// Execute
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		final SqrlTif tif = tifBuilder.createTif();
-		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		// Ensure nothing got disabled
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
@@ -68,13 +63,11 @@ public class SqrlCommandProcessorClientOptsTest {
 				SqrlClientOpt.hardlock);
 
 		// Execute
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		final SqrlTif tif = tifBuilder.createTif();
-		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		// Ensure nothing got disabled
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
@@ -90,13 +83,11 @@ public class SqrlCommandProcessorClientOptsTest {
 				SqrlClientOpt.sqrlonly);
 
 		// Execute
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		final SqrlTif tif = tifBuilder.createTif();
-		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		// Ensure nothing got disabled
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));

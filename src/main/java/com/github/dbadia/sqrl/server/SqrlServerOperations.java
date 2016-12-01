@@ -47,10 +47,10 @@ import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceCleanupTask;
-import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
+import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
-import com.github.dbadia.sqrl.server.util.SqrlException;
 import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 import com.google.zxing.BarcodeFormat;
@@ -260,7 +260,8 @@ public class SqrlServerOperations {
 				// Get the correlator first. Then, if the request is invalid, we can update the auth page saying so
 				correlator = SqrlClientRequest.parseCorrelatorOnly(servletRequest);
 				sqrlClientRequest = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
-				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest, sqrlPersistence, tifBuilder);
+				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest,
+						sqrlPersistence);
 
 				logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
 						.append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
@@ -268,9 +269,13 @@ public class SqrlServerOperations {
 				if (checkIfIpsMatch(sqrlClientRequest.getNut(), servletRequest)) {
 					tifBuilder.addFlag(SqrlTif.TIF_IPS_MATCHED);
 				}
-				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence,
-						tifBuilder);
+				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
 				sqrlInternalUserState = processor.processClientCommand();
+				if (sqrlInternalUserState == IDK_EXISTS) {
+					tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
+				} else if (sqrlInternalUserState == PIDK_EXISTS) {
+					tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
+				}
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
 				sqrlPersistence.closeCommit();
@@ -279,9 +284,8 @@ public class SqrlServerOperations {
 				sqrlPersistence.closeRollback();
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
 				// TODO: handle all tif error flags here based on exception type - extract to method
-				if (e instanceof SqrlInvalidRequestException) { // NOSONAR: don't want to duplicate all other logic in a
-					// separate try block
-					tifBuilder.addFlag(SqrlTif.TIF_CLIENT_FAILURE);
+				if (e instanceof SqrlClientRequestProcessingException) {
+					tifBuilder.addFlag(((SqrlClientRequestProcessingException) e).getTifToAdd());
 					logger.error("{}Received invalid SQRL request: {} of {}", SqrlLoggingUtil.getLogHeader(),
 							e.getMessage(), SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest), e);
 				} else {
@@ -303,8 +307,10 @@ public class SqrlServerOperations {
 				final boolean isInErrorState = exception != null;
 				serverReplyString = buildReply(servletRequest, sqrlClientRequest,
 						tif, correlator, sqrlInternalUserState, isInErrorState);
+				// Don't use AutoClosable here, we will handle it ourselves
 				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
 				if (isInErrorState || sqrlInternalUserState == DISABLED) {
+					tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
 					// update the correlator with the proper error state
 					SqrlAuthenticationStatus authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL;
 					if (exception instanceof SqrlInvalidRequestException) {

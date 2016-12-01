@@ -15,10 +15,9 @@ import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlFlag;
+import com.github.dbadia.sqrl.server.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
-import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 
 import junitx.framework.ObjectAssert;
 import junitx.framework.StringAssert;
@@ -28,7 +27,6 @@ public class SqrlCommandProcessorTest {
 	private SqrlConfig				config;
 	private SqrlPersistence			sqrlPersistence;
 	private SqrlClientRequestProcessor	processor;
-	private SqrlTifBuilder				tifBuilder;
 	private SqrlNutToken			nutToken;
 
 	@Before
@@ -36,7 +34,6 @@ public class SqrlCommandProcessorTest {
 		config = TCUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
-		tifBuilder = new SqrlTifBuilder();
 		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}
 
@@ -56,15 +53,13 @@ public class SqrlCommandProcessorTest {
 		// Execute - call start/commit since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		final SqrlTif tif = tifBuilder.createTif();
-		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
@@ -91,7 +86,7 @@ public class SqrlCommandProcessorTest {
 			// Execute - call start/commit since it is usually done by the caller
 			sqrlPersistence = TCUtil.createSqrlPersistence();
 
-			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 			sqrlInternalUserState = processor.processClientCommand();
 			sqrlPersistence.closeCommit();
 			fail("Exception expected");
@@ -118,14 +113,12 @@ public class SqrlCommandProcessorTest {
 		// Execute all start/commit manually since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		final SqrlTif tif = tifBuilder.createTif();
-		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 		assertFalse(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
@@ -141,7 +134,7 @@ public class SqrlCommandProcessorTest {
 		try {
 			sqrlPersistence = TCUtil.createSqrlPersistence();
 
-			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 			processor.processClientCommand();
 			fail("Exception expected");
 		} catch (final Exception e) {
@@ -163,14 +156,12 @@ public class SqrlCommandProcessorTest {
 		// Execute - call start/commit since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		final SqrlTif tif = tifBuilder.createTif();
-		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 		;
 		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));

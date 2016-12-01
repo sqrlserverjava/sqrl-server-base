@@ -1,7 +1,6 @@
 package com.github.dbadia.sqrl.server.exception;
 
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.util.SqrlException;
 
 /**
  * Indicates that the one time use Nut token received from the SQRL client was already used in a previous request as

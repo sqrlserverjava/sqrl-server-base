@@ -11,7 +11,7 @@ import javax.crypto.Cipher;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
-import com.github.dbadia.sqrl.server.util.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 /**

@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory;
 import com.github.dbadia.sqrl.server.exception.SqrlConfigSettingException;
+import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
-import com.github.dbadia.sqrl.server.util.SqrlException;
 import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 

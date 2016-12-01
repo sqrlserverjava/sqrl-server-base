@@ -14,11 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
-import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
+import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlNutTokenReplayedException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
-import com.github.dbadia.sqrl.server.util.SqrlException;
 
 /**
  * Various util methods for the {@link SqrlNutToken}
@@ -34,8 +33,7 @@ public class SqrlNutTokenUtil {
 	}
 
 	public static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress,
-			final SqrlConfig config)
-					throws SqrlException {
+			final SqrlConfig config) throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
 		// perform a match/no-match comparison to detect same-device phishing attacks. Therefore, any 128-bit IPv6
@@ -61,7 +59,7 @@ public class SqrlNutTokenUtil {
 
 	public static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt,
 			final SqrlConfig config)
-			throws SqrlException {
+					throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
 		// perform a match/no-match comparison to detect same-device phishing attacks. Therefore, any 128-bit IPv6
@@ -117,7 +115,7 @@ public class SqrlNutTokenUtil {
 	 *             if any validation fails or if persistence fails
 	 */
 	public static void validateNut(final String correlator, final SqrlNutToken nutToken, final SqrlConfig config,
-			final SqrlPersistence sqrlPersistence, final SqrlTifBuilder tifBuilder) throws SqrlException {
+			final SqrlPersistence sqrlPersistence) throws SqrlException {
 		final long nutExpiryMs = computeNutExpiresAt(nutToken, config);
 		final long now = System.currentTimeMillis();
 		if (logger.isDebugEnabled()) {
@@ -125,10 +123,10 @@ public class SqrlNutTokenUtil {
 			logger.debug("{} Now={}, nutExpiry={}", SqrlLoggingUtil.getLogHeader(), new Date(now), nutExpiry);
 		}
 		if (now > nutExpiryMs) {
-			tifBuilder.addFlag(SqrlTif.TIF_TRANSIENT_ERROR);
-			throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader() + "Nut expired by "
-					+ (nutExpiryMs - now) + "ms, nut timetamp ms=" + nutToken.getIssuedTimestampMillis()
-					+ ", expiry is set to " + config.getNutValidityInSeconds() + " seconds");
+			throw new SqrlClientRequestProcessingException(SqrlTif.TIF_TRANSIENT_ERROR,
+					SqrlLoggingUtil.getLogHeader() + "Nut expired by "
+							+ (nutExpiryMs - now) + "ms, nut timetamp ms=" + nutToken.getIssuedTimestampMillis()
+							+ ", expiry is set to " + config.getNutValidityInSeconds() + " seconds");
 		}
 		// Mark the token as used since we will process this request
 		final String nutTokenString = nutToken.asSqrlBase64EncryptedNut();

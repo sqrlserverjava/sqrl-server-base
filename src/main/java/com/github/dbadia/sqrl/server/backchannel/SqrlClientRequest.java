@@ -14,10 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
+import com.github.dbadia.sqrl.server.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
-import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
-import com.github.dbadia.sqrl.server.util.SqrlException;
 import com.github.dbadia.sqrl.server.util.SqrlIllegalDataException;
 import com.github.dbadia.sqrl.server.util.SqrlSanitize;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
@@ -58,8 +58,9 @@ public class SqrlClientRequest {
 		// parse client
 		final Map<String, String> clientNameValuePairTable = parseLinesToNameValueMap(decoded);
 		sqrlProtocolVersion = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_VER);
+		// TODO_VER
 		if (!"1".equals(sqrlProtocolVersion)) {
-			throw new SqrlInvalidRequestException("Unsupported SQRL Client version " + sqrlProtocolVersion, null);
+			throw new SqrlInvalidRequestException("Unsupported SQRL Client version " + sqrlProtocolVersion);
 		}
 
 		// parse opt

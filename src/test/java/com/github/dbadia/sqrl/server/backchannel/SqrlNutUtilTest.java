@@ -17,8 +17,7 @@ import org.junit.Test;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
-import com.github.dbadia.sqrl.server.util.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlException;
 
 import junitx.framework.ArrayAssert;
 import junitx.framework.ObjectAssert;
@@ -202,7 +201,7 @@ public class SqrlNutUtilTest {
 	/**
 	 * timetsamp is unsigned int with second precision which means that the timestamp will go up to
 	 * 2106-02-07T02:28:15-0400
-	 * 
+	 *
 	 * @throws SqrlException
 	 */
 	@Test
@@ -224,13 +223,11 @@ public class SqrlNutUtilTest {
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
 		final SqrlNutToken nutToken = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
-		final SqrlTifBuilder tifBuilder = new SqrlTifBuilder();
 		try {
-			SqrlNutTokenUtil.validateNut("123", nutToken, config, persistence, tifBuilder);
+			SqrlNutTokenUtil.validateNut("123", nutToken, config, persistence);
 			fail("Exception expected");
 		} catch (final Exception e) {
 			ObjectAssert.assertInstanceOf(SqrlException.class, e);
-			SqrlTifTest.assertTif(tifBuilder.createTif(), SqrlTif.TIF_TRANSIENT_ERROR);
 		}
 	}
 }
