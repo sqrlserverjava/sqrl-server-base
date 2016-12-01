@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -104,7 +103,7 @@ public class TCUtil {
 		if (serverParam != null) {
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		}
-		persistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
+		persistence.createAndEnableSqrlIdentity(idk);
 		persistence.closeCommit();
 		return new SqrlJpaPersistenceProvider();
 	}

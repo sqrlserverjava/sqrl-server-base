@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
@@ -46,7 +45,7 @@ public class SqrlCommandProcessorTest {
 	public void testCmdEnable_SqrlIdentityExists() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
+		sqrlPersistence.createAndEnableSqrlIdentity(idk);
 		sqrlPersistence.closeCommit();
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "enable", correlator, true);
 
@@ -70,7 +69,7 @@ public class SqrlCommandProcessorTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 
 		sqrlPersistence = TCUtil.createSqrlPersistence();
-		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
+		sqrlPersistence.createAndEnableSqrlIdentity(idk);
 		sqrlPersistence.closeCommit();
 
 		sqrlPersistence = TCUtil.createSqrlPersistence();
@@ -106,7 +105,7 @@ public class SqrlCommandProcessorTest {
 		// Setup
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
+		sqrlPersistence.createAndEnableSqrlIdentity(idk);
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", correlator, true);
 		sqrlPersistence.closeCommit();
 
@@ -126,7 +125,7 @@ public class SqrlCommandProcessorTest {
 	public void testCmdRemove_UrsMissing() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence.createAndEnableSqrlIdentity(idk, Collections.emptyMap());
+		sqrlPersistence.createAndEnableSqrlIdentity(idk);
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, "remove", correlator, false); // No
 		// urs
 

@@ -329,11 +329,10 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	}
 
 	@Override
-	public void createAndEnableSqrlIdentity(final String sqrlIdk, final Map<String, String> identityDataTable) {
+	public void createAndEnableSqrlIdentity(final String sqrlIdk) {
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = new SqrlIdentity(sqrlIdk);
 		sqrlIdentity.getEnabledFlagList().add(SqrlFlag.SQRL_AUTH_ENABLED);
-		sqrlIdentity.getIdentityDataTable().putAll(identityDataTable);
 		entityManager.persist(sqrlIdentity);
 	}
 

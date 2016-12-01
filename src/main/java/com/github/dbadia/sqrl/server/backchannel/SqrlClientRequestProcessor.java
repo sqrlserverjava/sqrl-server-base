@@ -4,7 +4,6 @@ import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.ID
 import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.NONE_EXIST;
 import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.PIDK_EXISTS;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -145,7 +144,7 @@ public class SqrlClientRequestProcessor {
 		if (!sqrlInternalUserState.idExistsInPersistence()) {
 			// First time seeing this SQRL identity, store it and enable it
 			// TODO: remove 2nd arg if it's always null? or pass request.getKeysToBeStored()
-			sqrlPersistence.createAndEnableSqrlIdentity(sqrlIdk, Collections.emptyMap());
+			sqrlPersistence.createAndEnableSqrlIdentity(sqrlIdk);
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBeStored());
 		}
 		final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,

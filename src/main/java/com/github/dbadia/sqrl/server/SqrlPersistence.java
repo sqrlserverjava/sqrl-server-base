@@ -24,10 +24,8 @@ public interface SqrlPersistence {
 	 *
 	 * @param sqrlIdk
 	 *            the idk of the SQRL identity
-	 * @param identityDataTable
-	 *            auth data for this SQRL identity
 	 */
-	public void createAndEnableSqrlIdentity(String sqrlIdk, Map<String, String> identityDataTable);
+	public void createAndEnableSqrlIdentity(String sqrlIdk);
 
 	/**
 	 * Check persistence to see if a user exists with the given sqrlIdk
