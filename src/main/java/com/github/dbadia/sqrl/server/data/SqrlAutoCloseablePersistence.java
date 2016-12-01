@@ -157,7 +157,6 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 		return sqrlPersistence.fetchSqrlCorrelatorStatusUpdates(correlatorToCurrentStatusTable);
 	}
 
-	// TODO: is this used?
 	@Override
 	public void deleteSqrlCorrelator(final SqrlCorrelator sqrlCorrelator) {
 		sqrlPersistence.deleteSqrlCorrelator(sqrlCorrelator);

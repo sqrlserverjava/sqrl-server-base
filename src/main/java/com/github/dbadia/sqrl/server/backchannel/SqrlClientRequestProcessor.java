@@ -1,5 +1,9 @@
 package com.github.dbadia.sqrl.server.backchannel;
 
+import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.IDK_EXISTS;
+import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.NONE_EXIST;
+import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.PIDK_EXISTS;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -10,10 +14,8 @@ import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
-import com.github.dbadia.sqrl.server.exception.SqrlDisabledUserException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlException;
-
 public class SqrlClientRequestProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 
@@ -31,6 +33,7 @@ public class SqrlClientRequestProcessor {
 	private final String					logHeader;
 	private final String			correlator;
 	private final SqrlPersistence	sqrlPersistence;
+	private SqrlInternalUserState	sqrlInternalUserState	= NONE_EXIST;
 
 	public SqrlClientRequestProcessor(final SqrlClientRequest sqrlClientRequest,
 			final SqrlPersistence sqrlPersistence, final SqrlTifBuilder tifBuilder) {
@@ -44,23 +47,29 @@ public class SqrlClientRequestProcessor {
 		this.correlator = sqrlClientRequest.getCorrelator();
 	}
 
-	public boolean processClientCommand() throws SqrlException {
-		final boolean idkExistsInDataStore = sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlIdk);
+	/**
+	 * Processes the request sent by a SQRL client
+	 *
+	 * @return true if the idk exists in persistence upon return
+	 */
+	public SqrlInternalUserState processClientCommand() throws SqrlException {
+		sqrlInternalUserState = NONE_EXIST;
+		final boolean idkExistsInPersistence = sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlIdk);
 		// Set IDK /PIDK Tifs
-		if (idkExistsInDataStore) {
+		if (idkExistsInPersistence) {
 			tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
-		} else if (sqrlClientRequest.hasPidk() // PIDK check TODO: move too identity command area
+			sqrlInternalUserState = IDK_EXISTS;
+		} else if (sqrlClientRequest.hasPidk()
 				&& sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlClientRequest.getPidk())) {
-			sqrlPersistence.updateIdkForSqrlIdentity(sqrlClientRequest.getPidk(), sqrlIdk);
-			// TODO AUDIT
+			sqrlInternalUserState = PIDK_EXISTS;
 			tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
 		}
 
-		final boolean idkExistsNow = processCommand(idkExistsInDataStore);
+		processCommand();
 		if (!COMMAND_REMOVE.equals(command)) {
 			processNonSukOptions();
 		}
-		return idkExistsNow;
+		return sqrlInternalUserState;
 	}
 
 	private void updateOptValueAsNeeded(final SqrlFlag flag, final SqrlClientOpt opt) {
@@ -102,12 +111,11 @@ public class SqrlClientRequestProcessor {
 
 	}
 
-	private boolean processCommand(final boolean idkExistsInDataStoreParam) throws SqrlException {
-		final boolean idkExistsInDataStore = idkExistsInDataStoreParam;
+	private void processCommand() throws SqrlException {
 		if (COMMAND_QUERY.equals(command)) {
 			// Nothing to do
 		} else if (COMMAND_IDENT.equals(command)) {
-			processIdentCommand(idkExistsInDataStoreParam);
+			processIdentCommand();
 		} else if (COMMAND_ENABLE.equals(command)) {
 			final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
 					SqrlFlag.SQRL_AUTH_ENABLED);
@@ -129,18 +137,17 @@ public class SqrlClientRequestProcessor {
 						SqrlLoggingUtil.getLogHeader() + "Request was to enable SQRL but didn't contain urs signature");
 			}
 		} else if (COMMAND_DISABLE.equals(command)) {
+			// TODO: require usk or something?
 			sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, false);
 		} else {
 			tifBuilder.addFlag(SqrlTif.TIF_FUNCTIONS_NOT_SUPPORTED);
 			tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
 			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Unsupported client command " + command, null);
 		}
-		return idkExistsInDataStore;
 	}
 
-	private boolean processIdentCommand(final boolean idkExistsInDataStoreParam) throws SqrlException {
-		boolean idkExistsInDataStore = idkExistsInDataStoreParam;
-		if (!idkExistsInDataStore) {
+	private void processIdentCommand() throws SqrlException {
+		if (!sqrlInternalUserState.idExistsInPersistence()) {
 			// First time seeing this SQRL identity, store it and enable it
 			// TODO: remove 2nd arg if it's always null? or pass request.getKeysToBeStored()
 			sqrlPersistence.createAndEnableSqrlIdentity(sqrlIdk, Collections.emptyMap());
@@ -148,21 +155,30 @@ public class SqrlClientRequestProcessor {
 		}
 		final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
 				SqrlFlag.SQRL_AUTH_ENABLED);
+		boolean performCpsCheck = false;
 		if (!sqrlEnabledForIdentity) {
 			// TODO: move this setting to catch
 			tifBuilder.addFlag(SqrlTif.TIF_SQRL_DISABLED);
 			tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
-			throw new SqrlDisabledUserException(
-					SqrlLoggingUtil.getLogHeader() + "SQRL authentication is disabled for this user");
-		} else { // sqrlEnabledForIdentity
-			// TODO: do we really overwrite existing data, or only if they are new?
+			sqrlInternalUserState = SqrlInternalUserState.DISABLED;
+		} else if (sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS) {
+			sqrlPersistence.updateIdkForSqrlIdentity(sqrlClientRequest.getPidk(), sqrlIdk);
+			logger.info("{}User SQRL authenticated, updating idk={} and to replace pidk",
+					SqrlLoggingUtil.getLogHeader(), sqrlIdk);
+			// TODO AUDIT
+			performCpsCheck = true;
+		} else if (sqrlInternalUserState == SqrlInternalUserState.IDK_EXISTS) {
+			// TODO_AMBIGUOUS: do we really overwrite existing data, or only if they are new?
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBeStored());
-			// TODO: is this right? set to true?
-			idkExistsInDataStore = true;
+			sqrlInternalUserState = SqrlInternalUserState.IDK_EXISTS;
+			// TODO AUDIT
 			logger.info("{}User SQRL authenticated idk={}", SqrlLoggingUtil.getLogHeader(), sqrlIdk);
-
+			performCpsCheck = true;
+		}
+		if (performCpsCheck) {
 			final boolean cpsRequested = sqrlClientRequest.getOptList().contains(SqrlClientOpt.cps);
-			final boolean cpsEnabled = false; // TODO: have SSO pass SqrlCpsGenerator instances and check for non-null
+			final boolean cpsEnabled = false; // TODOCPS: have SSO pass SqrlCpsGenerator instances and check for
+			// non-null
 			if (cpsRequested && cpsEnabled) {
 				// TODO: do it
 			} else { // Not requested or not enabled
@@ -172,6 +188,5 @@ public class SqrlClientRequestProcessor {
 				sqrlPersistence.userAuthenticatedViaSqrl(sqrlIdk, correlator);
 			}
 		}
-		return idkExistsInDataStore;
 	}
 }

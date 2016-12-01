@@ -56,10 +56,10 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-		final boolean idkExists = processor.processClientCommand();
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate - everything should be normal since these flags are ignored on a query command
-		TestCase.assertTrue(idkExists);
+		TestCase.assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));

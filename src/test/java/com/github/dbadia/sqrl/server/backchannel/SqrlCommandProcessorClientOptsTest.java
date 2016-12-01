@@ -1,5 +1,6 @@
 package com.github.dbadia.sqrl.server.backchannel;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
@@ -46,10 +47,10 @@ public class SqrlCommandProcessorClientOptsTest {
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-		final boolean idkExists = processor.processClientCommand();
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
-		assertTrue(idkExists);
+		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		// Ensure nothing got disabled
@@ -68,10 +69,10 @@ public class SqrlCommandProcessorClientOptsTest {
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-		final boolean idkExists = processor.processClientCommand();
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
-		assertTrue(idkExists);
+		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		// Ensure nothing got disabled
@@ -90,10 +91,10 @@ public class SqrlCommandProcessorClientOptsTest {
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-		final boolean idkExists = processor.processClientCommand();
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
-		assertTrue(idkExists);
+		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		// Ensure nothing got disabled

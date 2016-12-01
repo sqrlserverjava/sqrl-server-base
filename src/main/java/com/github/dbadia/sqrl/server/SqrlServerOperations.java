@@ -1,5 +1,9 @@
 package com.github.dbadia.sqrl.server;
 
+import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.DISABLED;
+import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.IDK_EXISTS;
+import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.PIDK_EXISTS;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -33,6 +37,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlClientOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestProcessor;
+import com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState;
 import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
@@ -42,7 +47,6 @@ import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.data.SqrlIdentity;
 import com.github.dbadia.sqrl.server.data.SqrlPersistenceCleanupTask;
-import com.github.dbadia.sqrl.server.exception.SqrlDisabledUserException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
@@ -243,7 +247,7 @@ public class SqrlServerOperations {
 		}
 		String correlator = "unknown";
 		final SqrlTifBuilder tifBuilder = new SqrlTifBuilder();
-		boolean idkExistsInDataStore = false;
+		SqrlInternalUserState sqrlInternalUserState = null;
 		String requestState = "invalid";
 		try {
 			String logHeader = "";
@@ -266,7 +270,7 @@ public class SqrlServerOperations {
 				}
 				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence,
 						tifBuilder);
-				idkExistsInDataStore = processor.processClientCommand();
+				sqrlInternalUserState = processor.processClientCommand();
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
 				sqrlPersistence.closeCommit();
@@ -297,16 +301,16 @@ public class SqrlServerOperations {
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
 				final boolean isInErrorState = exception != null;
-				serverReplyString = buildReply(isInErrorState, servletRequest, sqrlClientRequest, idkExistsInDataStore, tif,
-						correlator);
+				serverReplyString = buildReply(servletRequest, sqrlClientRequest,
+						tif, correlator, sqrlInternalUserState, isInErrorState);
 				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
-				if (isInErrorState) {
+				if (isInErrorState || sqrlInternalUserState == DISABLED) {
 					// update the correlator with the proper error state
 					SqrlAuthenticationStatus authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL;
 					if (exception instanceof SqrlInvalidRequestException) {
 						authErrorState = SqrlAuthenticationStatus.ERROR_BAD_REQUEST;
-					} else if (exception instanceof SqrlDisabledUserException) {
-						authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_USER_DISABLED;
+					} else if (sqrlInternalUserState == DISABLED) {
+						authErrorState = SqrlAuthenticationStatus.SQRL_USER_DISABLED;
 					}
 					sqrlCorrelator.setAuthenticationStatus(authErrorState);
 					// There should be no further requests so remove the parrot value
@@ -335,9 +339,9 @@ public class SqrlServerOperations {
 		}
 	}
 
-	private String buildReply(final boolean isInErrorState, final HttpServletRequest servletRequest,
-			final SqrlClientRequest sqrlRequest, final boolean idkExistsInDataStore, final SqrlTif tif,
-			final String correlator) throws SqrlException {
+	private String buildReply(final HttpServletRequest servletRequest, final SqrlClientRequest sqrlRequest,
+			final SqrlTif tif, final String correlator, final SqrlInternalUserState sqrlInternalUserState,
+			final boolean isInErrorState) throws SqrlException {
 		final String logHeader = SqrlLoggingUtil.getLogHeader();
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
 		try {
@@ -354,7 +358,7 @@ public class SqrlServerOperations {
 				final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest, config));
 
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
-						idkExistsInDataStore, sqrlPersistence);
+						sqrlInternalUserState, sqrlPersistence);
 				// Build the final reply object
 				reply = new SqrlClientReply(replyNut.asSqrlBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
 						additionalDataTable);
@@ -374,19 +378,34 @@ public class SqrlServerOperations {
 	}
 
 	private Map<String, String> buildReplyAdditionalDataTable(final SqrlClientRequest sqrlRequest,
-			final boolean idkExistsInDataStore, final SqrlPersistence sqrlPersistence) {
+			final SqrlInternalUserState sqrlInternalUserState,
+			final SqrlPersistence sqrlPersistence) {
 		// TreeMap to keep the items in order. Order is required as as the SQRL client will ignore everything
 		// after an unrecognized option
 		final Map<String, String> additionalDataTable = new TreeMap<>();
-		if (sqrlRequest != null && idkExistsInDataStore && sqrlRequest.getOptList().contains(SqrlClientOpt.suk)) {
-			// Add any additional data to the response based on the options the client requested
+
+		// suk?
+		if (shouldIncludeSukInReply(sqrlRequest, sqrlInternalUserState)
+				&& (sqrlInternalUserState == IDK_EXISTS || sqrlInternalUserState == PIDK_EXISTS)) {
 			final String sukSring = SqrlClientOpt.suk.toString();
 			final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), sukSring);
 			if (sukValue != null) {
 				additionalDataTable.put(sukSring, sukValue);
 			}
 		}
+
 		return additionalDataTable;
+	}
+
+	private boolean shouldIncludeSukInReply(final SqrlClientRequest sqrlRequest, final SqrlInternalUserState sqrlInternalUserState) {
+		return sqrlRequest.getOptList().contains(SqrlClientOpt.suk)
+				// https://www.grc.com/sqrl/semantics.htm says
+				// The SQRL specification requires the SQRL server to automatically return the account's matching SUK whenever
+				// it is able to anticipate that the client is likely to require it, such as when the server contains a previous
+				// identity key, or when the account is disabled
+				|| sqrlInternalUserState == DISABLED
+				|| (sqrlRequest.getClientCommand().equals(COMMAND_QUERY)
+						&& sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS);
 	}
 
 	static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)

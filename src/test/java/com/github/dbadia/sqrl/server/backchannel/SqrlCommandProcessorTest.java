@@ -3,6 +3,8 @@ package com.github.dbadia.sqrl.server.backchannel;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -55,13 +57,12 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-		final boolean idkExists = processor.processClientCommand();
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 		sqrlPersistence = TCUtil.createSqrlPersistence();
-		;
 
 		// Validate
-		assertTrue(idkExists);
+		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
@@ -85,25 +86,24 @@ public class SqrlCommandProcessorTest {
 		// urs
 
 		// Execute
+		SqrlInternalUserState sqrlInternalUserState = null;
 		try {
 			// Execute - call start/commit since it is usually done by the caller
 			sqrlPersistence = TCUtil.createSqrlPersistence();
 
 			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-			final boolean idkExists = processor.processClientCommand();
+			sqrlInternalUserState = processor.processClientCommand();
 			sqrlPersistence.closeCommit();
 			fail("Exception expected");
 		} catch (final Exception e) {
 			sqrlPersistence.closeRollback();
-			e.printStackTrace();
 			ObjectAssert.assertInstanceOf(SqrlInvalidRequestException.class, e);
 			StringAssert.assertContains("urs", e.getMessage());
 		}
+		assertNull(sqrlInternalUserState);
 		// Verify that it's still disabled
 		sqrlPersistence = TCUtil.createSqrlPersistence();
-		;
 		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
-		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 
 	@Test
@@ -119,11 +119,11 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-		final boolean idkExists = processor.processClientCommand();
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 
 		// Validate
-		assertTrue(idkExists);
+		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		sqrlPersistence = TCUtil.createSqrlPersistence();
@@ -142,7 +142,7 @@ public class SqrlCommandProcessorTest {
 			sqrlPersistence = TCUtil.createSqrlPersistence();
 
 			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-			final boolean idkExists = processor.processClientCommand();
+			processor.processClientCommand();
 			fail("Exception expected");
 		} catch (final Exception e) {
 			ObjectAssert.assertInstanceOf(SqrlInvalidRequestException.class, e);
@@ -164,11 +164,11 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence, tifBuilder);
-		final boolean idkExists = processor.processClientCommand();
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 
 		// Validate
-		assertTrue(idkExists);
+		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		final SqrlTif tif = tifBuilder.createTif();
 		SqrlTifTest.assertTif(tif, SqrlTif.TIF_CURRENT_ID_MATCH);
 		sqrlPersistence = TCUtil.createSqrlPersistence();
