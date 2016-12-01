@@ -18,7 +18,6 @@ import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 public class SqrlClientRequestProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 
-	// TODO: change COMMAND_ constants to enum
 	private static final String	COMMAND_QUERY	= "query";
 	private static final String	COMMAND_IDENT	= "ident";
 	private static final String	COMMAND_DISABLE	= "disable";
@@ -28,7 +27,7 @@ public class SqrlClientRequestProcessor {
 	private final SqrlClientRequest			sqrlClientRequest;
 	private final String			sqrlIdk;
 	private final String					command;
-	private final String			logHeader;								// TODO: use this everywhere
+	private final String			logHeader;
 	private final String			correlator;
 	private final SqrlPersistence	sqrlPersistence;
 	private SqrlInternalUserState	sqrlInternalUserState	= NONE_EXIST;
@@ -36,6 +35,7 @@ public class SqrlClientRequestProcessor {
 	public SqrlClientRequestProcessor(final SqrlClientRequest sqrlClientRequest,
 			final SqrlPersistence sqrlPersistence) {
 		super();
+		// Cache the logHeader since we use it a lot and it won't change here
 		this.logHeader = SqrlLoggingUtil.getLogHeader();
 		this.sqrlPersistence = sqrlPersistence;
 		this.sqrlClientRequest = sqrlClientRequest;
@@ -72,7 +72,7 @@ public class SqrlClientRequestProcessor {
 			final boolean clientValue = sqrlClientRequest.getOptList().contains(opt);
 			final boolean dbValue = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk, flag);
 			if (clientValue != dbValue) { // update it
-				logger.debug("{}Updating SQRL flag {} from {} to {}", SqrlLoggingUtil.getLogHeader(), opt, dbValue,
+				logger.debug("{}Updating SQRL flag {} from {} to {}", logHeader, opt, dbValue,
 						clientValue);
 				sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, flag, clientValue);
 				// TODO_AUDIT, client updated value to clientSet
@@ -93,7 +93,7 @@ public class SqrlClientRequestProcessor {
 				// Remove the item from the list since we have processed it
 				if (!optList.remove(flag.getSqrlClientOpt())) {
 					logger.warn("{}Tried to remove SqrlClientOpt {} but it wasn't in list {}",
-							SqrlLoggingUtil.getLogHeader(), opt, optList);
+							logHeader, opt, optList);
 				}
 			}
 		}
@@ -101,7 +101,7 @@ public class SqrlClientRequestProcessor {
 		// Some flags require special processing and were not handled above
 		if (!optList.isEmpty()) {
 			logger.warn("{}The SQRL client option(s) are not yet supported by the library: {}",
-					SqrlLoggingUtil.getLogHeader(), optList);
+					logHeader, optList);
 		}
 
 	}
@@ -118,7 +118,7 @@ public class SqrlClientRequestProcessor {
 				if (sqrlClientRequest.containsUrs()) {
 					sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, true);
 				} else {
-					throw new SqrlInvalidRequestException(SqrlLoggingUtil.getLogHeader()
+					throw new SqrlInvalidRequestException(logHeader
 							+ "Request was to enable SQRL but didn't contain urs signature");
 				}
 			} else {
@@ -128,18 +128,16 @@ public class SqrlClientRequestProcessor {
 			if (sqrlClientRequest.containsUrs()) {
 				sqrlPersistence.deleteSqrlIdentity(sqrlIdk);
 			} else {
-				// TODO: is this identical to the excepetion above?
 				throw new SqrlInvalidRequestException(
-						SqrlLoggingUtil.getLogHeader() + "Request was to enable SQRL but didn't contain urs signature");
+						logHeader + "Request was to remove SQRL but didn't contain urs signature");
 			}
 		} else if (COMMAND_DISABLE.equals(command)) {
-			// TODO: require usk or something?
 			sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, false);
 		} else {
 			// We handle all SQRL v1 verbs, so don't set TIF_FUNCTIONS_NOT_SUPPORTED, treat it as an invalid request
 			// instead
 			throw new SqrlInvalidRequestException(
-					SqrlLoggingUtil.getLogHeader() + "Recevied invalid SQRL command from client" + command);
+					logHeader + "Recevied invalid SQRL command from client" + command);
 		}
 	}
 
@@ -152,13 +150,13 @@ public class SqrlClientRequestProcessor {
 		}
 		final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
 				SqrlFlag.SQRL_AUTH_ENABLED);
-		boolean performCpsCheck = false;
+		boolean performCpsCheck = false; // TODO_CPS: set this using sqrlServer
 		if (!sqrlEnabledForIdentity) {
 			sqrlInternalUserState = SqrlInternalUserState.DISABLED;
 		} else if (sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS) {
 			sqrlPersistence.updateIdkForSqrlIdentity(sqrlClientRequest.getPidk(), sqrlIdk);
 			logger.info("{}User SQRL authenticated, updating idk={} and to replace pidk",
-					SqrlLoggingUtil.getLogHeader(), sqrlIdk);
+					logHeader, sqrlIdk);
 			// TODO_AUDIT
 			performCpsCheck = true;
 		} else if (sqrlInternalUserState == SqrlInternalUserState.IDK_EXISTS) {
@@ -166,7 +164,7 @@ public class SqrlClientRequestProcessor {
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBeStored());
 			sqrlInternalUserState = SqrlInternalUserState.IDK_EXISTS;
 			// TODO_AUDIT
-			logger.info("{}User SQRL authenticated idk={}", SqrlLoggingUtil.getLogHeader(), sqrlIdk);
+			logger.info("{}User SQRL authenticated idk={}", logHeader, sqrlIdk);
 			performCpsCheck = true;
 		}
 		if (performCpsCheck) {
@@ -174,10 +172,10 @@ public class SqrlClientRequestProcessor {
 			final boolean cpsEnabled = false; // TODOCPS: have SSO pass SqrlCpsGenerator instances and check for
 			// non-null
 			if (cpsRequested && cpsEnabled) {
-				// TODO: do it
+				// TODO_CPS: do it
 			} else { // Not requested or not enabled
 				if (cpsRequested && !cpsEnabled) {
-					logger.info("{} CPS requested but it is not enabled", SqrlLoggingUtil.getLogHeader());
+					logger.info("{} CPS requested but it is not enabled", logHeader);
 				}
 				sqrlPersistence.userAuthenticatedViaSqrl(sqrlIdk, correlator);
 			}

@@ -9,7 +9,6 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
  * @author Dave Badia
  *
  */
-// TODO: move to exception package
 public class SqrlInvalidRequestException extends SqrlClientRequestProcessingException {
 	private static final long serialVersionUID = -1136919442400493773L;
 

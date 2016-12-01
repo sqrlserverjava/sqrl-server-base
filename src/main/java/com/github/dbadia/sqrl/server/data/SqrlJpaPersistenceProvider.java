@@ -227,7 +227,6 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 
 	@Override
 	public void storeSqrlDataForSqrlIdentity(final String sqrlIdk, final Map<String, String> dataToStore) {
-		// TODO: what is the difference between this and the one below?
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = fetchSqrlIdentity(sqrlIdk);
 		if (sqrlIdentity == null) {

@@ -24,10 +24,9 @@ public class SqrlServerOperationsNegativeTest {
 	private static final String CLIENT_DATA_1_CORRELATOR = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
 
 	private static final SqrlTif.SqrlTifBuilder	TIF_BUILDER	= new SqrlTif.SqrlTifBuilder(false);
-	// TODO: refactor error handling then enable this
-	// private static final String EXPECTED_TIF_BAD_CLIENT_REQUEST = TIF_BUILDER.clearAllFlags()
-	// .addFlag(SqrlTif.TIF_COMMAND_FAILED).addFlag(SqrlTif.TIF_CLIENT_FAILURE).createTif().toHexString();
 	private static final String					EXPECTED_TIF_BAD_CLIENT_REQUEST	= TIF_BUILDER.clearAllFlags()
+			.addFlag(SqrlTif.TIF_COMMAND_FAILED).addFlag(SqrlTif.TIF_CLIENT_FAILURE).createTif().toHexString();
+	private static final String					EXPECTED_TIF_ERROR				= TIF_BUILDER.clearAllFlags()
 			.addFlag(SqrlTif.TIF_COMMAND_FAILED).createTif().toHexString();
 
 	@Test
@@ -61,7 +60,7 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals(EXPECTED_TIF_BAD_CLIENT_REQUEST, responseDataTable.get("tif"));
+		assertEquals(EXPECTED_TIF_ERROR, responseDataTable.get("tif"));
 	}
 
 	@Test
@@ -101,8 +100,7 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		// TODO AT chagne to EXPECTED_TIF_BAD_CLIENT_REQUEST
-		assertEquals("C0", responseDataTable.get("tif"));
+		assertEquals(EXPECTED_TIF_BAD_CLIENT_REQUEST, responseDataTable.get("tif"));
 	}
 
 	@Test
@@ -147,6 +145,6 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals(EXPECTED_TIF_BAD_CLIENT_REQUEST, responseDataTable.get("tif"));
+		assertEquals(EXPECTED_TIF_ERROR, responseDataTable.get("tif"));
 	}
 }

@@ -149,7 +149,7 @@ public class SqrlServerOperations {
 			sqrlServiceExecutor.scheduleAtFixedRate(cleanupRunnable, 0, cleanupIntervalInMinutes,
 					TimeUnit.MINUTES);
 		}
-		// TODO: set cpsEnabled
+		// TODOCPS: set cpsEnabled
 		cpsEnabled = false;
 	}
 
@@ -284,7 +284,6 @@ public class SqrlServerOperations {
 				exception = e;
 				sqrlPersistence.closeRollback();
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
-				// TODO: handle all tif error flags here based on exception type - extract to method
 				if (e instanceof SqrlClientRequestProcessingException) {
 					tifBuilder.addFlag(((SqrlClientRequestProcessingException) e).getTifToAdd());
 					logger.error("{}Received invalid SQRL request: {} of {}", SqrlLoggingUtil.getLogHeader(),
