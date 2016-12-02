@@ -90,3 +90,6 @@ NOTE: This section applies to this library only, it is not a security assessment
 The SQRL protocol dethe size of SQRL token ("Nut").  Each authentication page should get a unique nut, but due to size limitations, this is not guaranteed in a mutli server environment.  To help avoid the likelihood of 2 clients receiving the same nut, additional entropy is added to the Secure Random instance with a UUID, which, by definition, should be unique to the JVM instance.
 
 Assume that, by great chance, a SQRL Nut collision does occur with users foo and bar and assume that foo's SQRL client contacts the server first.  Foo will be authenticated and allowed in as usual.  When bar's SQRL client contacts the server, the SQRL library will reject the token as already used.  Bar should be shown a new authentication page with a new Nut.
+
+#### Reporting Issues
+Issues and security vulnerabilities should be reported via the GitHub issue tracker
