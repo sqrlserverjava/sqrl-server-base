@@ -20,8 +20,9 @@ import javax.persistence.TypedQuery;
 
 import org.junit.Test;
 
-import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
-import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
+import com.github.dbadia.sqrl.server.persistence.SqrlAutoCloseablePersistence;
+import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
+
 
 public class SqrlAuthStateEventServletTest {
 

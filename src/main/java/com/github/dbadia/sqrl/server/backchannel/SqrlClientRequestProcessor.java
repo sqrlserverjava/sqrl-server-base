@@ -144,7 +144,7 @@ public class SqrlClientRequestProcessor {
 				return;
 			default:
 				// This should have been caught before here
-				throw new SqrlClientRequestProcessingException(SqrlTif.TIF_COMMAND_FAILED,
+				throw new SqrlClientRequestProcessingException(
 						logHeader + "Don't know how to process SQRL command " + command);
 		}
 	}

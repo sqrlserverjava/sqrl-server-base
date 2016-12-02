@@ -1,8 +1,8 @@
-package com.github.dbadia.sqrl.server.data;
+package com.github.dbadia.sqrl.server.persistence;
 
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlPersistenceFactory;
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider.SqrlJpaEntityManagerMonitorTask;
+import com.github.dbadia.sqrl.server.persistence.SqrlJpaPersistenceProvider.SqrlJpaEntityManagerMonitorTask;
 
 public class SqrlJpaPersistenceFactory implements SqrlPersistenceFactory {
 

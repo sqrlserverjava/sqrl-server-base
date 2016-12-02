@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.data;
+package com.github.dbadia.sqrl.server.persistence;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

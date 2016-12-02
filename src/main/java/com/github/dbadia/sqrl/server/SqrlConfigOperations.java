@@ -18,9 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory;
 import com.github.dbadia.sqrl.server.exception.SqrlConfigSettingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
+import com.github.dbadia.sqrl.server.persistence.SqrlJpaPersistenceFactory;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;

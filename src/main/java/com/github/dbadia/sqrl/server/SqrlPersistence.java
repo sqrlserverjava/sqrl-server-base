@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
-import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
-import com.github.dbadia.sqrl.server.data.SqrlIdentity;
-import com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceProvider;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
+import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
+import com.github.dbadia.sqrl.server.persistence.SqrlIdentity;
+import com.github.dbadia.sqrl.server.persistence.SqrlJpaPersistenceProvider;
 
 /**
  * Bridge between the SQRL library and the persistence layer (database, etc)

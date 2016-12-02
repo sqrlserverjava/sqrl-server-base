@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlRequestOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestProcessor;
@@ -42,16 +41,17 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlRequestCommand;
+import com.github.dbadia.sqrl.server.backchannel.SqrlRequestOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
-import com.github.dbadia.sqrl.server.data.SqrlAutoCloseablePersistence;
-import com.github.dbadia.sqrl.server.data.SqrlCorrelator;
-import com.github.dbadia.sqrl.server.data.SqrlIdentity;
-import com.github.dbadia.sqrl.server.data.SqrlPersistenceCleanupTask;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
+import com.github.dbadia.sqrl.server.persistence.SqrlAutoCloseablePersistence;
+import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
+import com.github.dbadia.sqrl.server.persistence.SqrlIdentity;
+import com.github.dbadia.sqrl.server.persistence.SqrlPersistenceCleanupTask;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
@@ -260,7 +260,8 @@ public class SqrlServerOperations {
 				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest,
 						sqrlPersistence);
 
-				logHeader = SqrlLoggingUtil.updateLogHeader(new StringBuilder(correlator).append(" ")
+				logHeader = SqrlLoggingUtil.updateLogHeader(
+						new StringBuilder("v").append(sqrlClientRequest.getNegotiatedSqrlProtocolVersion()).append(" ")
 						.append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
 
 				if (checkIfIpsMatch(sqrlClientRequest.getNut(), servletRequest)) {
@@ -407,7 +408,7 @@ public class SqrlServerOperations {
 				// identity key, or when the account is disabled
 				|| sqrlInternalUserState == DISABLED
 				|| (sqrlRequest.getClientCommand() == SqrlRequestCommand.QUERY
-						&& sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS);
+				&& sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS);
 	}
 
 	static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)

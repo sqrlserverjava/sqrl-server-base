@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.data;
+package com.github.dbadia.sqrl.server.persistence;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;

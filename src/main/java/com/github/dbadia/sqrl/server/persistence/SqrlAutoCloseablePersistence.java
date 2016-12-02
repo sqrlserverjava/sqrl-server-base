@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.data;
+package com.github.dbadia.sqrl.server.persistence;
 
 import java.util.Date;
 import java.util.Map;

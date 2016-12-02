@@ -1,8 +1,12 @@
 package com.github.dbadia.sqrl.server.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -12,6 +16,19 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public class SqrlConstants {
+	public static final Integer SQRL_VERSION_1 = Integer.valueOf(1);
+
+	/**
+	 * The SQRL versions which this library supports, stored in descending order. This is an ugly one liner, but we need
+	 * to ensure it is sorted descending and unmodifiable
+	 */
+	// @formatter:off
+	public static final Set<Integer> SUPPORTED_SQRL_VERSIONS = Collections.unmodifiableSet(
+			new TreeSet<>(Arrays.asList(new Integer[] {
+					SqrlConstants.SQRL_VERSION_1
+			})).descendingSet());
+	// @formatter:off
+
 	public static final String	UTF8				= "UTF-8";
 	public static final String	SCHEME_HTTP			= "http";
 	public static final String	SCHEME_HTTP_COLON	= SCHEME_HTTP + ":";

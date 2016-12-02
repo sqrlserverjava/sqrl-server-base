@@ -3,6 +3,7 @@ package com.github.dbadia.sqrl.server.backchannel;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -21,6 +22,7 @@ import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlSanitize;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
+import com.github.dbadia.sqrl.server.util.SqrlVersionUtil;
 
 /**
  * Parses a SQRL client request and validates all signatures
@@ -35,7 +37,7 @@ public class SqrlClientRequest {
 
 	private final String logHeader;
 
-	private final String				sqrlProtocolVersion;
+	private final Integer				negotiatedSqrlProtocolVersion;
 	private final SqrlNutToken			nut;
 	private final SqrlRequestCommand	clientCommand;
 	private final Map<String, byte[]>	clientKeys			= new ConcurrentHashMap<>();
@@ -60,11 +62,21 @@ public class SqrlClientRequest {
 
 		// parse client
 		final Map<String, String> clientNameValuePairTable = parseLinesToNameValueMap(decoded);
-		this.sqrlProtocolVersion = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_VER);
-		// TODO_VER
-		if (!"1".equals(sqrlProtocolVersion)) {
-			throw new SqrlInvalidRequestException("Unsupported SQRL Client version " + sqrlProtocolVersion);
+		// clientVersionString format is 1[,n],[n-m]
+		final String clientVersionString = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_VER);
+		final Collection<Integer> clientVersionsSupported = SqrlVersionUtil
+				.parseClientVersionString(clientVersionString);
+		final Integer commonProtocolVersion= SqrlVersionUtil.findHighestCommonVersion(SqrlConstants.SUPPORTED_SQRL_VERSIONS,
+				clientVersionsSupported);
+		if (commonProtocolVersion == null) {
+			throw new SqrlClientRequestProcessingException("No common SQRL protocl version found");
 		}
+		// Sanity check; we probably need to take different actions for different versions so account for that here
+		if (!SqrlConstants.SQRL_VERSION_1.equals(commonProtocolVersion)) {
+			throw new SqrlClientRequestProcessingException(
+					"Unable to process SQRL protcol version " + commonProtocolVersion);
+		}
+		this.negotiatedSqrlProtocolVersion = commonProtocolVersion;
 
 		// parse opt
 		final String optListString = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_OPT);
@@ -255,8 +267,8 @@ public class SqrlClientRequest {
 		return optList;
 	}
 
-	String getSqrlProtocolVersion() {
-		return sqrlProtocolVersion;
+	public String getNegotiatedSqrlProtocolVersion() {
+		return negotiatedSqrlProtocolVersion.toString();
 	}
 
 	public String getCorrelator() {

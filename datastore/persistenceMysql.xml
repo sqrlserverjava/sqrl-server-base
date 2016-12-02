@@ -4,9 +4,9 @@
     <persistence-unit name="javasqrl-persistence"
         transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <class>com.github.dbadia.sqrl.server.data.SqrlIdentity</class>
-        <class>com.github.dbadia.sqrl.server.data.SqrlCorrelator</class>
-        <class>com.github.dbadia.sqrl.server.data.SqrlUsedNutToken</class>
+        <class>com.github.dbadia.sqrl.server.persistence.SqrlIdentity</class>
+        <class>com.github.dbadia.sqrl.server.persistence.SqrlCorrelator</class>
+        <class>com.github.dbadia.sqrl.server.persistence.SqrlUsedNutToken</class>
         <properties>
             <property name="eclipselink.logging.level" value="INFO" />
      		<!-- eclipselink.logging.parameters is required so we can see the bound params when a failure occurs -->

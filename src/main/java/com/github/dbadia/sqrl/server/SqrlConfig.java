@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.persistence.SqrlJpaPersistenceFactory;
 
 // @formatter:off
 /**
@@ -87,14 +88,14 @@ public class SqrlConfig {
 	private String[] ipForwardedForHeaders;
 
 	/**
-	 * The SQRL JPA persistence provider class which implements {@link SqrlPersistenceFactory}; default to
-	 * com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory
+	 * The SQRL JPA persistence provider class which implements {@link SqrlPersistenceFactory}; defaults to
+	 * {@link SqrlJpaPersistenceFactory}
 	 */
 	@XmlElement
-	private String sqrlPersistenceFactoryClass = "com.github.dbadia.sqrl.server.data.SqrlJpaPersistenceFactory";
+	private String sqrlPersistenceFactoryClass = "com.github.dbadia.sqrl.server.persistence.SqrlJpaPersistenceFactory";
 
 	/**
-	 * The cookie name to use for the SQRL correlator during authentication; defaults to sqrlcorrelator
+	 * The cookie name to use for the SQRL correlator during authentication; defaults to {@code sqrlcorrelator}
 	 */
 	@XmlElement
 	private String correlatorCookieName = "sqrlcorrelator";

@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.data;
+package com.github.dbadia.sqrl.server.persistence;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -38,7 +38,7 @@ public class SqrlCorrelator implements Serializable {
 
 	@Id
 	@TableGenerator(name = "correlator_gen", table = "sqrl_db_id_gen", pkColumnName = "name", valueColumnName = "value",
-			allocationSize = 1)
+	allocationSize = 1)
 	@GeneratedValue(generator = "correlator_gen")
 	@Column(name = "id")
 	private long id;
@@ -56,7 +56,7 @@ public class SqrlCorrelator implements Serializable {
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name = "sqrl_transient_auth_data",
-			joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
+	joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
 	@MapKeyColumn(name = "name")
 	@Column(name = "value")
 	private final Map<String, String> transientAuthDataTable = new HashMap<>();
