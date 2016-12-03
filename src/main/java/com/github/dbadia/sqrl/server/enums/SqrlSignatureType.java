@@ -3,8 +3,6 @@ package com.github.dbadia.sqrl.server.enums;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.dbadia.sqrl.server.util.SqrlServerSideKey;
-
 /**
  * Enum representing the valid signature types of the SQRL spec. The spec refers to all of these in lower case, so we
  * break java convention and do the same for readability

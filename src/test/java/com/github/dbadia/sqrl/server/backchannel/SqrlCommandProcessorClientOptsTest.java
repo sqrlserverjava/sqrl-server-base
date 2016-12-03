@@ -8,9 +8,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
+import com.github.dbadia.sqrl.server.enums.SqrlInternalUserState;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestOpt;
 
 public class SqrlCommandProcessorClientOptsTest {
 	final String					correlator	= "abc";
@@ -46,7 +49,7 @@ public class SqrlCommandProcessorClientOptsTest {
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		// Ensure nothing got disabled
-		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 
@@ -67,7 +70,7 @@ public class SqrlCommandProcessorClientOptsTest {
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		// Ensure nothing got disabled
-		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 
@@ -88,7 +91,7 @@ public class SqrlCommandProcessorClientOptsTest {
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		// Ensure nothing got disabled
-		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 }

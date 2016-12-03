@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.mockito.Mockito;
 
-import com.github.dbadia.sqrl.server.util.SqrlServerSideKey;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestOpt;
+import com.github.dbadia.sqrl.server.enums.SqrlServerSideKey;
 
 public class TCBackchannelUtil {
 

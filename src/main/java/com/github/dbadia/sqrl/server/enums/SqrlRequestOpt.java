@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server.enums;
 
 import java.util.HashSet;
 import java.util.Set;

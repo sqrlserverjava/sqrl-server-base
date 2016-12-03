@@ -22,7 +22,7 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 
 /**

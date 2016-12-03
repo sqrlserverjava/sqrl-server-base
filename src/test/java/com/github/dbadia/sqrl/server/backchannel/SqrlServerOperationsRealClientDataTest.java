@@ -24,9 +24,9 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.enums.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
-import com.github.dbadia.sqrl.server.util.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 import junit.framework.TestCase;

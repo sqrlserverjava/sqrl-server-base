@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.util.SelfExpiringHashMap;
 
 public class SqrlAuthStateMonitor implements Runnable {

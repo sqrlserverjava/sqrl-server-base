@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.enums.SqrlQrCodeImageFormat;
 import com.github.dbadia.sqrl.server.persistence.SqrlJpaPersistenceFactory;
 
 // @formatter:off
@@ -32,10 +33,6 @@ import com.github.dbadia.sqrl.server.persistence.SqrlJpaPersistenceFactory;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SqrlConfig {
-	public enum ImageFormat {
-		PNG, JPG
-	}
-
 	/**
 	 * The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time
 	 * that can pass between us (server) generating the QR code and us receiving the clients response
@@ -53,7 +50,7 @@ public class SqrlConfig {
 	 * The image format to generate QR codes in; default is PNG
 	 */
 	@XmlElement
-	private ImageFormat qrCodeFileType = ImageFormat.PNG;
+	private SqrlQrCodeImageFormat qrCodeFileType = SqrlQrCodeImageFormat.PNG;
 
 	/**
 	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call
@@ -172,11 +169,11 @@ public class SqrlConfig {
 	}
 
 
-	public ImageFormat getQrCodeFileType() {
+	public SqrlQrCodeImageFormat getQrCodeFileType() {
 		return qrCodeFileType;
 	}
 
-	public void setQrCodeFileType(final ImageFormat qrCodeFileType) {
+	public void setQrCodeFileType(final SqrlQrCodeImageFormat qrCodeFileType) {
 		this.qrCodeFileType = qrCodeFileType;
 	}
 

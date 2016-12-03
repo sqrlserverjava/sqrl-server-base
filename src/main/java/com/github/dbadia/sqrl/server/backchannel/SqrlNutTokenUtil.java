@@ -120,11 +120,11 @@ public class SqrlNutTokenUtil {
 		final long now = System.currentTimeMillis();
 		if (logger.isDebugEnabled()) {
 			final Date nutExpiry = new Date(nutExpiryMs);
-			logger.debug("{} Now={}, nutExpiry={}", SqrlLoggingUtil.getLogHeader(), new Date(now), nutExpiry);
+			logger.debug("{} Now={}, nutExpiry={}", SqrlClientRequestLoggingUtil.getLogHeader(), new Date(now), nutExpiry);
 		}
 		if (now > nutExpiryMs) {
 			throw new SqrlClientRequestProcessingException(SqrlTif.TIF_TRANSIENT_ERROR,
-					SqrlLoggingUtil.getLogHeader() + "Nut expired by "
+					SqrlClientRequestLoggingUtil.getLogHeader() + "Nut expired by "
 							+ (nutExpiryMs - now) + "ms, nut timetamp ms=" + nutToken.getIssuedTimestampMillis()
 							+ ", expiry is set to " + config.getNutValidityInSeconds() + " seconds");
 		}
@@ -132,7 +132,7 @@ public class SqrlNutTokenUtil {
 		final String nutTokenString = nutToken.asSqrlBase64EncryptedNut();
 		if (sqrlPersistence.hasTokenBeenUsed(nutTokenString)) {
 			throw new SqrlNutTokenReplayedException(
-					SqrlLoggingUtil.getLogHeader() + "Nut token was replayed " + nutToken);
+					SqrlClientRequestLoggingUtil.getLogHeader() + "Nut token was replayed " + nutToken);
 		}
 		final Date nutExpiry = new Date(nutExpiryMs);
 		sqrlPersistence.markTokenAsUsed(nutTokenString, nutExpiry);

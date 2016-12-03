@@ -1,6 +1,6 @@
 package com.github.dbadia.sqrl.server.exception;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 
 /**
@@ -24,7 +24,7 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	}
 
 	public SqrlClientRequestProcessingException(final int tifToAdd, final String message, final Throwable cause) {
-		super(new StringBuilder(SqrlLoggingUtil.getLogHeader()).append(message).toString(), cause);
+		super(new StringBuilder(SqrlClientRequestLoggingUtil.getLogHeader()).append(message).toString(), cause);
 		this.tifToAdd = tifToAdd;
 	}
 

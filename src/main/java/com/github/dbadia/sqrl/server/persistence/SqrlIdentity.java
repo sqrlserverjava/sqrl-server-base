@@ -19,7 +19,7 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 
-import com.github.dbadia.sqrl.server.SqrlFlag;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
 
 /**
  * Represents a users SQRL identity including a String id the users native app identity
@@ -58,7 +58,7 @@ public class SqrlIdentity implements Serializable {
 	@CollectionTable(name = "sqrl_identity_flag", joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
 	@Enumerated(EnumType.STRING)
 	@Column(name = "name")
-	private final HashSet<SqrlFlag> enabledFlagList = new HashSet<SqrlFlag>();
+	private final HashSet<SqrlIdentityFlag> enabledFlagList = new HashSet<SqrlIdentityFlag>();
 
 	public SqrlIdentity() {
 		// Required by JPA
@@ -96,7 +96,7 @@ public class SqrlIdentity implements Serializable {
 		return identityDataTable;
 	}
 
-	public HashSet<SqrlFlag> getEnabledFlagList() {
+	public HashSet<SqrlIdentityFlag> getEnabledFlagList() {
 		return enabledFlagList;
 	}
 

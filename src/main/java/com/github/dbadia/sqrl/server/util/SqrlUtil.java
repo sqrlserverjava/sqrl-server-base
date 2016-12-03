@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 
@@ -393,7 +393,7 @@ public class SqrlUtil {
 	}
 
 	public static String buildLogMessageForSqrlClientRequest(final HttpServletRequest request) {
-		final StringBuilder buf = new StringBuilder(SqrlLoggingUtil.getLogHeader()).append("SQRL client sent");
+		final StringBuilder buf = new StringBuilder(SqrlClientRequestLoggingUtil.getLogHeader()).append("SQRL client sent");
 		for (final Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
 			buf.append(entry.getKey()).append("=").append(Arrays.toString(entry.getValue())).append("   ");
 		}

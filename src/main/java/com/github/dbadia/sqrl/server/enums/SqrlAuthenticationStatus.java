@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.enums;
 
 public enum SqrlAuthenticationStatus {
 	//@formatter:off

@@ -13,9 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
+import com.github.dbadia.sqrl.server.enums.SqrlInternalUserState;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 
 import junitx.framework.ObjectAssert;
@@ -60,7 +62,7 @@ public class SqrlCommandProcessorTest {
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 
@@ -74,7 +76,7 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence.closeCommit();
 
 		sqrlPersistence = TCUtil.createSqrlPersistence();
-		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED, false);
+		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, false);
 		sqrlPersistence.closeCommit();
 
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.ENABLE,
@@ -99,7 +101,7 @@ public class SqrlCommandProcessorTest {
 		assertNull(sqrlInternalUserState);
 		// Verify that it's still disabled
 		sqrlPersistence = TCUtil.createSqrlPersistence();
-		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 	}
 
 	@Test
@@ -155,7 +157,7 @@ public class SqrlCommandProcessorTest {
 		TCUtil.setupIdk(idk, correlator, "123");
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.DISABLE,
 				correlator, true);
-		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 
 		// Execute - call start/commit since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
@@ -168,7 +170,7 @@ public class SqrlCommandProcessorTest {
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 		;
-		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 }

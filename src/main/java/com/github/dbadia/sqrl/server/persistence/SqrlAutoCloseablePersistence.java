@@ -7,9 +7,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
-import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
 
 /**
  * Decorator pattern wrapper for {@link SqrlPersistence} which, when auto-closed, will call
@@ -77,12 +77,12 @@ public class SqrlAutoCloseablePersistence implements SqrlPersistence, AutoClosea
 	}
 
 	@Override
-	public boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch) {
+	public boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlIdentityFlag flagToFetch) {
 		return sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk, flagToFetch);
 	}
 
 	@Override
-	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToSet, final boolean valueToSet) {
+	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlIdentityFlag flagToSet, final boolean valueToSet) {
 		sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, flagToSet, valueToSet);
 	}
 

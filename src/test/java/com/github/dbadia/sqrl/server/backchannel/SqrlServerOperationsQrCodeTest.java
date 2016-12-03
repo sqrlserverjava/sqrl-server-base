@@ -17,12 +17,12 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import com.github.dbadia.sqrl.server.SqrlAuthPageData;
 import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
-import com.github.dbadia.sqrl.server.SqrlConfig.ImageFormat;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.enums.SqrlQrCodeImageFormat;
 
 /**
  * Tests QR code generation for each image format we support
- * 
+ *
  * @author Dave Badia
  *
  */
@@ -33,7 +33,7 @@ public class SqrlServerOperationsQrCodeTest {
 	public static Collection<Object[]> data() {
 		// @formatter:off
 		final List<Object[]> data = new ArrayList<>();
-		for(final ImageFormat imageFormat : ImageFormat.values()) {
+		for(final SqrlQrCodeImageFormat imageFormat : SqrlQrCodeImageFormat.values()) {
 			data.add(new Object[]{imageFormat});
 		}
 		return data;
@@ -53,7 +53,7 @@ public class SqrlServerOperationsQrCodeTest {
 
 		// Emulate the login page generation
 		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);
-		MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
+		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
 		final SqrlAuthPageData authPageData = sqrlServerOps.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
 				InetAddress.getByName("localhost"), 250);
 		assertNotNull(authPageData);
@@ -62,7 +62,7 @@ public class SqrlServerOperationsQrCodeTest {
 
 	private final SqrlConfig config;
 
-	public SqrlServerOperationsQrCodeTest(final ImageFormat imageFormat) {
+	public SqrlServerOperationsQrCodeTest(final SqrlQrCodeImageFormat imageFormat) {
 		super();
 		config = TCUtil.buildTestSqrlConfig();
 		config.setQrCodeFileType(imageFormat);

@@ -19,10 +19,10 @@ import javax.persistence.TypedQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.SqrlAuthenticationStatus;
-import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
 import com.github.dbadia.sqrl.server.exception.SqrlDebugException;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 
@@ -308,14 +308,14 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	}
 
 	@Override
-	public boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToFetch) {
+	public boolean fetchSqrlFlagForIdentity(final String sqrlIdk, final SqrlIdentityFlag flagToFetch) {
 		return fetchRequiredSqrlIdentity(sqrlIdk).getEnabledFlagList().contains(flagToFetch);
 	}
 
 	@Override
-	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlFlag flagToSet, final boolean enableOrDisable) {
+	public void setSqrlFlagForIdentity(final String sqrlIdk, final SqrlIdentityFlag flagToSet, final boolean enableOrDisable) {
 		final SqrlIdentity sqrlIdentity = fetchRequiredSqrlIdentity(sqrlIdk);
-		final Set<SqrlFlag> enabledFlagSet = sqrlIdentity.getEnabledFlagList();
+		final Set<SqrlIdentityFlag> enabledFlagSet = sqrlIdentity.getEnabledFlagList();
 		if (enableOrDisable && !enabledFlagSet.add(flagToSet)) {
 			logger.warn("INFO-ONLY-STACK: Attempt to enable flag " + flagToSet + " that is already present",
 					new SqrlDebugException());
@@ -332,7 +332,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	public void createAndEnableSqrlIdentity(final String sqrlIdk) {
 		updateLastUsed(entityManager);
 		final SqrlIdentity sqrlIdentity = new SqrlIdentity(sqrlIdk);
-		sqrlIdentity.getEnabledFlagList().add(SqrlFlag.SQRL_AUTH_ENABLED);
+		sqrlIdentity.getEnabledFlagList().add(SqrlIdentityFlag.SQRL_AUTH_ENABLED);
 		entityManager.persist(sqrlIdentity);
 	}
 

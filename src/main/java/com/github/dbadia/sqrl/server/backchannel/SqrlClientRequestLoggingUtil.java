@@ -15,8 +15,12 @@ import com.github.dbadia.sqrl.server.util.SqrlUtil;
  * @author Dave Badia
  *
  */
-public class SqrlLoggingUtil {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlLoggingUtil.class);
+public class SqrlClientRequestLoggingUtil {
+	private static final Logger logger = LoggerFactory.getLogger(SqrlClientRequestLoggingUtil.class);
+
+	private SqrlClientRequestLoggingUtil() {
+		// util class
+	}
 
 	private static final ThreadLocal<String> threadLocalLogHeader = new ThreadLocal<String>() {
 		@Override
@@ -24,10 +28,6 @@ public class SqrlLoggingUtil {
 			return "";
 		}
 	};
-
-	private SqrlLoggingUtil() {
-		// util class
-	}
 
 	public static void initLoggingHeader(final HttpServletRequest servletRequest) {
 		String sqrlAgentString = "unknown";

@@ -9,7 +9,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestLoggingUtil;
 
 public class SqrlVersionUtil {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlVersionUtil.class);
@@ -38,7 +38,7 @@ public class SqrlVersionUtil {
 		try {
 			return Optional.of(Integer.parseInt(intString));
 		} catch (final NumberFormatException  e) {
-			logger.error("{}Version parsing failed for '{}'", SqrlLoggingUtil.getLogHeader(), intString);
+			logger.error("{}Version parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(), intString);
 			return Optional.empty();
 		}
 	}
@@ -54,12 +54,12 @@ public class SqrlVersionUtil {
 		final List<Integer> dataList = new ArrayList<>();
 		final String[] partArray = versionRangeString.split("-");
 		if (partArray.length != 2) {
-			logger.error("{}Version range parsing failed for '{}'", SqrlLoggingUtil.getLogHeader(), versionRangeString);
+			logger.error("{}Version range parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(), versionRangeString);
 		} else {
 			final Optional<Integer> min = parseToInteger(partArray[0]);
 			final Optional<Integer> max = parseToInteger(partArray[1]);
 			if (!min.isPresent() || !max.isPresent()) {
-				logger.error("{}Version range parsing failed for '{}'", SqrlLoggingUtil.getLogHeader(),
+				logger.error("{}Version range parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(),
 						versionRangeString);
 				return dataList; // dataList is empty
 			}
@@ -67,7 +67,7 @@ public class SqrlVersionUtil {
 			if (compared == 0) {
 				dataList.add(min.get());
 			} else if (compared > 0) {
-				logger.error("{}Version range parsing failed for '{}'", SqrlLoggingUtil.getLogHeader(),
+				logger.error("{}Version range parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(),
 						versionRangeString);
 			} else {
 				for (int i = min.get(); i < max.get() + 1; i++) {

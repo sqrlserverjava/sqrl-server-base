@@ -1,8 +1,8 @@
 package com.github.dbadia.sqrl.server;
 
-import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.DISABLED;
-import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.IDK_EXISTS;
-import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.PIDK_EXISTS;
+import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.DISABLED;
+import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.IDK_EXISTS;
+import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.PIDK_EXISTS;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -36,15 +36,17 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestProcessor;
-import com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState;
-import com.github.dbadia.sqrl.server.backchannel.SqrlLoggingUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
-import com.github.dbadia.sqrl.server.backchannel.SqrlRequestCommand;
-import com.github.dbadia.sqrl.server.backchannel.SqrlRequestOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.enums.SqrlClientParam;
+import com.github.dbadia.sqrl.server.enums.SqrlInternalUserState;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestOpt;
+import com.github.dbadia.sqrl.server.enums.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
@@ -54,7 +56,6 @@ import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.persistence.SqrlIdentity;
 import com.github.dbadia.sqrl.server.persistence.SqrlPersistenceCleanupTask;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
-import com.github.dbadia.sqrl.server.util.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 import com.google.zxing.BarcodeFormat;
@@ -214,7 +215,7 @@ public class SqrlServerOperations {
 					nut.asSqrlBase64EncryptedNut(), config.getNutValidityInSeconds(), config));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
-			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
+			throw new SqrlException(SqrlClientRequestLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
 		}
 	}
 
@@ -239,7 +240,7 @@ public class SqrlServerOperations {
 	 */
 	public void handleSqrlClientRequest(final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse) throws IOException {
-		SqrlLoggingUtil.initLoggingHeader(servletRequest);
+		SqrlClientRequestLoggingUtil.initLoggingHeader(servletRequest);
 		if (logger.isInfoEnabled()) {
 			logger.info(SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString());
 		}
@@ -262,7 +263,7 @@ public class SqrlServerOperations {
 				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest,
 						sqrlPersistence);
 
-				logHeader = SqrlLoggingUtil.updateLogHeader(
+				logHeader = SqrlClientRequestLoggingUtil.updateLogHeader(
 						new StringBuilder("v").append(sqrlClientRequest.getNegotiatedSqrlProtocolVersion()).append(" ")
 						.append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
 
@@ -285,11 +286,11 @@ public class SqrlServerOperations {
 				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
 				if (e instanceof SqrlClientRequestProcessingException) {
 					tifBuilder.addFlag(((SqrlClientRequestProcessingException) e).getTifToAdd());
-					logger.error("{}Received invalid SQRL request: {} of {}", SqrlLoggingUtil.getLogHeader(),
+					logger.error("{}Received invalid SQRL request: {} of {}", SqrlClientRequestLoggingUtil.getLogHeader(),
 							e.getMessage(), SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest), e);
 				} else {
 					logger.error("{}Generate exception processing SQRL request: {} of {}",
-							SqrlLoggingUtil.getLogHeader(), e.getMessage(),
+							SqrlClientRequestLoggingUtil.getLogHeader(), e.getMessage(),
 							SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest), e);
 				}
 				// The SQRL spec is unclear about HTTP return codes. It mentions returning a 404 for an invalid request
@@ -322,7 +323,7 @@ public class SqrlServerOperations {
 					if (sqrlCorrelator.getTransientAuthDataTable()
 							.remove(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT) == null) {
 						logger.warn("{}Tried to remove server parrot since we are in error state but it doesn't exist",
-								SqrlLoggingUtil.getLogHeader());
+								SqrlClientRequestLoggingUtil.getLogHeader());
 					}
 				} else {
 					// Store the serverReplyString in the server parrot value so we can validate it on the clients next
@@ -340,14 +341,14 @@ public class SqrlServerOperations {
 				logger.debug("{}Request {}, responded with   B64: {}", logHeader, requestState, serverReplyString);
 			}
 		} finally {
-			SqrlLoggingUtil.clearLogHeader();
+			SqrlClientRequestLoggingUtil.clearLogHeader();
 		}
 	}
 
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlClientRequest sqrlRequest,
 			final SqrlTif tif, final String correlator, final SqrlInternalUserState sqrlInternalUserState,
 			final boolean isInErrorState) throws SqrlException {
-		final String logHeader = SqrlLoggingUtil.getLogHeader();
+		final String logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
 		try {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());
@@ -376,7 +377,7 @@ public class SqrlServerOperations {
 		} catch (final URISyntaxException e) {
 			sqrlPersistence.closeRollback();
 			throw new SqrlException(
-					SqrlLoggingUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
+					SqrlClientRequestLoggingUtil.getLogHeader() + "Error converting servletRequest.getRequestURL() to URI.  "
 							+ "servletRequest.getRequestURL()=" + servletRequest.getRequestURL(),
 							e);
 		}
@@ -452,7 +453,7 @@ public class SqrlServerOperations {
 			throws SqrlException {
 		final String ipAddressString = servletRequest.getRemoteAddr();
 		if (SqrlUtil.isBlank(ipAddressString)) {
-			throw new SqrlException(SqrlLoggingUtil.getLogHeader() + "No ip address found in sqrl request");
+			throw new SqrlException(SqrlClientRequestLoggingUtil.getLogHeader() + "No ip address found in sqrl request");
 		}
 		final InetAddress requesterIpAddress = SqrlUtil.ipStringToInetAddresss(servletRequest.getRemoteAddr());
 		return SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, nut.getInetInt(), config);

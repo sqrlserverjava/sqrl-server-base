@@ -13,9 +13,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.github.dbadia.sqrl.server.SqrlConfig;
-import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
+import com.github.dbadia.sqrl.server.enums.SqrlInternalUserState;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestOpt;
 
 import junit.framework.TestCase;
 
@@ -58,7 +61,7 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 
 		// Validate - everything should be normal since these flags are ignored on a query command
 		TestCase.assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlFlag.SQRL_AUTH_ENABLED));
+		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 

@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.enums.SqrlClientParam;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestOpt;
+import com.github.dbadia.sqrl.server.enums.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.enums.SqrlSignatureType;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
@@ -24,7 +27,6 @@ import com.github.dbadia.sqrl.server.exception.SqrlInvalidDataException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlSanitize;
-import com.github.dbadia.sqrl.server.util.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 import com.github.dbadia.sqrl.server.util.SqrlVersionUtil;
 
@@ -55,7 +57,7 @@ public class SqrlClientRequest {
 
 	public SqrlClientRequest(final HttpServletRequest servletRequest, final SqrlPersistence persistence,
 			final SqrlConfigOperations configOps) throws SqrlClientRequestProcessingException {
-		this.logHeader = SqrlLoggingUtil.getLogHeader();
+		this.logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		this.servletRequest = servletRequest;
 		this.clientParam = getRequiredParameter(servletRequest, "client");
 		this.serverParam = getRequiredParameter(servletRequest, "server");
@@ -234,13 +236,13 @@ public class SqrlClientRequest {
 			final byte[] publicKey = requestKeyTableRaw.get(keyName);
 			if (publicKey == null) {
 				throw new SqrlInvalidRequestException(
-						SqrlLoggingUtil.getLogHeader() + keyName + " not found in client param: " + clientParam);
+						SqrlClientRequestLoggingUtil.getLogHeader() + keyName + " not found in client param: " + clientParam);
 			}
 			final byte[] messageBytes = (clientParam + serverParam).getBytes();
 			final boolean isSignatureValid = SqrlUtil.verifyED25519(signatureFromMessage, messageBytes, publicKey);
 			if (!isSignatureValid) {
 				throw new SqrlInvalidRequestException(
-						SqrlLoggingUtil.getLogHeader() + "Signature for " + keyName + " was invalid");
+						SqrlClientRequestLoggingUtil.getLogHeader() + "Signature for " + keyName + " was invalid");
 			}
 		} catch (final SqrlInvalidRequestException e) {
 			throw e;

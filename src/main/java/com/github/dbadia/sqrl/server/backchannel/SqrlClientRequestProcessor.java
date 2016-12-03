@@ -1,19 +1,22 @@
 package com.github.dbadia.sqrl.server.backchannel;
 
-import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.IDK_EXISTS;
-import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.NONE_EXIST;
-import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.PIDK_EXISTS;
-import static com.github.dbadia.sqrl.server.util.SqrlServerSideKey.idk;
-import static com.github.dbadia.sqrl.server.util.SqrlServerSideKey.pidk;
+import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.IDK_EXISTS;
+import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.NONE_EXIST;
+import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.PIDK_EXISTS;
+import static com.github.dbadia.sqrl.server.enums.SqrlServerSideKey.idk;
+import static com.github.dbadia.sqrl.server.enums.SqrlServerSideKey.pidk;
 
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.dbadia.sqrl.server.SqrlFlag;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
+import com.github.dbadia.sqrl.server.enums.SqrlInternalUserState;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
+import com.github.dbadia.sqrl.server.enums.SqrlRequestOpt;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
@@ -33,7 +36,7 @@ public class SqrlClientRequestProcessor {
 			final SqrlPersistence sqrlPersistence) throws SqrlInvalidRequestException {
 		super();
 		// Cache the logHeader since we use it a lot and it won't change here
-		this.logHeader = SqrlLoggingUtil.getLogHeader();
+		this.logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		this.sqrlPersistence = sqrlPersistence;
 		this.sqrlClientRequest = sqrlClientRequest;
 		this.sqrlIdk = sqrlClientRequest.getKey(idk);
@@ -65,7 +68,7 @@ public class SqrlClientRequestProcessor {
 		return sqrlInternalUserState;
 	}
 
-	private void updateOptValueAsNeeded(final SqrlFlag flag, final SqrlRequestOpt opt) {
+	private void updateOptValueAsNeeded(final SqrlIdentityFlag flag, final SqrlRequestOpt opt) {
 		if (opt != null) {
 			final boolean clientValue = sqrlClientRequest.getOptList().contains(opt);
 			final boolean dbValue = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk, flag);
@@ -92,7 +95,7 @@ public class SqrlClientRequestProcessor {
 
 		// The absence of given flags means they should be disabled. So loop through all known flags and take the
 		// appropriate action
-		for (final SqrlFlag flag : SqrlFlag.values()) {
+		for (final SqrlIdentityFlag flag : SqrlIdentityFlag.values()) {
 			if (flag.hasOptEquivalent()) {
 				final SqrlRequestOpt opt = flag.getSqrlClientOpt();
 				updateOptValueAsNeeded(flag, opt);
@@ -122,10 +125,10 @@ public class SqrlClientRequestProcessor {
 				return;
 			case ENABLE:
 				final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
-						SqrlFlag.SQRL_AUTH_ENABLED);
+						SqrlIdentityFlag.SQRL_AUTH_ENABLED);
 				if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
 					if (sqrlClientRequest.containsUrs()) {
-						sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, true);
+						sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, true);
 					} else {
 						throw new SqrlInvalidRequestException(
 								logHeader + "Request was to enable SQRL but didn't contain urs signature");
@@ -135,7 +138,7 @@ public class SqrlClientRequestProcessor {
 				}
 				return;
 			case DISABLE:
-				sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlFlag.SQRL_AUTH_ENABLED, false);
+				sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, false);
 				return;
 			case REMOVE:
 				if (sqrlClientRequest.containsUrs()) {
@@ -159,7 +162,7 @@ public class SqrlClientRequestProcessor {
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBePersisted());
 		}
 		final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
-				SqrlFlag.SQRL_AUTH_ENABLED);
+				SqrlIdentityFlag.SQRL_AUTH_ENABLED);
 		final boolean performCpsCheck = false; // TODO_CPS: set this using sqrlServer
 		if (!sqrlEnabledForIdentity) {
 			sqrlInternalUserState = SqrlInternalUserState.DISABLED;

@@ -1,8 +1,7 @@
-package com.github.dbadia.sqrl.server;
+package com.github.dbadia.sqrl.server.enums;
 
-import com.github.dbadia.sqrl.server.backchannel.SqrlRequestOpt;
-
-public enum SqrlFlag {
+public enum SqrlIdentityFlag {
+	
 	SQRL_AUTH_ENABLED(null), HARDLOCK(SqrlRequestOpt.hardlock);
 
 	/**
@@ -10,7 +9,7 @@ public enum SqrlFlag {
 	 */
 	private final SqrlRequestOpt opt;
 
-	private SqrlFlag(final SqrlRequestOpt opt) {
+	private SqrlIdentityFlag(final SqrlRequestOpt opt) {
 		this.opt = opt;
 	}
 

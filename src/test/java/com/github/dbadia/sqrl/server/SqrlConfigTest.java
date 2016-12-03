@@ -16,6 +16,8 @@ import javax.xml.bind.Unmarshaller;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.github.dbadia.sqrl.server.enums.SqrlQrCodeImageFormat;
+
 import junitx.framework.ArrayAssert;
 
 public class SqrlConfigTest {
@@ -51,7 +53,7 @@ public class SqrlConfigTest {
 			final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 			final SqrlConfig config = (SqrlConfig) jaxbUnmarshaller.unmarshal(is);
 			assertEquals(600, config.getNutValidityInSeconds());
-			assertEquals(SqrlConfig.ImageFormat.PNG, config.getQrCodeFileType());
+			assertEquals(SqrlQrCodeImageFormat.PNG, config.getQrCodeFileType());
 			assertEquals("/sqrlbc", config.getBackchannelServletPath());
 			assertEquals("SQRL Java Server Demo", config.getServerFriendlyName());
 			System.out.println(Arrays.toString(config.getAESKeyBytes()));

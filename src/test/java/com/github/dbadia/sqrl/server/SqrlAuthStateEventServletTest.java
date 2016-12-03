@@ -20,6 +20,7 @@ import javax.persistence.TypedQuery;
 
 import org.junit.Test;
 
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.persistence.SqrlAutoCloseablePersistence;
 import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
 

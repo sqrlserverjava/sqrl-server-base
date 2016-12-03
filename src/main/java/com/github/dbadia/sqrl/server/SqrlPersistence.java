@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
+import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
 import com.github.dbadia.sqrl.server.exception.SqrlPersistenceException;
 import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.persistence.SqrlIdentity;
@@ -108,7 +110,7 @@ public interface SqrlPersistence {
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
-	public boolean fetchSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToFetch);
+	public boolean fetchSqrlFlagForIdentity(String sqrlIdk, SqrlIdentityFlag flagToFetch);
 
 	/**
 	 * Invoked when the user chooses to temporarily disable SQRL authentication for this site
@@ -120,7 +122,7 @@ public interface SqrlPersistence {
 	 * @throws SqrlPersistenceException
 	 *             if there was an error accessing the persistence store
 	 */
-	public void setSqrlFlagForIdentity(String sqrlIdk, SqrlFlag flagToSet, boolean valueToSet);
+	public void setSqrlFlagForIdentity(String sqrlIdk, SqrlIdentityFlag flagToSet, boolean valueToSet);
 
 	/* ***************** SQRL IDENTITY DATA *********************/
 	/**

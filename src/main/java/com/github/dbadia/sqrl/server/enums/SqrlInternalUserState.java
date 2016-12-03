@@ -1,4 +1,4 @@
-package com.github.dbadia.sqrl.server.backchannel;
+package com.github.dbadia.sqrl.server.enums;
 
 /**
  * Represents the state of a SQRL user within our application
