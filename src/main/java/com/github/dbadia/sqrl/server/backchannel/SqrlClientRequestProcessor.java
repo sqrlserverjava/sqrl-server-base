@@ -3,6 +3,8 @@ package com.github.dbadia.sqrl.server.backchannel;
 import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.IDK_EXISTS;
 import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.NONE_EXIST;
 import static com.github.dbadia.sqrl.server.backchannel.SqrlInternalUserState.PIDK_EXISTS;
+import static com.github.dbadia.sqrl.server.util.SqrlServerSideKey.idk;
+import static com.github.dbadia.sqrl.server.util.SqrlServerSideKey.pidk;
 
 import java.util.List;
 
@@ -15,6 +17,7 @@ import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+
 public class SqrlClientRequestProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 
@@ -33,7 +36,7 @@ public class SqrlClientRequestProcessor {
 		this.logHeader = SqrlLoggingUtil.getLogHeader();
 		this.sqrlPersistence = sqrlPersistence;
 		this.sqrlClientRequest = sqrlClientRequest;
-		this.sqrlIdk = sqrlClientRequest.getIdk();
+		this.sqrlIdk = sqrlClientRequest.getKey(idk);
 		this.command = sqrlClientRequest.getClientCommand();
 		this.correlator = sqrlClientRequest.getCorrelator();
 	}
@@ -50,8 +53,8 @@ public class SqrlClientRequestProcessor {
 		// Set IDK /PIDK Tifs
 		if (idkExistsInPersistence) {
 			sqrlInternalUserState = IDK_EXISTS;
-		} else if (sqrlClientRequest.hasPidk()
-				&& sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlClientRequest.getPidk())) {
+		} else if (sqrlClientRequest.hasKey(pidk)
+				&& sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlClientRequest.getKey(pidk))) {
 			sqrlInternalUserState = PIDK_EXISTS;
 		}
 
@@ -153,7 +156,7 @@ public class SqrlClientRequestProcessor {
 		if (!sqrlInternalUserState.idExistsInPersistence()) {
 			// First time seeing this SQRL identity, store it and enable it
 			sqrlPersistence.createAndEnableSqrlIdentity(sqrlIdk);
-			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBeStored());
+			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBePersisted());
 		}
 		final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
 				SqrlFlag.SQRL_AUTH_ENABLED);
@@ -161,13 +164,13 @@ public class SqrlClientRequestProcessor {
 		if (!sqrlEnabledForIdentity) {
 			sqrlInternalUserState = SqrlInternalUserState.DISABLED;
 		} else if (sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS) {
-			sqrlPersistence.updateIdkForSqrlIdentity(sqrlClientRequest.getPidk(), sqrlIdk);
+			sqrlPersistence.updateIdkForSqrlIdentity(sqrlClientRequest.getKey(pidk), sqrlIdk);
 			logger.info("{}User SQRL authenticated, updating idk={} and to replace pidk",
 					logHeader, sqrlIdk);
 			// TODO_AUDIT
 		} else if (sqrlInternalUserState == SqrlInternalUserState.IDK_EXISTS) {
 			// TODO_AMBIGUOUS: do we really overwrite existing data, or only if they are new?
-			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBeStored());
+			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBePersisted());
 			sqrlInternalUserState = SqrlInternalUserState.IDK_EXISTS;
 			// TODO_AUDIT
 			logger.info("{}User SQRL authenticated idk={}", logHeader, sqrlIdk);

@@ -44,6 +44,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlRequestCommand;
 import com.github.dbadia.sqrl.server.backchannel.SqrlRequestOpt;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.dbadia.sqrl.server.enums.SqrlClientParam;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
@@ -53,6 +54,7 @@ import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.persistence.SqrlIdentity;
 import com.github.dbadia.sqrl.server.persistence.SqrlPersistenceCleanupTask;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
+import com.github.dbadia.sqrl.server.util.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.util.SqrlServiceExecutor;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 import com.google.zxing.BarcodeFormat;
@@ -193,7 +195,7 @@ public class SqrlServerOperations {
 			final MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			final String correlator = SqrlUtil
 					.sqrlBase64UrlEncode(digest.digest(nut.asSqrlBase64EncryptedNut().getBytes()));
-			urlBuf.append("&").append(SqrlConstants.CLIENT_PARAM_CORRELATOR).append("=").append(correlator);
+			urlBuf.append("&").append(SqrlClientParam.cor.toString()).append("=").append(correlator);
 
 			final String url = urlBuf.toString();
 			final ByteArrayOutputStream qrBaos = generateQrCode(config, url, qrCodeSizeInPixels);
@@ -391,7 +393,8 @@ public class SqrlServerOperations {
 		if (shouldIncludeSukInReply(sqrlRequest, sqrlInternalUserState)
 				&& (sqrlInternalUserState == IDK_EXISTS || sqrlInternalUserState == PIDK_EXISTS)) {
 			final String sukSring = SqrlRequestOpt.suk.toString();
-			final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getIdk(), sukSring);
+			final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getKey(SqrlServerSideKey.idk),
+					sukSring);
 			if (sukValue != null) {
 				additionalDataTable.put(sukSring, sukValue);
 			}

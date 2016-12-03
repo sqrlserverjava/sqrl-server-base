@@ -16,12 +16,15 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
+import com.github.dbadia.sqrl.server.enums.SqrlClientParam;
+import com.github.dbadia.sqrl.server.enums.SqrlSignatureType;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidDataException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlSanitize;
+import com.github.dbadia.sqrl.server.util.SqrlServerSideKey;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 import com.github.dbadia.sqrl.server.util.SqrlVersionUtil;
 
@@ -41,8 +44,8 @@ public class SqrlClientRequest {
 	private final Integer				negotiatedSqrlProtocolVersion;
 	private final SqrlNutToken			nut;
 	private final SqrlRequestCommand	clientCommand;
-	private final Map<String, byte[]>	clientKeys			= new ConcurrentHashMap<>();
-	private final Map<String, String>	clientKeysBsse64	= new ConcurrentHashMap<>();
+	private final Map<SqrlServerSideKey, byte[]>	requestKeyTableRaw			= new ConcurrentHashMap<>();
+	private final Map<SqrlServerSideKey, String>	requestKeyTableBase64	= new ConcurrentHashMap<>();
 	private final List<SqrlRequestOpt>	optList				= new ArrayList<>();
 
 	private final HttpServletRequest	servletRequest;
@@ -59,12 +62,12 @@ public class SqrlClientRequest {
 		this.nut = new SqrlNutToken(configOps, extractFromSqrlCsvString(serverParam, NUT_EQUALS));
 		final String decoded = SqrlUtil.base64UrlDecodeDataFromSqrlClientToString(clientParam);
 		// parse server - not a name value pair, just the query string we gave
-		this.correlator = extractFromSqrlCsvString(serverParam, SqrlConstants.CLIENT_PARAM_CORRELATOR);
+		this.correlator = extractFromSqrlCsvString(serverParam, SqrlClientParam.cor.toString());
 
 		// parse client
 		final Map<String, String> clientNameValuePairTable = parseLinesToNameValueMap(decoded);
 		// clientVersionString format is 1[,n],[n-m]
-		final String clientVersionString = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_VER);
+		final String clientVersionString = clientNameValuePairTable.get(SqrlClientParam.ver.toString());
 		final Collection<Integer> clientVersionsSupported = SqrlVersionUtil
 				.parseClientVersionString(clientVersionString);
 		final Integer commonProtocolVersion= SqrlVersionUtil.findHighestCommonVersion(SqrlConstants.SUPPORTED_SQRL_VERSIONS,
@@ -80,7 +83,7 @@ public class SqrlClientRequest {
 		this.negotiatedSqrlProtocolVersion = commonProtocolVersion;
 
 		// parse opt
-		final String optListString = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_OPT);
+		final String optListString = clientNameValuePairTable.get(SqrlClientParam.opt.toString());
 		if (SqrlUtil.isNotBlank(optListString)) {
 			for (final String optString : optListString.split("~")) {
 				try {
@@ -96,12 +99,30 @@ public class SqrlClientRequest {
 
 		// parse keys
 		for (final Map.Entry<String, String> entry : parseLinesToNameValueMap(decoded).entrySet()) {
-			if (SqrlConstants.getAllKeyTypes().contains(entry.getKey())) {
+			final SqrlServerSideKey keyType = SqrlServerSideKey.valueOfOrNull(entry.getKey());
+			if (keyType == null) {
+				continue;
+			}
+			final String keyBase64 = entry.getValue();
+			// Sanity check for a client sending the same key more than once
+			if (requestKeyTableRaw.containsKey(keyType)) {
+				// Uh oh, is the value different?
+				if (requestKeyTableBase64.get(keyType).equals(entry.getValue())) {
+					logger.info("Client sent the key " + keyType
+							+ " multiple times but with the same value; this should be reported as a minor bug to the client author.  clientParam="
+							+ clientParam);
+				} else {
+					throw new SqrlInvalidRequestException("Client sent the key " + keyType
+							+ " multiple times in the same request, each with different values: " + clientParam);
+				}
+			} else {
+				// Store the keys in our tables
 				final byte[] keyBytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(entry.getValue());
-				clientKeys.put(entry.getKey(), keyBytes);
-				clientKeysBsse64.put(entry.getKey(), entry.getValue());
+				requestKeyTableRaw.put(keyType, keyBytes);
+				requestKeyTableBase64.put(keyType, keyBase64);
 			}
 		}
+		logger.debug("{}keys found in request: {}", logHeader, requestKeyTableBase64.keySet());
 
 		// Per the SQRL spec, since the server response is not signed, we must check the value that comes
 		// back to ensure it wasn't tampered with
@@ -118,12 +139,13 @@ public class SqrlClientRequest {
 
 		// Validate the signatures
 		boolean idsFound = false;
-		for (final String aSignatureType : SqrlConstants.getAllSignatureTypes()) {
-			final String signatureParamValue = servletRequest.getParameter(aSignatureType);
+		for (final SqrlSignatureType aSignatureType : SqrlSignatureType.values()) {
+			final String signatureParamValue = servletRequest.getParameter(aSignatureType.toString());
 			if (SqrlUtil.isNotBlank(signatureParamValue)) {
 				// Validate the signature
-				validateSignature(SqrlConstants.getSignatureToKeyParamTable().get(aSignatureType), signatureParamValue);
-				if (aSignatureType.equals(SqrlConstants.SIGNATURE_TYPE_IDS)) {
+				validateSignature(SqrlSignatureType.getSignatureToKeyParamTable().get(aSignatureType),
+						signatureParamValue);
+				if (aSignatureType == SqrlSignatureType.ids) {
 					idsFound = true;
 				}
 			}
@@ -135,7 +157,7 @@ public class SqrlClientRequest {
 					"ids was missing in SQRL client request: " + clientNameValuePairTable);
 		}
 
-		final String clientCommandString = clientNameValuePairTable.get(SqrlConstants.CLIENT_PARAM_CMD);
+		final String clientCommandString = clientNameValuePairTable.get(SqrlClientParam.cmd.toString());
 		try {
 			this.clientCommand = SqrlRequestCommand.valueOf(clientCommandString.toUpperCase());
 		} catch (final IllegalArgumentException e) {
@@ -153,7 +175,7 @@ public class SqrlClientRequest {
 	public static String parseCorrelatorOnly(final HttpServletRequest servletRequest) throws SqrlException {
 		final String serverParam = getRequiredParameter(servletRequest, "server");
 		// parse server - not a name value pair, just the query string we gave
-		return extractFromSqrlCsvString(serverParam, SqrlConstants.CLIENT_PARAM_CORRELATOR);
+		return extractFromSqrlCsvString(serverParam, SqrlClientParam.cor.toString());
 	}
 
 	private static String getRequiredParameter(final HttpServletRequest servletRequest, final String requiredParamName)
@@ -204,12 +226,12 @@ public class SqrlClientRequest {
 		return value;
 	}
 
-	private void validateSignature(final String keyName, final String signatureParamValue)
+	private void validateSignature(final SqrlServerSideKey keyName, final String signatureParamValue)
 			throws SqrlInvalidRequestException {
 		final byte[] signatureFromMessage = SqrlUtil.base64UrlDecodeDataFromSqrlClient(signatureParamValue);
 
 		try {
-			final byte[] publicKey = clientKeys.get(keyName);
+			final byte[] publicKey = requestKeyTableRaw.get(keyName);
 			if (publicKey == null) {
 				throw new SqrlInvalidRequestException(
 						SqrlLoggingUtil.getLogHeader() + keyName + " not found in client param: " + clientParam);
@@ -255,23 +277,23 @@ public class SqrlClientRequest {
 		return nut;
 	}
 
-	public Map<String, String> getKeysToBeStored() {
-		final Map<String, String> toBeStored = new ConcurrentHashMap<>(clientKeysBsse64);
-		toBeStored.remove(SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
-		toBeStored.remove(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
-		return toBeStored;
+	public Map<String, String> getKeysToBePersisted() {
+		// Convert to type <String, String> to ease persistence call
+		final Map<String, String> toBePersisted = new ConcurrentHashMap<>();
+		for (final Map.Entry<SqrlServerSideKey, String> entry : requestKeyTableBase64.entrySet()) {
+			if (entry.getKey().needsToBePersisted()) {
+				toBePersisted.put(entry.getKey().toString(), entry.getValue());
+			}
+		}
+		return toBePersisted;
 	}
 
-	public String getIdk() {
-		return clientKeysBsse64.get(SqrlConstants.SQRL_KEY_TYPE_IDENTITY);
+	public boolean hasKey(final SqrlServerSideKey key) {
+		return requestKeyTableBase64.containsKey(key);
 	}
 
-	public boolean hasPidk() {
-		return clientKeysBsse64.containsKey(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
-	}
-
-	public String getPidk() {
-		return clientKeysBsse64.get(SqrlConstants.KEY_TYPE_PREVIOUS_IDENTITY);
+	public String getKey(final SqrlServerSideKey key) {
+		return requestKeyTableBase64.get(key);
 	}
 
 	public List<SqrlRequestOpt> getOptList() {
@@ -290,6 +312,6 @@ public class SqrlClientRequest {
 	 * @return true if the request contained a valid urs signature
 	 */
 	public boolean containsUrs() {
-		return SqrlUtil.isNotBlank(servletRequest.getParameter(SqrlConstants.SQRL_SIGNATURE_URS));
+		return SqrlUtil.isNotBlank(servletRequest.getParameter(SqrlSignatureType.urs.toString()));
 	}
 }
