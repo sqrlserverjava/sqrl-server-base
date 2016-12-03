@@ -18,6 +18,7 @@ import com.github.dbadia.sqrl.server.SqrlConfigOperations;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
+import com.github.dbadia.sqrl.server.exception.SqrlInvalidDataException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 import com.github.dbadia.sqrl.server.util.SqrlSanitize;
@@ -162,7 +163,12 @@ public class SqrlClientRequest {
 			throw new SqrlInvalidRequestException("Missing required parameter " + requiredParamName
 					+ ".  Request contained: " + SqrlUtil.buildRequestParamList(servletRequest));
 		}
-		SqrlSanitize.inspectIncomingSqrlData(value);
+		try {
+			SqrlSanitize.inspectIncomingSqrlData(value);
+		} catch (final SqrlInvalidDataException e) {
+			// Convert to SqrlInvalidRequestException since it came from a SQRL client app
+			throw new SqrlInvalidRequestException(e.getMessage(), e);
+		}
 		return value;
 	}
 
@@ -189,7 +195,12 @@ public class SqrlClientRequest {
 		if (index > -1) {
 			value = value.substring(0, index);
 		}
-		SqrlSanitize.inspectIncomingSqrlData(value);
+		try {
+			SqrlSanitize.inspectIncomingSqrlData(value);
+		} catch (final SqrlInvalidDataException e) {
+			// Convert to SqrlInvalidRequestException since it came from a SQRL client app
+			throw new SqrlInvalidRequestException(e.getMessage(), e);
+		}
 		return value;
 	}
 

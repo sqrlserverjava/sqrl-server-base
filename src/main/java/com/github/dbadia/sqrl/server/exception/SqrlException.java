@@ -1,8 +1,8 @@
 package com.github.dbadia.sqrl.server.exception;
 
 /**
- * SQRL exception class
- * 
+ * SQRL exception class; all exceptions in this framework extend this class
+ *
  * @author Dave Badia
  *
  */

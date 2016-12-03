@@ -157,7 +157,7 @@ public class SqrlClientRequestProcessor {
 		}
 		final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
 				SqrlFlag.SQRL_AUTH_ENABLED);
-		boolean performCpsCheck = false; // TODO_CPS: set this using sqrlServer
+		final boolean performCpsCheck = false; // TODO_CPS: set this using sqrlServer
 		if (!sqrlEnabledForIdentity) {
 			sqrlInternalUserState = SqrlInternalUserState.DISABLED;
 		} else if (sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS) {
@@ -165,27 +165,31 @@ public class SqrlClientRequestProcessor {
 			logger.info("{}User SQRL authenticated, updating idk={} and to replace pidk",
 					logHeader, sqrlIdk);
 			// TODO_AUDIT
-			performCpsCheck = true;
 		} else if (sqrlInternalUserState == SqrlInternalUserState.IDK_EXISTS) {
 			// TODO_AMBIGUOUS: do we really overwrite existing data, or only if they are new?
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBeStored());
 			sqrlInternalUserState = SqrlInternalUserState.IDK_EXISTS;
 			// TODO_AUDIT
 			logger.info("{}User SQRL authenticated idk={}", logHeader, sqrlIdk);
-			performCpsCheck = true;
 		}
+		boolean invokeUserAuthenticated = true;
 		if (performCpsCheck) {
 			final boolean cpsRequested = sqrlClientRequest.getOptList().contains(SqrlRequestOpt.cps);
 			final boolean cpsEnabled = false; // TODOCPS: have SSO pass SqrlCpsGenerator instances and check for
 			// non-null
 			if (cpsRequested && cpsEnabled) {
 				// TODO_CPS: do it
+				// but how to mark as authenticated in DB without triggering refresh?
+				// rename persistence method to something else... split handoff to listener and auth
+				invokeUserAuthenticated = false;
 			} else { // Not requested or not enabled
 				if (cpsRequested && !cpsEnabled) {
 					logger.info("{} CPS requested but it is not enabled", logHeader);
 				}
-				sqrlPersistence.userAuthenticatedViaSqrl(sqrlIdk, correlator);
 			}
+		}
+		if (invokeUserAuthenticated) {
+			sqrlPersistence.userAuthenticatedViaSqrl(sqrlIdk, correlator);
 		}
 	}
 }
