@@ -12,5 +12,3 @@ gradlew
 gradlew.bat
 build.gradle
 settings.gradle
-.classpath
-.project

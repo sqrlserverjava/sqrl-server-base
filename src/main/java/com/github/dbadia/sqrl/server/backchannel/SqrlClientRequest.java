@@ -163,7 +163,7 @@ public class SqrlClientRequest {
 		try {
 			this.clientCommand = SqrlRequestCommand.valueOf(clientCommandString.toUpperCase());
 		} catch (final IllegalArgumentException e) {
-			// We handle all SQRL v1 verbs, so don't set TIF_FUNCTIONS_NOT_SUPPORTED, treat it as an invalid
+			// We handle all SQRL v1 verbs, so don't set FUNCTIONS_NOT_SUPPORTED, treat it as an invalid
 			// request
 			// instead
 			throw new SqrlInvalidRequestException(

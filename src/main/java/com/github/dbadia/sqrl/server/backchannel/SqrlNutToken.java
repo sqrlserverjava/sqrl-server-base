@@ -112,7 +112,7 @@ public class SqrlNutToken {
 			// but there is no way we can know this when we issue the first nut and there are better
 			// ways to track this, so we ignored it
 		} catch (final IOException e) {
-			throw new SqrlClientRequestProcessingException(SqrlTif.TIF_COMMAND_FAILED, "IO exception during read", e);
+			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, "IO exception during read", e);
 		}
 	}
 

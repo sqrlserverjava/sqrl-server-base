@@ -1,10 +1,11 @@
 package com.github.dbadia.sqrl.server.exception;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTifFlag;
 
 /**
  * Indicates that a SQRL client send us an invalid request and will trigger the setting of
- * {@link SqrlTif#TIF_CLIENT_FAILURE} on the SQRL response
+ * {@link SqrlTif#CLIENT_FAILURE} on the SQRL response
  *
  * @author Dave Badia
  *
@@ -17,7 +18,7 @@ public class SqrlInvalidRequestException extends SqrlClientRequestProcessingExce
 	}
 
 	public SqrlInvalidRequestException(final String message, final Throwable cause) {
-		super(SqrlTif.TIF_CLIENT_FAILURE, message, cause);
+		super(SqrlTifFlag.CLIENT_FAILURE, message, cause);
 	}
 
 }

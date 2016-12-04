@@ -41,6 +41,7 @@ import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTifFlag;
 import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.enums.SqrlClientParam;
 import com.github.dbadia.sqrl.server.enums.SqrlInternalUserState;
@@ -268,14 +269,14 @@ public class SqrlServerOperations {
 						.append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
 
 				if (checkIfIpsMatch(sqrlClientRequest.getNut(), servletRequest)) {
-					tifBuilder.addFlag(SqrlTif.TIF_IPS_MATCHED);
+					tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);
 				}
 				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
 				sqrlInternalUserState = processor.processClientCommand();
 				if (sqrlInternalUserState == IDK_EXISTS) {
-					tifBuilder.addFlag(SqrlTif.TIF_CURRENT_ID_MATCH);
+					tifBuilder.addFlag(SqrlTifFlag.CURRENT_ID_MATCH);
 				} else if (sqrlInternalUserState == PIDK_EXISTS) {
-					tifBuilder.addFlag(SqrlTif.TIF_PREVIOUS_ID_MATCH);
+					tifBuilder.addFlag(SqrlTifFlag.PREVIOUS_ID_MATCH);
 				}
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
@@ -283,7 +284,7 @@ public class SqrlServerOperations {
 			} catch (final SqrlException e) {
 				exception = e;
 				sqrlPersistence.closeRollback();
-				tifBuilder.clearAllFlags().addFlag(SqrlTif.TIF_COMMAND_FAILED);
+				tifBuilder.clearAllFlags().addFlag(SqrlTifFlag.COMMAND_FAILED);
 				if (e instanceof SqrlClientRequestProcessingException) {
 					tifBuilder.addFlag(((SqrlClientRequestProcessingException) e).getTifToAdd());
 					logger.error("{}Received invalid SQRL request: {} of {}", SqrlClientRequestLoggingUtil.getLogHeader(),
@@ -310,7 +311,7 @@ public class SqrlServerOperations {
 				// Don't use AutoClosable here, we will handle it ourselves
 				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
 				if (isInErrorState || sqrlInternalUserState == DISABLED) {
-					tifBuilder.addFlag(SqrlTif.TIF_COMMAND_FAILED);
+					tifBuilder.addFlag(SqrlTifFlag.COMMAND_FAILED);
 					// update the correlator with the proper error state
 					SqrlAuthenticationStatus authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL;
 					if (exception instanceof SqrlInvalidRequestException) {

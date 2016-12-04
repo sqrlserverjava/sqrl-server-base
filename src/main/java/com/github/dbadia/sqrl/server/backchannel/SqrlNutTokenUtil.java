@@ -123,7 +123,7 @@ public class SqrlNutTokenUtil {
 			logger.debug("{} Now={}, nutExpiry={}", SqrlClientRequestLoggingUtil.getLogHeader(), new Date(now), nutExpiry);
 		}
 		if (now > nutExpiryMs) {
-			throw new SqrlClientRequestProcessingException(SqrlTif.TIF_TRANSIENT_ERROR,
+			throw new SqrlClientRequestProcessingException(SqrlTifFlag.TRANSIENT_ERROR,
 					SqrlClientRequestLoggingUtil.getLogHeader() + "Nut expired by "
 							+ (nutExpiryMs - now) + "ms, nut timetamp ms=" + nutToken.getIssuedTimestampMillis()
 							+ ", expiry is set to " + config.getNutValidityInSeconds() + " seconds");
