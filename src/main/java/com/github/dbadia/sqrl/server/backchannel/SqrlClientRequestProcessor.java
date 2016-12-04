@@ -99,11 +99,8 @@ public class SqrlClientRequestProcessor {
 			if (flag.hasOptEquivalent()) {
 				final SqrlRequestOpt opt = flag.getSqrlClientOpt();
 				updateOptValueAsNeeded(flag, opt);
-				// Remove the item from the list since we have processed it
-				if (!optList.remove(flag.getSqrlClientOpt())) {
-					logger.warn("{}Tried to remove SqrlClientOpt {} but it wasn't in list {}",
-							logHeader, opt, optList);
-				}
+				// Return type of remove is irrelevant since absence of opt means disable
+				optList.remove(flag.getSqrlClientOpt());
 			}
 		}
 
