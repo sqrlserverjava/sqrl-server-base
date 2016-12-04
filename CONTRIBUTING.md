@@ -1,4 +1,4 @@
-## How to contribute to SQRL server lib
+## How to contribute
 
 #### **IDE Setup**
 * **Eclipse:** It is helpful to enable the JPA facet when working in eclipse.  This performs extra validation o the JPA components.  After enabling it, you typically see the error "No persistence.xml file found in project".  To fix this:
