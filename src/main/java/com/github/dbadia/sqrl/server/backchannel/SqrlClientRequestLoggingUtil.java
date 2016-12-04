@@ -30,13 +30,14 @@ public class SqrlClientRequestLoggingUtil {
 	};
 
 	public static void initLoggingHeader(final HttpServletRequest servletRequest) {
-		String sqrlAgentString = "unknown";
+		String sqrlAgentString = "-";
 		final String header = servletRequest.getHeader("user-agent");
 		if (SqrlUtil.isNotBlank(header)) {
 			sqrlAgentString = header;
 			logger.trace("setting sqrlagent on thread local to {}", sqrlAgentString);
 		}
-		threadLocalLogHeader.set(new StringBuilder(sqrlAgentString).append(" ").toString());
+		// - for unknown protocol version
+		threadLocalLogHeader.set(new StringBuilder(sqrlAgentString).append(" - ").toString());
 	}
 
 	/**

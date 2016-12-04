@@ -12,13 +12,19 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import junit.framework.TestCase;
 
+/**
+ * Tests for {@code buildMockRequest}
+ * 
+ * @author Dave Badia
+ *
+ */
 @RunWith(Parameterized.class)
 public class TCUtilTest {
 
 	@Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
 	public static Collection<Object[]> data() {
-	// @formatter:off
-		return Arrays.asList(new Object[][] { 
+		// @formatter:off
+		return Arrays.asList(new Object[][] {
 			{ "http://127.0.0.1:8080/sqrlexample/sqrlbc", "http", "127.0.0.1", 8080, "/sqrlexample/sqrlbc" },
 			{ "https://127.0.0.1:8080/sqrlexample/sqrlbc", "https", "127.0.0.1", 8080, "/sqrlexample/sqrlbc" },
 			{ "http://127.0.0.1/sqrlexample/sqrlbc", "http", "127.0.0.1", -1, "/sqrlexample/sqrlbc" },

@@ -35,8 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientReply;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequest;
-import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestProcessor;
 import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestLoggingUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlClientRequestProcessor;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutToken;
 import com.github.dbadia.sqrl.server.backchannel.SqrlNutTokenUtil;
 import com.github.dbadia.sqrl.server.backchannel.SqrlTif;
@@ -264,7 +264,7 @@ public class SqrlServerOperations {
 						sqrlPersistence);
 
 				logHeader = SqrlClientRequestLoggingUtil.updateLogHeader(
-						new StringBuilder("v").append(sqrlClientRequest.getNegotiatedSqrlProtocolVersion()).append(" ")
+						new StringBuilder(sqrlClientRequest.getNegotiatedSqrlProtocolVersion()).append(" ")
 						.append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
 
 				if (checkIfIpsMatch(sqrlClientRequest.getNut(), servletRequest)) {
