@@ -1,4 +1,4 @@
-<!--- ## 9.3.1
+<!--- ## 9.3.0
 
 ### Major Changes
 * 
@@ -8,7 +8,7 @@
 
 --->
 
-## 9.3.0
+## 9.2.0
 
 * First major release, authentication fully functional
 
