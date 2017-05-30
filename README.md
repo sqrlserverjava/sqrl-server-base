@@ -16,7 +16,7 @@ The intent is that additional libraries will be built on top of this for popular
  * This library is fully functional for basic authentication.  Advanced operations such as SQRL identity replacement are not yet implemented
  * As of June 2016, the SQRL protocol has been declared ["done with caveats"](https://www.grc.com/sn/sn-562.txt) by it's creator.  SQRL clients built prior to this may still be using an older version of the protocol and may not be compatible
 * There is a example application using this library at the url below.  You <b>must</b> install a SQRL client (such as sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl/) before running the demo:
- https://sqrljava.tech:20000/sqrlexample
+ https://sqrljava.com:20000/sqrlexample
 
 #### Dependencies
  * Java 1.8
@@ -54,7 +54,7 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 1. Create a servlet (or equivalent endpoint in your framework of choice) to handle SQRL client requests.  The `doPost` method of this servlet should invoke `SqrlServerOperations.handleSqrlClientRequest(ServletRequest, ServletResponse)`
 1. Authentication Page Impact
 	* Decide on one of the two approaches explained in [Browser to SQRL Client Correlation](#browser-to-sqrl-client-correlation) 
-	* When you are ready to display the SQRL QR code, invoke `SqrlServerOperations.buildQrCodeForAuthPage()`.  Use the result to display an anchor tag with the SQRL url that wraps the QR code image.  The expected result in a QR code that can be scanned, clicked, or tapped, as seen in  https://sqrljava.tech:20000/sqrlexample
+	* When you are ready to display the SQRL QR code, invoke `SqrlServerOperations.buildQrCodeForAuthPage()`.  Use the result to display an anchor tag with the SQRL url that wraps the QR code image.  The expected result in a QR code that can be scanned, clicked, or tapped, as seen in  https://sqrljava.com:20000/sqrlexample
 	* Once the SQRL QR code is displayed, the authentication page must periodically poll the server (using ajay long polling, etc) to see if SQRL authentication is in progress or has completed.  Completion can be detected by checking `SqrlJpaPersistenceProvider
 .fetchAuthenticationStatusRequired(correlator) == SqrlAuthenticationStatus.AUTH_COMPLETE`  which means that `SqrlCorrelator.getAuthenticatedIdentity` can be used to fetch the `SqrlIdentity` object
    * If `SqrlIdentity.getNativeUserXref == null` then this is the first time this user has authenticated with SQRL, but the user may have previously authenticated to the site via some other mechanism.  The application should present a one-time account mapping page asking if the user already has an existing account (username/password, google auth, etc) and authenticate them.  The application should then call `SqrlJpaPersistenceProvider.updateNativeUserXref(String)` to store the mapping between the SQRL identity and the username (or whatever means the application uniquely identifies users).
