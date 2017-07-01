@@ -1,5 +1,8 @@
 package com.github.dbadia.sqrl.server.persistence;
 
+import static com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus.AUTHENTICATED_BROWSER;
+import static com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus.AUTHENTICATED_CPS;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -117,9 +120,11 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		updateLastUsed(entityManager);
 		// Find the sqrlIdentity and mark SQRL authentication as occurred
 		final SqrlCorrelator sqrlCorrelator = fetchSqrlCorrelatorRequired(correlatorString);
-		sqrlCorrelator.setAuthenticationStatus(SqrlAuthenticationStatus.AUTH_COMPLETE);
 		final SqrlIdentity sqrlIdentity = fetchRequiredSqrlIdentity(sqrlIdk);
 		sqrlCorrelator.setAuthenticatedIdentity(sqrlIdentity);
+		if (sqrlCorrelator.getAuthenticationStatus() != AUTHENTICATED_CPS) {
+			sqrlCorrelator.setAuthenticationStatus(AUTHENTICATED_BROWSER);
+		}
 	}
 
 	@Override
@@ -190,7 +195,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
 			buf.append(" (i.value = :correlator").append(counter);
 			// If current state is AUTH_COMPLETE, always return the result
-			if (entry.getValue() != SqrlAuthenticationStatus.AUTH_COMPLETE) {
+			if (entry.getValue() != AUTHENTICATED_BROWSER) {
 				buf.append(" AND i.authenticationStatus <> :authenticationStatus").append(counter);
 			}
 			buf.append(" ) OR");
@@ -203,7 +208,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
 			query.setParameter(PARAM_CORRELATOR + counter, entry.getKey());
 			updateDebugBuf(debugBuf, ":correlator" + counter, entry.getKey());
-			if (entry.getValue() != SqrlAuthenticationStatus.AUTH_COMPLETE) {
+			if (entry.getValue() != AUTHENTICATED_BROWSER) {
 				query.setParameter("authenticationStatus" + counter, entry.getValue());
 				updateDebugBuf(debugBuf, ":authenticationStatus" + counter, entry.getValue().toString());
 			}

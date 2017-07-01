@@ -15,7 +15,8 @@ public interface SqrlClientAuthStateUpdater {
 	 * Invoked during initialization so that the {@link SqrlClientAuthStateUpdater} has access to the resources it may
 	 * need
 	 */
-	public void initSqrl(final SqrlConfig sqrlConfig, SqrlAuthStateMonitor sqrlAuthStateMonitor);
+	public void initSqrl(SqrlServerOperations sqrlServerOperations, final SqrlConfig sqrlConfig,
+			SqrlAuthStateMonitor sqrlAuthStateMonitor);
 
 	/**
 	 * Invoked by {@link SqrlAuthStateMonitor} when it is time to respond to a browsers polling request with an update

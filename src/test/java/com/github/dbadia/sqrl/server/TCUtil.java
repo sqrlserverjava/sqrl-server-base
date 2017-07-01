@@ -232,4 +232,8 @@ public class TCUtil {
 		}
 	}
 
+	public static void setSqrlServerOpsBrowserFacingUrl(final URL browserFacingUrlAndContextPath) {
+		SqrlServerOperations.browserFacingUrlAndContextPath = browserFacingUrlAndContextPath;
+	}
+
 }

@@ -4,10 +4,12 @@ public enum SqrlAuthenticationStatus {
 	//@formatter:off
 	CORRELATOR_ISSUED,
 	COMMUNICATING,
-	AUTH_COMPLETE,
+	AUTHENTICATED_BROWSER,
+	AUTHENTICATED_CPS,
 	ERROR_BAD_REQUEST,
 	ERROR_SQRL_INTERNAL,
-	SQRL_USER_DISABLED;
+	SQRL_USER_DISABLED,
+	;
 	//@formatter:on
 
 	/**
@@ -15,14 +17,21 @@ public enum SqrlAuthenticationStatus {
 	 *         has errored out
 	 */
 	public boolean isUpdatesForThisCorrelatorComplete() {
-		return this.toString().startsWith("ERROR_") || this == SQRL_USER_DISABLED || this == AUTH_COMPLETE;
+		return this.toString().startsWith("ERROR_") || this == SQRL_USER_DISABLED || isAuthComplete();
+	}
+
+	/**
+	 * @return true if this status represents one of the authentication complete states
+	 */
+	public boolean isAuthComplete() {
+		return this == AUTHENTICATED_BROWSER || this == AUTHENTICATED_CPS;
 	}
 
 	/**
 	 * @return true if the enum is one of the happy path login flow states
 	 */
 	public boolean isHappyPath() {
-		return this == CORRELATOR_ISSUED || this == SqrlAuthenticationStatus.COMMUNICATING || this == AUTH_COMPLETE;
+		return !this.toString().startsWith("ERROR_"); // TODO: what is SQRL_USER_DISABLED
 	}
 
 }

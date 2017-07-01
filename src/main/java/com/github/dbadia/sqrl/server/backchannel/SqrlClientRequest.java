@@ -72,10 +72,10 @@ public class SqrlClientRequest {
 		final String clientVersionString = clientNameValuePairTable.get(SqrlClientParam.ver.toString());
 		final Collection<Integer> clientVersionsSupported = SqrlVersionUtil
 				.parseClientVersionString(clientVersionString);
-		final Integer commonProtocolVersion= SqrlVersionUtil.findHighestCommonVersion(SqrlConstants.SUPPORTED_SQRL_VERSIONS,
-				clientVersionsSupported);
+		final Integer commonProtocolVersion = SqrlVersionUtil
+				.findHighestCommonVersion(SqrlConstants.SUPPORTED_SQRL_VERSIONS, clientVersionsSupported);
 		if (commonProtocolVersion == null) {
-			throw new SqrlClientRequestProcessingException("No common SQRL protocl version found");
+			throw new SqrlClientRequestProcessingException("No common SQRL protocol version found");
 		}
 		// Sanity check; we probably need to take different actions for different versions so account for that here
 		if (!SqrlConstants.SQRL_VERSION_1.equals(commonProtocolVersion)) {

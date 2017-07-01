@@ -39,6 +39,7 @@ public class SqrlConstants {
 	public static final int				AES_KEY_LENGTH				= 16;
 
 	public static final String					TRANSIENT_NAME_SERVER_PARROT	= "lastServerParam";
+	public static final String					TRANSIENT_CPS_NONCE				= "cpsNonce";
 	public static final String					ERROR							= "error";
 
 	public static final String	REGEX_BASE64_URL	= "[a-zA-Z0-9_-]+";

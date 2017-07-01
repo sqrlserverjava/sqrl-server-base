@@ -18,7 +18,7 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.util.SqrlUtil;
 
 @RunWith(Parameterized.class)
-public class SqrlServerOperationsComputeBackchannelUrlTest {
+public class SqrlServerOperationsComputeCookieDomainTest {
 
 	// @formatter:off
 	@Parameters(name = "{index}: SqrlClientOpt=({0})")

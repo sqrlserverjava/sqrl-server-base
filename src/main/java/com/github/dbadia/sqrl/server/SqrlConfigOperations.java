@@ -182,6 +182,8 @@ public class SqrlConfigOperations {
 		if (backchannelRequestString.contains(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST)) {
 			backchannelRequestString = backchannelRequestString.replace(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST,
 					SqrlConstants.FORWARD_SLASH_X2_127_0_0_1);
+			// Some testers use a localhost.com alias, replace the .com if it's there
+			backchannelRequestString = backchannelRequestString.replace(".com", "");
 		}
 		final URI backchannelRequestUrl = changeToSqrlScheme(backchannelRequestString);
 		logger.trace("backchannelRequestUrl: " + backchannelRequestUrl);

@@ -43,7 +43,8 @@ public class SqrlCommandProcessorClientOptsTest {
 				SqrlRequestOpt.cps);
 
 		// Execute
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
@@ -64,7 +65,8 @@ public class SqrlCommandProcessorClientOptsTest {
 				SqrlRequestOpt.hardlock);
 
 		// Execute
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
@@ -85,7 +87,8 @@ public class SqrlCommandProcessorClientOptsTest {
 				SqrlRequestOpt.sqrlonly);
 
 		// Execute
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate

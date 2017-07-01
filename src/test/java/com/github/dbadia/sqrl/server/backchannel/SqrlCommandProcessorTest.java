@@ -55,7 +55,8 @@ public class SqrlCommandProcessorTest {
 		// Execute - call start/commit since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 		sqrlPersistence = TCUtil.createSqrlPersistence();
@@ -89,7 +90,8 @@ public class SqrlCommandProcessorTest {
 			// Execute - call start/commit since it is usually done by the caller
 			sqrlPersistence = TCUtil.createSqrlPersistence();
 
-			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+					TCUtil.buildTestSqrlConfig());
 			sqrlInternalUserState = processor.processClientCommand();
 			sqrlPersistence.closeCommit();
 			fail("Exception expected");
@@ -117,7 +119,8 @@ public class SqrlCommandProcessorTest {
 		// Execute all start/commit manually since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 
@@ -139,7 +142,8 @@ public class SqrlCommandProcessorTest {
 		try {
 			sqrlPersistence = TCUtil.createSqrlPersistence();
 
-			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+					TCUtil.buildTestSqrlConfig());
 			processor.processClientCommand();
 			fail("Exception expected");
 		} catch (final Exception e) {
@@ -162,7 +166,8 @@ public class SqrlCommandProcessorTest {
 		// Execute - call start/commit since it is usually done by the caller
 		sqrlPersistence = TCUtil.createSqrlPersistence();
 
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 

@@ -53,7 +53,8 @@ public class SqrlConfig {
 	private SqrlQrCodeImageFormat qrCodeFileType = SqrlQrCodeImageFormat.PNG;
 
 	/**
-	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call
+	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call TODO:
+	 * examples
 	 */
 	@XmlElement
 	private String backchannelServletPath;
@@ -136,6 +137,18 @@ public class SqrlConfig {
 	 */
 	@XmlElement
 	private String cookiePath = "/";
+
+	/**
+	 * The path to the servlet or request handler that processes SQRL login requests. defaults to "/sqrllogin"
+	 */
+	@XmlElement
+	private String sqrlLoginServletPath = "/sqrllogin";
+
+	/**
+	 * Whether or not CPS is enabled for this server, defaults to true
+	 */
+	@XmlElement
+	private boolean enableCps = true;
 
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;
@@ -301,5 +314,21 @@ public class SqrlConfig {
 
 	public void setAuthSyncCheckInMillis(final long authSyncCheckInMillis) {
 		this.authSyncCheckInMillis = authSyncCheckInMillis;
+	}
+
+	public String getSqrlLoginServletPath() {
+		return sqrlLoginServletPath;
+	}
+
+	public void setSqrlLoginServletPath(final String sqrlLoginServletPath) {
+		this.sqrlLoginServletPath = sqrlLoginServletPath;
+	}
+
+	public boolean isEnableCps() {
+		return enableCps;
+	}
+
+	public void setEnableCps(final boolean enableCps) {
+		this.enableCps = enableCps;
 	}
 }

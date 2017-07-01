@@ -13,7 +13,7 @@ The intent is that additional libraries will be built on top of this for popular
 
 
 #### Interoperability
- * This library is fully functional for basic authentication.  Advanced operations such as SQRL identity replacement are not yet implemented
+ * This library is fully functional for basic SQRL authentication.  Advanced operations such as SQRL identity replacement are not yet implemented
  * As of June 2016, the SQRL protocol has been declared ["done with caveats"](https://www.grc.com/sn/sn-562.txt) by it's creator.  SQRL clients built prior to this may still be using an older version of the protocol and may not be compatible
 * There is a example application using this library at the url below.  You <b>must</b> install a SQRL client (such as sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl/) before running the demo:
  https://sqrljava.com:20000/sqrlexample

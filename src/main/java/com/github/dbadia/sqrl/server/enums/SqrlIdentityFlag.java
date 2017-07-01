@@ -1,7 +1,13 @@
 package com.github.dbadia.sqrl.server.enums;
 
+/**
+ * Flags that can be applied to a particular SQRL identity
+ * 
+ * @author Dave Badia
+ *
+ */
 public enum SqrlIdentityFlag {
-	
+
 	SQRL_AUTH_ENABLED(null), HARDLOCK(SqrlRequestOpt.hardlock);
 
 	/**

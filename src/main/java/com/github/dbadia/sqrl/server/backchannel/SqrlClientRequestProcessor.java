@@ -6,13 +6,16 @@ import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.PIDK_EXI
 import static com.github.dbadia.sqrl.server.enums.SqrlServerSideKey.idk;
 import static com.github.dbadia.sqrl.server.enums.SqrlServerSideKey.pidk;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
+import com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus;
 import com.github.dbadia.sqrl.server.enums.SqrlIdentityFlag;
 import com.github.dbadia.sqrl.server.enums.SqrlInternalUserState;
 import com.github.dbadia.sqrl.server.enums.SqrlRequestCommand;
@@ -20,25 +23,29 @@ import com.github.dbadia.sqrl.server.enums.SqrlRequestOpt;
 import com.github.dbadia.sqrl.server.exception.SqrlClientRequestProcessingException;
 import com.github.dbadia.sqrl.server.exception.SqrlException;
 import com.github.dbadia.sqrl.server.exception.SqrlInvalidRequestException;
+import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
 
 public class SqrlClientRequestProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 
-	private final SqrlClientRequest			sqrlClientRequest;
-	private final String			sqrlIdk;
+	private final SqrlClientRequest		sqrlClientRequest;
+	private final String				sqrlIdk;
 	private final SqrlRequestCommand	command;
-	private final String			logHeader;
-	private final String			correlator;
-	private final SqrlPersistence	sqrlPersistence;
-	private SqrlInternalUserState	sqrlInternalUserState	= NONE_EXIST;
+	private final String				logHeader;
+	private final String				correlator;
+	private final SqrlPersistence		sqrlPersistence;
+	private final SqrlConfig			sqrlconfig;
+
+	private SqrlInternalUserState		sqrlInternalUserState	= NONE_EXIST;
 
 	public SqrlClientRequestProcessor(final SqrlClientRequest sqrlClientRequest,
-			final SqrlPersistence sqrlPersistence) throws SqrlInvalidRequestException {
+			final SqrlPersistence sqrlPersistence, final SqrlConfig sqrlConfig) throws SqrlInvalidRequestException {
 		super();
 		// Cache the logHeader since we use it a lot and it won't change here
 		this.logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		this.sqrlPersistence = sqrlPersistence;
 		this.sqrlClientRequest = sqrlClientRequest;
+		this.sqrlconfig = sqrlConfig;
 		this.sqrlIdk = sqrlClientRequest.getKey(idk);
 		this.command = sqrlClientRequest.getClientCommand();
 		this.correlator = sqrlClientRequest.getCorrelator();
@@ -86,7 +93,7 @@ public class SqrlClientRequestProcessor {
 	 */
 	private void processNonKeyOptions() {
 		// Create a copy so we can track which flags we have processed
-		final List<SqrlRequestOpt> optList = sqrlClientRequest.getOptList();
+		final List<SqrlRequestOpt> optList = new ArrayList<>(sqrlClientRequest.getOptList());
 
 		// Remove the key opts from the list since they are processed in SqrlServerOperations
 		for (final SqrlRequestOpt keyOpt : SqrlRequestOpt.getKeyOpts()) {
@@ -105,6 +112,10 @@ public class SqrlClientRequestProcessor {
 		}
 
 		// Some flags require special processing and were not handled above
+		// CPS is a request flag that is per request
+		optList.remove(SqrlRequestOpt.cps);
+
+		// What's left is unknown or unsupported to us
 		if (!optList.isEmpty()) {
 			logger.warn("{}The SQRL client option(s) are not yet supported by the library: {}",
 					logHeader, optList);
@@ -114,41 +125,41 @@ public class SqrlClientRequestProcessor {
 
 	private void processCommand() throws SqrlException {
 		switch (command) {
-			case QUERY:
-				// Nothing to do
-				return;
-			case IDENT:
-				processIdentCommand();
-				return;
-			case ENABLE:
-				final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
-						SqrlIdentityFlag.SQRL_AUTH_ENABLED);
-				if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
-					if (sqrlClientRequest.containsUrs()) {
-						sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, true);
-					} else {
-						throw new SqrlInvalidRequestException(
-								logHeader + "Request was to enable SQRL but didn't contain urs signature");
-					}
-				} else {
-					logger.warn("{}Received request to ENABLE but it already is");
-				}
-				return;
-			case DISABLE:
-				sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, false);
-				return;
-			case REMOVE:
+		case QUERY:
+			// Nothing to do
+			return;
+		case IDENT:
+			processIdentCommand();
+			return;
+		case ENABLE:
+			final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
+					SqrlIdentityFlag.SQRL_AUTH_ENABLED);
+			if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
 				if (sqrlClientRequest.containsUrs()) {
-					sqrlPersistence.deleteSqrlIdentity(sqrlIdk);
+					sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, true);
 				} else {
 					throw new SqrlInvalidRequestException(
-							logHeader + "Request was to remove SQRL but didn't contain urs signature");
+							logHeader + "Request was to enable SQRL but didn't contain urs signature");
 				}
-				return;
-			default:
-				// This should have been caught before here
-				throw new SqrlClientRequestProcessingException(
-						logHeader + "Don't know how to process SQRL command " + command);
+			} else {
+				logger.warn("{}Received request to ENABLE but it already is");
+			}
+			return;
+		case DISABLE:
+			sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, false);
+			return;
+		case REMOVE:
+			if (sqrlClientRequest.containsUrs()) {
+				sqrlPersistence.deleteSqrlIdentity(sqrlIdk);
+			} else {
+				throw new SqrlInvalidRequestException(
+						logHeader + "Request was to remove SQRL but didn't contain urs signature");
+			}
+			return;
+		default:
+			// This should have been caught before here
+			throw new SqrlClientRequestProcessingException(
+					logHeader + "Don't know how to process SQRL command " + command);
 		}
 	}
 
@@ -160,7 +171,6 @@ public class SqrlClientRequestProcessor {
 		}
 		final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
 				SqrlIdentityFlag.SQRL_AUTH_ENABLED);
-		final boolean performCpsCheck = false; // TODO_CPS: set this using sqrlServer
 		if (!sqrlEnabledForIdentity) {
 			sqrlInternalUserState = SqrlInternalUserState.DISABLED;
 		} else if (sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS) {
@@ -175,24 +185,18 @@ public class SqrlClientRequestProcessor {
 			// TODO_AUDIT
 			logger.info("{}User SQRL authenticated idk={}", logHeader, sqrlIdk);
 		}
-		boolean invokeUserAuthenticated = true;
-		if (performCpsCheck) {
-			final boolean cpsRequested = sqrlClientRequest.getOptList().contains(SqrlRequestOpt.cps);
-			final boolean cpsEnabled = false; // TODOCPS: have SSO pass SqrlCpsGenerator instances and check for
-			// non-null
-			if (cpsRequested && cpsEnabled) {
-				// TODO_CPS: do it
-				// but how to mark as authenticated in DB without triggering refresh?
-				// rename persistence method to something else... split handoff to listener and auth
-				invokeUserAuthenticated = false;
-			} else { // Not requested or not enabled
-				if (cpsRequested && !cpsEnabled) {
-					logger.info("{} CPS requested but it is not enabled", logHeader);
-				}
+		final boolean cpsRequested = sqrlClientRequest.getOptList().contains(SqrlRequestOpt.cps);
+		if (cpsRequested) {
+			if (sqrlconfig.isEnableCps()) {
+				// Tell the browser to stop polling for a response
+				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
+				// Setting AuthenticationStatus to CPS drives the CPS logic in the rest of this code
+				sqrlCorrelator.setAuthenticationStatus(SqrlAuthenticationStatus.AUTHENTICATED_CPS);
+			} else {
+				// Per the SQRL spec, servers are not required to support cps, but the client can always request it
+				logger.info("cps was requested but is disabled in sqrlconfig.  Continuing with browser sign on");
 			}
 		}
-		if (invokeUserAuthenticated) {
-			sqrlPersistence.userAuthenticatedViaSqrl(sqrlIdk, correlator);
-		}
+		sqrlPersistence.userAuthenticatedViaSqrl(sqrlIdk, correlator);
 	}
 }

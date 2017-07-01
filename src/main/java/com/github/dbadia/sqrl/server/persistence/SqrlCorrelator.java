@@ -87,8 +87,8 @@ public class SqrlCorrelator implements Serializable {
 	}
 
 	public SqrlIdentity getAuthenticatedIdentity() {
-		if (getAuthenticationStatus() != SqrlAuthenticationStatus.AUTH_COMPLETE) {
-			throw new SqrlPersistenceException(
+		if (getAuthenticationStatus().isAuthComplete() == false) {
+			throw new SqrlPersistenceException( // TOOD: create SqrlRuntimeException
 					"getAuthenticatedIdentity() can only be called when getAuthenticationStatus() == SqrlAuthenticationStatus.AUTH_COMPLETE");
 		}
 		return authenticatedIdentity;
@@ -144,37 +144,50 @@ public class SqrlCorrelator implements Serializable {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		final SqrlCorrelator other = (SqrlCorrelator) obj;
 		if (authenticatedIdentity == null) {
-			if (other.authenticatedIdentity != null)
+			if (other.authenticatedIdentity != null) {
 				return false;
-		} else if (!authenticatedIdentity.equals(other.authenticatedIdentity))
+			}
+		} else if (!authenticatedIdentity.equals(other.authenticatedIdentity)) {
 			return false;
-		if (authenticationStatus != other.authenticationStatus)
+		}
+		if (authenticationStatus != other.authenticationStatus) {
 			return false;
+		}
 		if (expiryTime == null) {
-			if (other.expiryTime != null)
+			if (other.expiryTime != null) {
 				return false;
-		} else if (!expiryTime.equals(other.expiryTime))
+			}
+		} else if (!expiryTime.equals(other.expiryTime)) {
 			return false;
-		if (id != other.id)
+		}
+		if (id != other.id) {
 			return false;
+		}
 		if (transientAuthDataTable == null) {
-			if (other.transientAuthDataTable != null)
+			if (other.transientAuthDataTable != null) {
 				return false;
-		} else if (!transientAuthDataTable.equals(other.transientAuthDataTable))
+			}
+		} else if (!transientAuthDataTable.equals(other.transientAuthDataTable)) {
 			return false;
+		}
 		if (value == null) {
-			if (other.value != null)
+			if (other.value != null) {
 				return false;
-		} else if (!value.equals(other.value))
+			}
+		} else if (!value.equals(other.value)) {
 			return false;
+		}
 		return true;
 	}
 

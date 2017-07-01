@@ -56,7 +56,8 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 				opt);
 
 		// Execute
-		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence);
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate - everything should be normal since these flags are ignored on a query command

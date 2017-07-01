@@ -93,9 +93,9 @@ public interface SqrlPersistence {
 	 * @param sqrlIdk
 	 *            the SQRL ID which the user authenticated with.
 	 * @param correlator
-	 *            The correlator ID that was generated when the login page was presented and embedded in the sqrl url
+	 *            The correlator ID that was generated when the login page was presented and embedded in the SQRL url
 	 * @param dataToStore
-	 *            SQRL related data that must be persisted for this user and be retreivable via
+	 *            SQRL related data that must be persisted for this user and be retrievable via
 	 *            {@link #fetchSqrlIdentityDataItem(String, String)}
 	 * @return true if this the first time the user has used this sqrlUserId to visit this site, false otherwise
 	 */
@@ -244,7 +244,7 @@ public interface SqrlPersistence {
 	Map<String, SqrlCorrelator> fetchSqrlCorrelatorsDetached(Set<String> correlatorStringSet);
 
 	/**
-	 * Checks for correlators who's status has changed or is {@link SqrlAuthenticationStatus#AUTH_COMPLETE}. Complete
+	 * Checks for correlators who's status has changed or is {@link SqrlAuthenticationStatus#AUTHENTICATED_BROWSER}. Complete
 	 * state is always returned in case the client didn't get the update the first time it was sent
 	 *
 	 * @param correlatorToCurrentStatusTable

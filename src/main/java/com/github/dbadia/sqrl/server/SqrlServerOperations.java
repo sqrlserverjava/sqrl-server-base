@@ -1,8 +1,9 @@
 package com.github.dbadia.sqrl.server;
-
+import static com.github.dbadia.sqrl.server.enums.SqrlAuthenticationStatus.AUTHENTICATED_CPS;
 import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.DISABLED;
 import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.IDK_EXISTS;
 import static com.github.dbadia.sqrl.server.enums.SqrlInternalUserState.PIDK_EXISTS;
+import static com.github.dbadia.sqrl.server.util.SqrlUtil.buildString;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -12,8 +13,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -23,6 +26,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -74,25 +78,26 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
  *
  */
 public class SqrlServerOperations {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
+	private static final Logger				logger			= LoggerFactory.getLogger(SqrlServerOperations.class);
 
-	private static final AtomicInteger COUNTER = new AtomicInteger(0);
+	private static final AtomicInteger		COUNTER			= new AtomicInteger(0);
 
-	static final long MAX_TIMESTAMP = Integer.toUnsignedLong(-1) * 1000L;
+	static final long						MAX_TIMESTAMP	= Integer.toUnsignedLong(-1) * 1000L;
 
-	private static SqrlServiceExecutor sqrlServiceExecutor;
+	private static SqrlServiceExecutor		sqrlServiceExecutor;
+	// Visible for unit testing
+	protected static URL					browserFacingUrlAndContextPath;
 
 	private final SqrlPersistenceFactory	persistenceFactory;
 	private final SqrlConfigOperations		configOperations;
 	private final SqrlConfig				config;
 	private final SqrlAuthStateMonitor		authStateMonitor;
-	private final boolean					cpsEnabled;
 
 	/**
-	 * Initializes the operations class with the given config, defaulting to the built in JPA persisentce provider.
+	 * Initializes the operations class with the given config, defaulting to the built in JPA persistence provider.
 	 *
 	 * @param sqrlPersistence
-	 *            the persistence to be used for storing and retreiving SQRL data
+	 *            the persistence to be used for storing and retrieving SQRL data
 	 * @param config
 	 *            the SQRL settings to be used
 	 * @throws SqrlException
@@ -125,14 +130,16 @@ public class SqrlServerOperations {
 				}
 				final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
 				authStateMonitor = new SqrlAuthStateMonitor(config, this, clientAuthStateUpdater);
-				clientAuthStateUpdater.initSqrl(config, authStateMonitor);
+				// It's bad form to pass this to another object from our constructor since technically, we aren't
+				// completely initialized. But here we do so as the only tasks left are administraitive
+				clientAuthStateUpdater.initSqrl(this, config, authStateMonitor);
 				final long intervalInMilis = config.getAuthSyncCheckInMillis();
 				logger.info("Client auth state task scheduled to run every {} ms", intervalInMilis);
 				sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
 						TimeUnit.MILLISECONDS);
-			} catch (final ReflectiveOperationException e) {
-				throw new IllegalStateException("SQRL: Error instantiating ClientAuthStateUpdaterClass of " + classname,
-						e);
+			} catch (final Exception e) {
+				throw new IllegalStateException(
+						"SQRL: Error instantiating or initializing ClientAuthStateUpdaterClass of " + classname, e);
 			}
 		}
 
@@ -148,8 +155,6 @@ public class SqrlServerOperations {
 			sqrlServiceExecutor.scheduleAtFixedRate(cleanupRunnable, 0, cleanupIntervalInMinutes,
 					TimeUnit.MINUTES);
 		}
-		// TODOCPS: set cpsEnabled
-		cpsEnabled = false;
 	}
 
 	/**
@@ -177,12 +182,13 @@ public class SqrlServerOperations {
 	 */
 	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest request, final HttpServletResponse response,
 			final InetAddress userInetAddress, final int qrCodeSizeInPixels) throws SqrlException {
+		storeBrowserFacingUrlAndContextPath(request);
 		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString());
 		// Now we append the nut and our SFN
-		// Even though urlBuf only contains the baseUrl, it's enough for NetUtil.inetAddressToInt
+		// Even though urlBuf only contains the baseUrl, it's enough for NetUtil.inetAddressToInt TODO: what?
 		final SqrlNutToken nut = buildNut(backchannelUri, userInetAddress);
-		urlBuf.append("?nut=").append(nut.asSqrlBase64EncryptedNut());
+		urlBuf.append("?nut=").append(nut.asSqrlBase64EncryptedNut()); // TODO: rename to asBase64UrlEncryptedNut
 		// Append the SFN
 		String sfn = config.getServerFriendlyName();
 		if (sfn == null) {
@@ -194,7 +200,8 @@ public class SqrlServerOperations {
 		try (SqrlAutoCloseablePersistence sqrlPersistence = createSqrlPersistence()) {
 			// Append our correlation id
 			// Need correlation id to be unique to each Nut, so sha-256 the nut
-			final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			final MessageDigest digest = MessageDigest.getInstance("SHA-256"); // TODO: is it ok for the correlator to
+			// be derived from teh nut?
 			final String correlator = SqrlUtil
 					.sqrlBase64UrlEncode(digest.digest(nut.asSqrlBase64EncryptedNut().getBytes()));
 			urlBuf.append("&").append(SqrlClientParam.cor.toString()).append("=").append(correlator);
@@ -217,6 +224,25 @@ public class SqrlServerOperations {
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlClientRequestLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
+		}
+	}
+
+	private void storeBrowserFacingUrlAndContextPath(final HttpServletRequest request) throws SqrlException {
+		URL currentRequestBrowserFacingUri;
+		try {
+			currentRequestBrowserFacingUri = new URI(request.getRequestURL().toString())
+					.resolve(request.getContextPath()).toURL();
+		} catch (final URISyntaxException | MalformedURLException e) {
+			throw new SqrlException("Error computing currentRequestBrowserFacingUri", e);
+		}
+		if (browserFacingUrlAndContextPath == null) {
+			logger.debug("Setting browserFacingUrlAndContextPath to {}", currentRequestBrowserFacingUri.toString());
+			browserFacingUrlAndContextPath = currentRequestBrowserFacingUri;
+		} else if (!browserFacingUrlAndContextPath.equals(currentRequestBrowserFacingUri)) {
+			throw new SqrlException(
+					SqrlUtil.buildString("Found multiple browser facing login paths which is not currently supported: ",
+							browserFacingUrlAndContextPath.toString(), " and ",
+							currentRequestBrowserFacingUri.toString()));
 		}
 	}
 
@@ -247,7 +273,7 @@ public class SqrlServerOperations {
 		}
 		String correlator = "unknown";
 		final SqrlTifBuilder tifBuilder = new SqrlTifBuilder();
-		SqrlInternalUserState sqrlInternalUserState = null;
+		SqrlInternalUserState sqrlInternalUserState = SqrlInternalUserState.NONE_EXIST;
 		String requestState = "invalid";
 		try {
 			String logHeader = "";
@@ -262,7 +288,7 @@ public class SqrlServerOperations {
 
 				sqrlClientRequest = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
 				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest,
-						sqrlPersistence);
+						sqrlPersistence, config);
 
 				logHeader = SqrlClientRequestLoggingUtil.updateLogHeader(
 						new StringBuilder(sqrlClientRequest.getNegotiatedSqrlProtocolVersion()).append(" ")
@@ -306,10 +332,10 @@ public class SqrlServerOperations {
 			try {
 				final SqrlTif tif = tifBuilder.createTif();
 				final boolean isInErrorState = exception != null;
-				serverReplyString = buildReply(servletRequest, sqrlClientRequest,
-						tif, correlator, sqrlInternalUserState, isInErrorState);
-				// Don't use AutoClosable here, we will handle it ourselves
 				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
+				serverReplyString = buildReply(servletRequest, sqrlClientRequest,
+						tif, sqrlCorrelator, sqrlInternalUserState, isInErrorState);
+				// Don't use AutoClosable here, we will handle it ourselves
 				if (isInErrorState || sqrlInternalUserState == DISABLED) {
 					tifBuilder.addFlag(SqrlTifFlag.COMMAND_FAILED);
 					// update the correlator with the proper error state
@@ -347,8 +373,9 @@ public class SqrlServerOperations {
 	}
 
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlClientRequest sqrlRequest,
-			final SqrlTif tif, final String correlator, final SqrlInternalUserState sqrlInternalUserState,
-			final boolean isInErrorState) throws SqrlException {
+			final SqrlTif tif, final SqrlCorrelator sqrlCorrelator,
+			final SqrlInternalUserState sqrlInternalUserState, final boolean isInErrorState)
+					throws SqrlException {
 		final String logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
 		try {
@@ -365,9 +392,10 @@ public class SqrlServerOperations {
 				final SqrlNutToken replyNut = buildNut(sqrlServerUrl, determineClientIpAddress(servletRequest, config));
 
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
-						sqrlInternalUserState, sqrlPersistence);
+						sqrlCorrelator, sqrlInternalUserState, sqrlPersistence);
 				// Build the final reply object
-				reply = new SqrlClientReply(replyNut.asSqrlBase64EncryptedNut(), tif, subsequentRequestPath, correlator,
+				reply = new SqrlClientReply(replyNut.asSqrlBase64EncryptedNut(), tif, subsequentRequestPath,
+						sqrlCorrelator.getCorrelatorString(),
 						additionalDataTable);
 			}
 
@@ -385,15 +413,15 @@ public class SqrlServerOperations {
 	}
 
 	private Map<String, String> buildReplyAdditionalDataTable(final SqrlClientRequest sqrlRequest,
-			final SqrlInternalUserState sqrlInternalUserState,
-			final SqrlPersistence sqrlPersistence) {
+			final SqrlCorrelator sqrlCorrelator,
+			final SqrlInternalUserState sqrlInternalUserState, final SqrlPersistence sqrlPersistence)
+					throws SqrlException {
 		// TreeMap to keep the items in order. Order is required as as the SQRL client will ignore everything
 		// after an unrecognized option
 		final Map<String, String> additionalDataTable = new TreeMap<>();
 
 		// suk?
-		if (shouldIncludeSukInReply(sqrlRequest, sqrlInternalUserState)
-				&& (sqrlInternalUserState == IDK_EXISTS || sqrlInternalUserState == PIDK_EXISTS)) {
+		if (shouldIncludeSukInReply(sqrlRequest, sqrlInternalUserState)) {
 			final String sukSring = SqrlRequestOpt.suk.toString();
 			final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getKey(SqrlServerSideKey.idk),
 					sukSring);
@@ -402,18 +430,47 @@ public class SqrlServerOperations {
 			}
 		}
 
+		// cps?
+		if (AUTHENTICATED_CPS == sqrlCorrelator.getAuthenticationStatus()) {
+			// Generate and store our CPS nonce
+			final String cpsNonce = UUID.randomUUID().toString();
+			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_CPS_NONCE, cpsNonce);
+			additionalDataTable.put("url", buildCpsLoginUrl(sqrlCorrelator, cpsNonce)); // NOT base64url encoded
+		}
+
 		return additionalDataTable;
 	}
 
+	private String buildCpsLoginUrl(final SqrlCorrelator sqrlCorrelator, final String cpsNonce) throws SqrlException {
+		// The full sqrlAuth browser URL with the cps nonce as a param
+		final StringBuilder cpsLoginUrlBuf = new StringBuilder(150);
+		cpsLoginUrlBuf.append(browserFacingUrlAndContextPath.toString())
+		.append(config.getSqrlLoginServletPath());
+		cpsLoginUrlBuf.append("?cor=").append(sqrlCorrelator.getCorrelatorString()); // TODO: create util UrlBuf object
+		// which url
+		// encodes all values
+		cpsLoginUrlBuf.append("&cps=").append(cpsNonce);
+		final String cpsLoginUrl = cpsLoginUrlBuf.toString();
+		try {
+			new URL(cpsLoginUrl); // Sanity check
+		} catch (final MalformedURLException e) {
+			throw new SqrlException("Generated invalid CPS login URL of " + cpsLoginUrl, e);
+		}
+		return cpsLoginUrl;
+	}
+
 	private boolean shouldIncludeSukInReply(final SqrlClientRequest sqrlRequest, final SqrlInternalUserState sqrlInternalUserState) {
+		if(sqrlRequest.getClientCommand() != SqrlRequestCommand.QUERY) {
+			// suk is only returned during the query command
+			return false;
+		}
 		return sqrlRequest.getOptList().contains(SqrlRequestOpt.suk)
 				// https://www.grc.com/sqrl/semantics.htm says
 				// The SQRL specification requires the SQRL server to automatically return the account's matching SUK whenever
 				// it is able to anticipate that the client is likely to require it, such as when the server contains a previous
 				// identity key, or when the account is disabled
-				|| sqrlInternalUserState == DISABLED
-				|| (sqrlRequest.getClientCommand() == SqrlRequestCommand.QUERY
-				&& sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS);
+				|| sqrlInternalUserState == DISABLED || sqrlInternalUserState == IDK_EXISTS
+				|| sqrlInternalUserState == PIDK_EXISTS;
 	}
 
 	static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)
@@ -533,6 +590,23 @@ public class SqrlServerOperations {
 		}
 		final SqrlNutToken token = new SqrlNutToken(configOperations, stringValue);
 		return SqrlNutTokenUtil.computeNutExpiresAt(token, config);
+	}
+
+	public void valiateCpsParamIfNecessary(final SqrlCorrelator sqrlCorrelator, final HttpServletRequest request)
+			throws SqrlException {
+		final String cpsParam = request.getParameter("cps");
+		final SqrlAuthenticationStatus sqrlAuthStatus = sqrlCorrelator.getAuthenticationStatus();
+		if (AUTHENTICATED_CPS == sqrlAuthStatus && SqrlUtil.isBlank(cpsParam)) {
+			throw new SqrlException("server expected cps auth but got browser auth request instead");
+		} else if (SqrlUtil.isNotBlank(cpsParam)) {
+			final String persistenceCpsNonce = sqrlCorrelator.getTransientAuthDataTable().get(SqrlConstants.TRANSIENT_CPS_NONCE);
+			if (AUTHENTICATED_CPS != sqrlAuthStatus) {
+				throw new SqrlException("cps param present but authstatus was " + sqrlAuthStatus);
+			} else if (!cpsParam.equals(persistenceCpsNonce)) {
+				throw new SqrlException(
+						buildString("cps mismatch.  param=", cpsParam, " persistence=", persistenceCpsNonce));
+			}
+		}
 	}
 
 	// @formatter:off

@@ -400,4 +400,16 @@ public class SqrlUtil {
 		}
 		return buf.toString();
 	}
+
+	public static String buildString(final String... stringArray) {
+		int length = 0;
+		for(final String aString : stringArray) {
+			length += aString.length();
+		}
+		final StringBuilder buf = new StringBuilder(length);
+		for(final String aString : stringArray) {
+			buf.append(aString);
+		}
+		return buf.toString();
+	}
 }
