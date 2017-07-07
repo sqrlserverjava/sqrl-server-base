@@ -422,11 +422,13 @@ public class SqrlServerOperations {
 
 		// suk?
 		if (shouldIncludeSukInReply(sqrlRequest, sqrlInternalUserState)) {
-			final String sukSring = SqrlRequestOpt.suk.toString();
-			final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(sqrlRequest.getKey(SqrlServerSideKey.idk),
-					sukSring);
-			if (sukValue != null) {
-				additionalDataTable.put(sukSring, sukValue);
+			if (sqrlPersistence.doesSqrlIdentityExistByIdk(sqrlRequest.getKey(SqrlServerSideKey.idk))) {
+				final String sukString = SqrlRequestOpt.suk.toString();
+				final String sukValue = sqrlPersistence
+						.fetchSqrlIdentityDataItem(sqrlRequest.getKey(SqrlServerSideKey.idk), sukString);
+				if (sukValue != null) {
+					additionalDataTable.put(sukString, sukValue);
+				}
 			}
 		}
 
