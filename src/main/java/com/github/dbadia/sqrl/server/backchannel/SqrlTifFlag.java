@@ -2,6 +2,7 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 /**
  * Enumeration of the SQRL tif flags, see https://www.grc.com/sqrl/semantics.htm
+ * 
  * @author Dave Badia
  *
  */
@@ -12,7 +13,7 @@ public enum SqrlTifFlag {
 	 * user based upon the default (current) identity credentials supplied by the client: the IDentity Key (idk) and the
 	 * IDentity Signature (ids).
 	 */
-	CURRENT_ID_MATCH(0x01),
+	CURRENT_ID_MATCH 		(0x01),
 	/**
 	 * Previous ID match: When set, this bit indicates that the web server has found an identity association for the
 	 * user based upon the previous identity credentials supplied by the client in the previous IDentity Key (pidk) and
@@ -87,7 +88,7 @@ public enum SqrlTifFlag {
 	 * that the wrong SQRL identity was used with a nut that was already associated with a different identity.
 	 */
 	BAD_ID_ASSOCIATION		(0x100),
-	
+
 	/**
 	 * DEPRECATED NO LONGER DEFINED - DO NOT USE
 	 *
@@ -106,13 +107,13 @@ public enum SqrlTifFlag {
 
 	;
 	// @formatter:on
-	
+
 	private final int mask;
-	
-	private SqrlTifFlag(int mask) {
+
+	private SqrlTifFlag(final int mask) {
 		this.mask = mask;
 	}
-	
+
 	public int getMask() {
 		return mask;
 	}
