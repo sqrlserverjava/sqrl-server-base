@@ -58,7 +58,7 @@ public class SqrlCorrelator implements Serializable {
 	@CollectionTable(name = "sqrl_transient_auth_data",
 	joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
 	@MapKeyColumn(name = "name")
-	@Column(name = "value")
+	@Column(name = "value", length = 5000)
 	private final Map<String, String> transientAuthDataTable = new HashMap<>();
 
 	@ManyToOne
