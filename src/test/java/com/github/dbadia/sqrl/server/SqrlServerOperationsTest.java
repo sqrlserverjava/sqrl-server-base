@@ -23,7 +23,7 @@ public class SqrlServerOperationsTest {
 	@Test
 	public void testUrlsMatch() throws Throwable {
 		final String configBackchannelPath = "/sqrlbc";
-		final String loginRequestUrl = "http://127.0.0.1:8080/sqrlexample/login";
+		final String loginRequestUrl = "https://sqrljava.com:20000/sqrlexample/sqrllogin";
 
 		// Data from a real transaction with a long expiry
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();

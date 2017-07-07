@@ -236,4 +236,8 @@ public class TCUtil {
 		SqrlServerOperations.browserFacingUrlAndContextPath = browserFacingUrlAndContextPath;
 	}
 
+	public static void clearStaticFields() {
+		SqrlServerOperations.browserFacingUrlAndContextPath = null;
+	}
+
 }

@@ -2,12 +2,12 @@ package com.github.dbadia.sqrl.server.backchannel;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
-import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -16,6 +16,7 @@ import com.github.dbadia.sqrl.server.SqrlConfig;
 import com.github.dbadia.sqrl.server.SqrlPersistence;
 import com.github.dbadia.sqrl.server.SqrlServerOperations;
 import com.github.dbadia.sqrl.server.TCUtil;
+import com.github.dbadia.sqrl.server.backchannel.SqrlTif.SqrlTifBuilder;
 import com.github.dbadia.sqrl.server.persistence.SqrlCorrelator;
 import com.github.dbadia.sqrl.server.util.SqrlConstants;
 
@@ -27,6 +28,11 @@ public class SqrlServerOperationsNegativeTest {
 	private static final SqrlTifBuilder	BUILDER	= new SqrlTifBuilder(false);
 	private static final String					EXPECTED_BAD_CLIENT_REQUEST	= BUILDER.clearAllFlags()
 			.addFlag(SqrlTifFlag.COMMAND_FAILED).addFlag(SqrlTifFlag.CLIENT_FAILURE).createTif().toHexString();
+
+	@Before
+	public void setUp() throws NoSuchFieldException {
+		TCUtil.clearStaticFields();
+	}
 
 	@Test
 	public void testNutReplayed() throws Throwable {

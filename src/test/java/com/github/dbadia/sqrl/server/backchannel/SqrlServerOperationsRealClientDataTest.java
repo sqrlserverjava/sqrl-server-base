@@ -41,9 +41,11 @@ import junitx.framework.StringAssert;
  */
 public class SqrlServerOperationsRealClientDataTest {
 	private final Date expiryTime = new Date(System.currentTimeMillis() + 1_000_000);
+
 	@Before
 	public void setUp() throws NoSuchFieldException {
 		TCUtil.createEmptySqrlPersistence();
+		TCUtil.clearStaticFields();
 	}
 
 	@Test
@@ -152,6 +154,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 		// Store the server parrot
 		TCUtil.setupSqrlPersistence(correlatorFromServerParam, serverParam);
+
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=" + serverParam
