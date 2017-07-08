@@ -7,8 +7,20 @@ package com.github.sqrlserverjava.enums;
  *
  */
 public enum SqrlIdentityFlag {
+	// @formatter:off
+	SQRL_AUTH_ENABLED(null), 
 
-	SQRL_AUTH_ENABLED(null), HARDLOCK(SqrlRequestOpt.hardlock);
+	/**
+	 *  @see {@link SqrlRequestOpt#hardlock}
+	 */
+	HARDLOCK(SqrlRequestOpt.hardlock),
+
+	/**
+	 * @see {@link SqrlRequestOpt#sqrlonly}
+	 */
+	SQRLONLY(SqrlRequestOpt.sqrlonly),
+	;
+	// @formatter:on
 
 	/**
 	 * The SqrlClientOpt that corresponds to this flag, or null if there is no equivalent
