@@ -17,6 +17,7 @@ import javax.persistence.EntityManagerFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.sqrlserverjava.backchannel.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.persistence.SqrlAutoCloseablePersistence;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
@@ -53,7 +54,7 @@ public class TCUtil {
 		final SqrlConfig config = new TCSqrlConfig(nutToken.getIssuedTimestampMillis());
 		// Set SqrlServerOperations counter to generate the expected value
 		final AtomicInteger sqrlServerOperationscounter = (AtomicInteger) PrivateAccessor
-				.getField(SqrlServerOperations.class, "COUNTER");
+				.getField(SqrlNutTokenUtil.class, "COUNTER");
 		sqrlServerOperationscounter.set(nutToken.getCounter());
 		// TestSecureRandom isn't random at all which is very fast
 		final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);

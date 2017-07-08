@@ -8,11 +8,13 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.SqrlConfig;
+import com.github.sqrlserverjava.SqrlConfigOperations;
 import com.github.sqrlserverjava.SqrlPersistence;
 import com.github.sqrlserverjava.exception.SqrlClientRequestProcessingException;
 import com.github.sqrlserverjava.exception.SqrlException;
@@ -26,10 +28,19 @@ import com.github.sqrlserverjava.util.SqrlConstants;
  */
 public class SqrlNutTokenUtil {
 	private static final Logger	logger				= LoggerFactory.getLogger(SqrlNutTokenUtil.class);
+	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 	private static final int	IPV6_TO_PACK_BYTES	= 4;
 
 	private SqrlNutTokenUtil() {
 		// Util class, all static methods
+	}
+
+	public static SqrlNutToken buildNut(final SqrlConfig config, final SqrlConfigOperations configOperations,
+			final URI backchannelUri, final InetAddress userInetAddress) throws SqrlException {
+		final int inetInt = SqrlNutTokenUtil.inetAddressToInt(backchannelUri, userInetAddress, config);
+		final int randomInt = config.getSecureRandom().nextInt();
+		final long timestamp = config.getCurrentTimeMs();
+		return new SqrlNutToken(inetInt, configOperations, COUNTER.getAndIncrement(), timestamp, randomInt);
 	}
 
 	public static int inetAddressToInt(final URI serverUrl, final InetAddress requesterIpAddress,

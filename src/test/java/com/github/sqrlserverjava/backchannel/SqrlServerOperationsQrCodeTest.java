@@ -54,7 +54,8 @@ public class SqrlServerOperationsQrCodeTest {
 		// Emulate the login page generation
 		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
-		final SqrlAuthPageData authPageData = sqrlServerOps.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
+		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
+				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
 				InetAddress.getByName("localhost"), 250);
 		assertNotNull(authPageData);
 		assertNotNull(authPageData.getQrCodeOutputStream());

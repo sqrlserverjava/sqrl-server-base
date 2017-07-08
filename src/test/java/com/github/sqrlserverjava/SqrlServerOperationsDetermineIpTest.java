@@ -13,14 +13,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import com.github.sqrlserverjava.SqrlConfig;
-import com.github.sqrlserverjava.SqrlServerOperations;
-
 @RunWith(Parameterized.class)
 public class SqrlServerOperationsDetermineIpTest {
 	@Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
 	public static Collection<Object[]> data() {
-	// @formatter:off
+		// @formatter:off
 		return Arrays.asList(new Object[][] {
 			// final String expectedIp, final String[] headerConfigSetting,
 			// final String ipToSetOnRequest, final String[] headersToSetOnRequest
@@ -35,7 +32,7 @@ public class SqrlServerOperationsDetermineIpTest {
 
 	@Test
 	public void testIt() throws Throwable {
-		final InetAddress inetAddress = SqrlServerOperations.determineClientIpAddress(request, config);
+		final InetAddress inetAddress = SqrlClientFacingOperations.determineClientIpAddress(request, config);
 		assertEquals(expectedIp, inetAddress);
 	}
 

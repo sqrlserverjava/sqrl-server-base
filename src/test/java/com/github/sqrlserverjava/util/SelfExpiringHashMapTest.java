@@ -6,9 +6,6 @@ import static org.junit.Assert.assertNull;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.sqrlserverjava.util.SelfExpiringHashMap;
-import com.github.sqrlserverjava.util.SelfExpiringMap;
-
 /**
  *
  * @author Pierantonio Cangianiello
@@ -21,7 +18,7 @@ public class SelfExpiringHashMapTest {
 	public void basicGetTest() throws InterruptedException {
 		@SuppressWarnings("deprecation") // OK for test case use
 		final SelfExpiringMap<String, String> map = new SelfExpiringHashMap<String, String>();
-		map.put("a", "b", 2 * SLEEP_MULTIPLIER);
+		map.put("a", "b", 3 * SLEEP_MULTIPLIER);
 		Thread.sleep(1 * SLEEP_MULTIPLIER);
 		assertEquals(map.get("a"), "b");
 	}
