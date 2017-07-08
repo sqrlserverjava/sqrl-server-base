@@ -129,7 +129,7 @@ public class SqrlNutTokenUtil {
 							+ ", expiry is set to " + config.getNutValidityInSeconds() + " seconds");
 		}
 		// Mark the token as used since we will process this request
-		final String nutTokenString = nutToken.asSqrlBase64EncryptedNut();
+		final String nutTokenString = nutToken.asBase64UrlEncryptedNut();
 		if (sqrlPersistence.hasTokenBeenUsed(nutTokenString)) {
 			throw new SqrlNutTokenReplayedException(
 					SqrlClientRequestLoggingUtil.getLogHeader() + "Nut token was replayed " + nutToken);

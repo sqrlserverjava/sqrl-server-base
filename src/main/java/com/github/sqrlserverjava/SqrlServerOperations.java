@@ -187,9 +187,8 @@ public class SqrlServerOperations {
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
 		urlBuf.append(backchannelUri.toString());
 		// Now we append the nut and our SFN
-		// Even though urlBuf only contains the baseUrl, it's enough for NetUtil.inetAddressToInt TODO: what?
 		final SqrlNutToken nut = buildNut(backchannelUri, userInetAddress);
-		urlBuf.append("?nut=").append(nut.asSqrlBase64EncryptedNut()); // TODO: rename to asBase64UrlEncryptedNut
+		urlBuf.append("?nut=").append(nut.asBase64UrlEncryptedNut());
 		// Append the SFN
 		String sfn = config.getServerFriendlyName();
 		if (sfn == null) {
@@ -204,7 +203,7 @@ public class SqrlServerOperations {
 			final MessageDigest digest = MessageDigest.getInstance("SHA-256"); // TODO: is it ok for the correlator to
 			// be derived from teh nut?
 			final String correlator = SqrlUtil
-					.sqrlBase64UrlEncode(digest.digest(nut.asSqrlBase64EncryptedNut().getBytes()));
+					.sqrlBase64UrlEncode(digest.digest(nut.asBase64UrlEncryptedNut().getBytes()));
 			urlBuf.append("&").append(SqrlClientParam.cor.toString()).append("=").append(correlator);
 
 			final String url = urlBuf.toString();
@@ -221,7 +220,7 @@ public class SqrlServerOperations {
 			response.addCookie(SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getCorrelatorCookieName(),
 					correlator, correlatorCookieAgeInSeconds, config));
 			response.addCookie(SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getFirstNutCookieName(),
-					nut.asSqrlBase64EncryptedNut(), config.getNutValidityInSeconds(), config));
+					nut.asBase64UrlEncryptedNut(), config.getNutValidityInSeconds(), config));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(SqrlClientRequestLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
@@ -395,7 +394,7 @@ public class SqrlServerOperations {
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
 						sqrlCorrelator, sqrlInternalUserState, sqrlPersistence);
 				// Build the final reply object
-				reply = new SqrlClientReply(replyNut.asSqrlBase64EncryptedNut(), tif, subsequentRequestPath,
+				reply = new SqrlClientReply(replyNut.asBase64UrlEncryptedNut(), tif, subsequentRequestPath,
 						sqrlCorrelator.getCorrelatorString(),
 						additionalDataTable);
 			}

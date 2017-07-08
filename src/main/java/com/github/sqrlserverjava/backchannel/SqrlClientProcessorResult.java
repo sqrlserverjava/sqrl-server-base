@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
 
-// TODO: format this like the others
 public class SqrlClientProcessorResult {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlClientProcessorResult.class);
 
