@@ -1,8 +1,8 @@
 package com.github.sqrlserverjava.exception;
 
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
-import com.github.sqrlserverjava.backchannel.SqrlTif;
 import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
+import com.github.sqrlserverjava.util.SqrlUtil;
 
 /**
  * Indicates that an error occurred (nut token timeout, invalid signature, etc) while processing a request from a SQRL
@@ -25,7 +25,7 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	}
 
 	public SqrlClientRequestProcessingException(final SqrlTifFlag tifToAdd, final String message, final Throwable cause) {
-		super(new StringBuilder(SqrlClientRequestLoggingUtil.getLogHeader()).append(message).toString(), cause);
+		super(SqrlUtil.buildString(SqrlClientRequestLoggingUtil.getLogHeader(), message), cause);
 		this.tifFlagToAdd = tifToAdd;
 	}
 

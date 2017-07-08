@@ -44,7 +44,7 @@ public class SqrlClientReply {
 	}
 
 	public String toBase64() {
-		final StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder(400);
 		buf.append("ver=").append(VERSION_1).append(SEPARATOR);
 		buf.append("nut=").append(nut).append(SEPARATOR);
 		buf.append("tif=").append(tifInHex).append(SEPARATOR);

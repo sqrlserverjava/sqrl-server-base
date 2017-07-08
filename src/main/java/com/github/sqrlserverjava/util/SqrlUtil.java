@@ -260,7 +260,7 @@ public class SqrlUtil {
 	 */
 	public static String buildRequestParamList(final HttpServletRequest servletRequest) {
 		final Enumeration<String> params = servletRequest.getParameterNames();
-		final StringBuilder buf = new StringBuilder();
+		final StringBuilder buf = new StringBuilder(500);
 		while (params.hasMoreElements()) {
 			final String paramName = params.nextElement();
 			buf.append(paramName).append("=").append(servletRequest.getParameter(paramName)).append("  ");
@@ -329,7 +329,8 @@ public class SqrlUtil {
 	}
 
 	public static final String cookiesToString(final Cookie[] cookieArray) {
-		final StringBuilder buf = new StringBuilder("[ ");
+		final StringBuilder buf = new StringBuilder(300);
+		buf.append("[ ");
 		if (cookieArray != null) {
 			for (final Cookie cookie : cookieArray) {
 				buf.append(cookie.getName()).append("=").append(cookie.getValue()).append(", ");
@@ -367,7 +368,8 @@ public class SqrlUtil {
 		if (!logger.isInfoEnabled()) {
 			return "";
 		}
-		final StringBuilder buf = new StringBuilder("In ");
+		final StringBuilder buf = new StringBuilder(300);
+		buf.append("In ");
 		buf.append(request.getRequestURI()).append(" with params: ");
 		buf.append(parameterMapToString(request.getParameterMap())).append(" and  cookies: ");
 		buf.append(cookiesToString(request.getCookies()));
@@ -375,7 +377,8 @@ public class SqrlUtil {
 	}
 
 	public static String parameterMapToString(final Map<String, String[]> parameterMap) {
-		final StringBuilder buf = new StringBuilder("{");
+		final StringBuilder buf = new StringBuilder(400);
+		buf.append("{");
 		// {c=12850, 38.6=386540,
 		for (final Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
 			buf.append(entry.getKey()).append(":");
@@ -393,20 +396,25 @@ public class SqrlUtil {
 	}
 
 	public static String buildLogMessageForSqrlClientRequest(final HttpServletRequest request) {
-		final StringBuilder buf = new StringBuilder(SqrlClientRequestLoggingUtil.getLogHeader())
-				.append("full params from  client: ");
+		final StringBuilder buf = new StringBuilder(500);
+		buf.append(SqrlClientRequestLoggingUtil.getLogHeader()).append("full params from  client: ");
 		for (final Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
 			buf.append(entry.getKey()).append("=").append(Arrays.toString(entry.getValue())).append("   ");
 		}
 		return buf.toString();
 	}
 
+	/**
+	 * Convenience method which concatenates the given strings in an efficient manner using a {@link StringBuilder} or
+	 * similar object
+	 * 
+	 */
 	public static String buildString(final String... stringArray) {
 		int length = 0;
 		for(final String aString : stringArray) {
 			length += aString.length();
 		}
-		final StringBuilder buf = new StringBuilder(length);
+		final StringBuilder buf = new StringBuilder(length + 1);
 		for(final String aString : stringArray) {
 			buf.append(aString);
 		}

@@ -200,10 +200,11 @@ public class SqrlConfigOperations {
 		// Compute the proper protocol
 		StringBuilder urlBuf = null;
 		if (fullBackChannelUrl.startsWith(SqrlConstants.SCHEME_HTTPS_COLON)) {
-			urlBuf = new StringBuilder(
-					fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTPS, SqrlConstants.SCHEME_SQRL));
+			urlBuf = new StringBuilder(fullBackChannelUrl.length() + 5);
+			urlBuf.append(fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTPS, SqrlConstants.SCHEME_SQRL));
 		} else if (fullBackChannelUrl.startsWith("http:")) {
-			urlBuf = new StringBuilder(fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTP, SqrlConstants.SCHEME_QRL));
+			urlBuf = new StringBuilder(fullBackChannelUrl.length() + 5);
+			urlBuf.append(fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTP, SqrlConstants.SCHEME_QRL));
 		} else {
 			throw new SqrlException(
 					"Don't know how to handle protocol of config.getBackChannelUrl(): " + fullBackChannelUrl);
@@ -254,8 +255,8 @@ public class SqrlConfigOperations {
 				type = BackchannelSettingType.FULL_URL;
 			} catch (final MalformedURLException e) {
 				// Try build a specific error message depending on the circumstances
-				final StringBuilder buf = new StringBuilder(
-						"SqrlConfig backchannelServletPath contained what appeared to be a URL but it ");
+				final StringBuilder buf = new StringBuilder(100);
+				buf.append("SqrlConfig backchannelServletPath contained what appeared to be a URL but it ");
 				buf.append("couldn't be parsed: ").append(backchannelServletPath);
 				throw new IllegalArgumentException(buf.toString(), e);
 			}

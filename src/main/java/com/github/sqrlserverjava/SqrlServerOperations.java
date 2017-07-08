@@ -184,7 +184,8 @@ public class SqrlServerOperations {
 			final InetAddress userInetAddress, final int qrCodeSizeInPixels) throws SqrlException {
 		storeBrowserFacingUrlAndContextPath(request);
 		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
-		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString());
+		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
+		urlBuf.append(backchannelUri.toString());
 		// Now we append the nut and our SFN
 		// Even though urlBuf only contains the baseUrl, it's enough for NetUtil.inetAddressToInt TODO: what?
 		final SqrlNutToken nut = buildNut(backchannelUri, userInetAddress);
@@ -445,14 +446,8 @@ public class SqrlServerOperations {
 
 	private String buildCpsLoginUrl(final SqrlCorrelator sqrlCorrelator, final String cpsNonce) throws SqrlException {
 		// The full sqrlAuth browser URL with the cps nonce as a param
-		final StringBuilder cpsLoginUrlBuf = new StringBuilder(150);
-		cpsLoginUrlBuf.append(browserFacingUrlAndContextPath.toString())
-		.append(config.getSqrlLoginServletPath());
-		cpsLoginUrlBuf.append("?cor=").append(sqrlCorrelator.getCorrelatorString()); // TODO: create util UrlBuf object
-		// which url
-		// encodes all values
-		cpsLoginUrlBuf.append("&cps=").append(cpsNonce);
-		final String cpsLoginUrl = cpsLoginUrlBuf.toString();
+		final String cpsLoginUrl = SqrlUtil.buildString(browserFacingUrlAndContextPath.toString(),
+				config.getSqrlLoginServletPath(), "?cor=", sqrlCorrelator.getCorrelatorString(), "&cps=", cpsNonce);
 		try {
 			new URL(cpsLoginUrl); // Sanity check
 		} catch (final MalformedURLException e) {
