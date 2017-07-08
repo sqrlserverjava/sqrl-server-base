@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="1.0"
-    xmlns="http://java.sun.com/xml/ns/persistence">
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+             http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+             version="2.1">
     <persistence-unit name="javasqrl-persistence"
         transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <class>com.github.dbadia.sqrl.server.persistence.SqrlIdentity</class>
-        <class>com.github.dbadia.sqrl.server.persistence.SqrlCorrelator</class>
-        <class>com.github.dbadia.sqrl.server.persistence.SqrlUsedNutToken</class>
+        <class>com.github.sqrlserverjava.persistence.SqrlIdentity</class>
+        <class>com.github.sqrlserverjava.persistence.SqrlCorrelator</class>
+        <class>com.github.sqrlserverjava.persistence.SqrlUsedNutToken</class>
         <properties>
             <property name="eclipselink.logging.level" value="WARNING" />
         	<property name="eclipselink.ddl-generation" value="drop-and-create-tables" />
