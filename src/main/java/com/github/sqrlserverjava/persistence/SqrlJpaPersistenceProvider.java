@@ -194,8 +194,8 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		int counter = 0;
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
 			buf.append(" (i.value = :correlator").append(counter);
-			// If current state is AUTH_COMPLETE, always return the result
-			if (entry.getValue() != AUTHENTICATED_BROWSER) {
+			// If we are in the end state (isAuthComplete), always return the result
+			if (entry.getValue().isAuthComplete() == false) {
 				buf.append(" AND i.authenticationStatus <> :authenticationStatus").append(counter);
 			}
 			buf.append(" ) OR");
@@ -208,7 +208,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		for (final Map.Entry<String, SqrlAuthenticationStatus> entry : correlatorToCurrentStatusTable.entrySet()) {
 			query.setParameter(PARAM_CORRELATOR + counter, entry.getKey());
 			updateDebugBuf(debugBuf, ":correlator" + counter, entry.getKey());
-			if (entry.getValue() != AUTHENTICATED_BROWSER) {
+			if (entry.getValue().isAuthComplete() == false) {
 				query.setParameter("authenticationStatus" + counter, entry.getValue());
 				updateDebugBuf(debugBuf, ":authenticationStatus" + counter, entry.getValue().toString());
 			}

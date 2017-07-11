@@ -28,8 +28,6 @@ import com.github.sqrlserverjava.util.SqrlUtil;
 /**
  * The core SQRL class which processes all SQRL requests and generates the appropriates responses.
  * 
- * Registers itself for servlet context destroy events so background tasks can be stopped
- *
  * @author Dave Badia
  *
  */

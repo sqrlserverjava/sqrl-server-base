@@ -51,8 +51,9 @@ public class SqrlServiceExecutor implements ServletContextListener {
 	@Override
 	public void contextDestroyed(final ServletContextEvent arg0) {
 		logger.info("Shutting down background tasks and executor service");
-		for (@SuppressWarnings("rawtypes")
-		final ScheduledFuture backgroundTask : backgroundTaskList) {
+		// @formatter:off
+		for (@SuppressWarnings("rawtypes") final ScheduledFuture backgroundTask : backgroundTaskList) {
+			// @formatter:on
 			backgroundTask.cancel(false);
 		}
 		EXECUTOR_SERVICE.shutdown();
