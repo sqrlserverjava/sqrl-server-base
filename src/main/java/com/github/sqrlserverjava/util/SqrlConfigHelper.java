@@ -22,7 +22,7 @@ public class SqrlConfigHelper {
 	}
 
 	public static SqrlConfig loadFromClasspath() {
-		return loadFromClasspath("sqrl.xml");
+		return loadFromClasspath("sqrlconfig.xml");
 	}
 
 	public static SqrlConfig loadFromClasspath(final String name) {
