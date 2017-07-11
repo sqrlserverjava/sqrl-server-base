@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.SqrlConfig;
+import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 
 public class SqrlConfigHelper {
 	private static final Logger	logger	= LoggerFactory.getLogger(SqrlConfigHelper.class);
@@ -27,7 +28,7 @@ public class SqrlConfigHelper {
 	public static SqrlConfig loadFromClasspath(final String name) {
 		final URL url = SqrlConfigHelper.class.getClassLoader().getResource(name);
 		if (url == null) {
-			throw new IllegalStateException("SQRL config '" + name + "' not found on classpath");
+			throw new SqrlIllegalStateException("SQRL config '" + name + "' not found on classpath");
 		}
 		logger.info("Found SQRL config file at {}", url.getPath());
 		try {
@@ -36,7 +37,7 @@ public class SqrlConfigHelper {
 			validateSqrlConfig(sqrlConfig);
 			return sqrlConfig;
 		} catch (final JAXBException e) {
-			throw new IllegalStateException("Error unmarshalling SQRL config from " + url.getPath(), e);
+			throw new SqrlIllegalStateException("Error unmarshalling SQRL config from " + url.getPath(), e);
 		}
 	}
 
@@ -56,7 +57,7 @@ public class SqrlConfigHelper {
 			try {
 				jaxbContext = JAXBContext.newInstance(SqrlConfig.class);
 			} catch (final JAXBException e) {
-				throw new IllegalStateException("Error initializing JAXBContext for SqrlConfig.class", e);
+				throw new SqrlIllegalStateException("Error initializing JAXBContext for SqrlConfig.class", e);
 			}
 		}
 		return jaxbContext;

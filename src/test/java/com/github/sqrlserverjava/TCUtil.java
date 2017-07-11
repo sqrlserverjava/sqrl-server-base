@@ -19,6 +19,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import com.github.sqrlserverjava.backchannel.SqrlNutToken;
 import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
 import com.github.sqrlserverjava.exception.SqrlException;
+import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.persistence.SqrlAutoCloseablePersistence;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceProvider;
@@ -217,7 +218,7 @@ public class TCUtil {
 		try {
 			return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8));
 		} catch (final UnsupportedEncodingException e) {
-			throw new IllegalStateException("UnsupportedEncodingException ", e);
+			throw new SqrlIllegalStateException("UnsupportedEncodingException ", e);
 		}
 	}
 
@@ -229,7 +230,7 @@ public class TCUtil {
 			}
 			return encoded;
 		} catch (final UnsupportedEncodingException e) {
-			throw new IllegalStateException("UnsupportedEncodingException during base64 encode", e);
+			throw new SqrlIllegalStateException("UnsupportedEncodingException during base64 encode", e);
 		}
 	}
 

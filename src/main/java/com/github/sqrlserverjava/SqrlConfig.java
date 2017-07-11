@@ -16,13 +16,15 @@ import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
 // @formatter:off
 /**
  * Bean which stores our server-side SQRL configuration settings.
+ * Designed to for loaded from an xml config file (see {@link SqrlConfigHelper) or dependency injection 
  * <p/>
  * <b>Required</b>fields to be set are:
  * <ul>
- * <li>{@link #aesKeyBytes} - </li>
- * <li>{@link #backchannelServletPath}
+ * <li>{@link #aesKeyBytes}</li>
+ * <li>{@link #backchannelServletPath}</li>
  * </ul><p>
  *  <b>Recommended</b> fields to be set are:
+ * <li>{@link #clientAuthStateUpdaterClass}</li>
  *
  *  All other fields are optional with sensible defaults
  *
@@ -33,6 +35,42 @@ import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SqrlConfig {
+
+	/* *********************************************************************************************/
+	/* *************************************** REQUIRED ********************************************/
+	/* *********************************************************************************************/
+	/**
+	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call TODO:
+	 * examples
+	 */
+	@XmlElement(required = true)
+	private String backchannelServletPath;
+
+	/**
+	 * REQUIRED: The base64 encoded 16 byte AES key used to encrypt {@link SqrlNutToken}
+	 */
+	@XmlElement(required = true)
+	private byte[] aesKeyBytes;
+
+	/* *********************************************************************************************/
+	/* *************************************** RECOMMENDED ********************************************/
+	/* *********************************************************************************************/
+	/**
+	 * RECOMMENDED: The full classname of the SqrlClientAuthStateUpdater that will push status updates to the client
+	 * browser. The sqrl-sever-atomosphere project contains a prebuit updated which uses the atmosphere framework
+	 * 
+	 * Example: com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater
+	 * 
+	 * @see {@link SqrlClientAuthStateUpdater}
+	 * @see <a href="https://github.com/sqrlserverjava/sqrl-server-atmosphere">sqrl-server-atmosphere</a>
+	 */
+	@XmlElement(required = false)
+	private String clientAuthStateUpdaterClass = null;
+
+	/* *********************************************************************************************/
+	/* *************************************** OPTIONAL ********************************************/
+	/* *********************************************************************************************/
+
 	/**
 	 * The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time
 	 * that can pass between us (server) generating the QR code and us receiving the clients response
@@ -41,114 +79,104 @@ public class SqrlConfig {
 	 * user may use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it
 	 * works etc.
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toSeconds(15);
-
-	private long nutValidityInMillis = nutValidityInSeconds * 1000;
 
 	/**
 	 * The image format to generate QR codes in; default is PNG
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private SqrlQrCodeImageFormat qrCodeFileType = SqrlQrCodeImageFormat.PNG;
-
-	/**
-	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call TODO:
-	 * examples
-	 */
-	@XmlElement
-	private String backchannelServletPath;
 
 	/**
 	 * The SQRL Server Friendly Name; default: the hostname of the site
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private String serverFriendlyName;
 
 	/**
 	 * The secureRandom instance that is used to generate various random tokens; defaults to
-	 * {@link SecureRandom#SecureRandom()}
+	 * {@link SecureRandom#SecureRandom()}. Can only be set via setter
+	 * 
+	 * @see #setSecureRandom(SecureRandom)
 	 */
 	@XmlTransient
 	private SecureRandom secureRandom;
 
 	/**
-	 * REQUIRED: The 16 byte AES key used to encrypt {@link SqrlNutToken}
+	 * A list of one or more comma separated headers (X-Forwarded-For, etc) from which to get the users real IP. SQRL
+	 * requires the users real IP to respond to the client correctly. The headers will be checked in the order given.
+	 * 
+	 * Example: X-Forwarded-For
 	 */
-	@XmlElement
-	private byte[] aesKeyBytes;
-
-	/**
-	 * A list of one or more headers (X-Forwarded-For, etc) from which to get the users real IP. SQRL requires the users
-	 * real IP to respond to the client correctly. The headers will be checked in the order given.
-	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private String[] ipForwardedForHeaders;
 
 	/**
 	 * The SQRL JPA persistence provider class which implements {@link SqrlPersistenceFactory}; defaults to
 	 * {@link SqrlJpaPersistenceFactory}
 	 */
-	@XmlElement
-	private String					sqrlPersistenceFactoryClass	= "com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory";
+	@XmlElement(required = false)
+	private String sqrlPersistenceFactoryClass = "com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory";
 
 	/**
 	 * The cookie name to use for the SQRL correlator during authentication; defaults to {@code sqrlcorrelator}
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private String correlatorCookieName = "sqrlcorrelator";
-
-	/**
-	 * The full classname of the {@link SqrlClientAuthStateUpdater} that will push status updates to the client browser
-	 */
-	@XmlElement
-	private String clientAuthStateUpdaterClass = null;
 
 	/**
 	 * The frequency with which to execute {@link SqrlPersistence#cleanUpExpiredEntries()} via {@link java.util.Timer};
 	 * defaults to 15. If an alternate cleanup mechanism is in use (DB stored procedure, etc), this should be set to -1
 	 * to disable the background task completely
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private int cleanupTaskExecInMinutes = 15;
 
 	/**
 	 * The amount of time in millis to pause in between persistence queries to see if the SQRL client has finished
 	 * authenticating users; defaults to 500
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private long authSyncCheckInMillis = 500;
 
 	/**
 	 * The cookie name to use for the SQRL first nut during authentication; defaults to sqrlfirstnut
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private String firstNutCookieName = "sqrlfirstnut";
 
 	/**
-	 * The domain to set on SQRL cookies ; defaults to the domain (including subdomain) that the browser request came in
+	 * The domain to set on SQRL cookies. defaults to the domain (including subdomain) that the browser request came in
 	 * on
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private String cookieDomain = null;
 
 	/**
 	 * The path to set on SQRL cookies; defaults to "/"
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private String cookiePath = "/";
 
 	/**
-	 * The path to the servlet or request handler that processes SQRL login requests. defaults to "/sqrllogin"
+	 * The path to the servlet or request handler that processes SQRL <b>client</b> (not web browser) requests. defaults
+	 * to "/sqrllogin"
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private String sqrlLoginServletPath = "/sqrllogin";
 
 	/**
 	 * Whether or not CPS is enabled for this server, defaults to true
 	 */
-	@XmlElement
+	@XmlElement(required = false)
 	private boolean enableCps = true;
+
+	/**
+	 * Computed from {@link #nutValidityInSeconds}, cannot be set directly
+	 */
+	@XmlTransient
+	private long nutValidityInMillis = nutValidityInSeconds * 1000;
 
 	public String[] getIpForwardedForHeaders() {
 		return ipForwardedForHeaders;
@@ -180,7 +208,6 @@ public class SqrlConfig {
 		this.nutValidityInSeconds = nutValidityInSeconds;
 		this.nutValidityInMillis = nutValidityInSeconds * 1000;
 	}
-
 
 	public SqrlQrCodeImageFormat getQrCodeFileType() {
 		return qrCodeFileType;

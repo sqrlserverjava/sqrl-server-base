@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.exception.SqrlException;
+import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.exception.SqrlPersistenceException;
 import com.github.sqrlserverjava.persistence.SqrlAutoCloseablePersistence;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
@@ -109,12 +110,12 @@ public class SqrlServerOperations {
 				final Class clazz = Class.forName(classname);
 				final Constructor<SqrlClientAuthStateUpdater> constructor = clazz.getConstructor();
 				if (constructor == null) {
-					throw new IllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+					throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
 							+ " must have a no-arg constructor, but does not");
 				}
 				final Object object = constructor.newInstance();
 				if (!(object instanceof SqrlClientAuthStateUpdater)) {
-					throw new IllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+					throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
 							+ " was not an instance of ClientAuthStateUpdater");
 				}
 				final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
@@ -126,7 +127,7 @@ public class SqrlServerOperations {
 				sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
 						TimeUnit.MILLISECONDS);
 			} catch (final Exception e) {
-				throw new IllegalStateException(
+				throw new SqrlIllegalStateException(
 						"SQRL: Error instantiating or initializing ClientAuthStateUpdaterClass of " + classname, e);
 			}
 		}

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.exception.SqrlException;
+import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.exception.SqrlInvalidRequestException;
 
 import net.i2p.crypto.eddsa.EdDSAEngine;
@@ -64,7 +65,7 @@ public class SqrlUtil {
 			}
 			return encoded;
 		} catch (final UnsupportedEncodingException e) {
-			throw new IllegalStateException("UnsupportedEncodingException during base64 encode", e);
+			throw new SqrlIllegalStateException("UnsupportedEncodingException during base64 encode", e);
 		}
 	}
 
@@ -79,7 +80,7 @@ public class SqrlUtil {
 		try {
 			return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8));
 		} catch (final UnsupportedEncodingException e) {
-			throw new IllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
+			throw new SqrlIllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
 		}
 	}
 
@@ -132,7 +133,7 @@ public class SqrlUtil {
 			return new String(base64UrlDecode(toDecode), SqrlConstants.UTF8);
 		} catch (final UnsupportedEncodingException e) {
 			// This should never happen as the java specification requires that all JVMs support UTF8
-			throw new IllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
+			throw new SqrlIllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
 		}
 	}
 
