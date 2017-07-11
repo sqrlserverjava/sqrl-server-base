@@ -49,8 +49,8 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 
 1. Select a JPA provider and add the required jars to your classpath.  For example, to use eclipse link you would add: https://mvnrepository.com/artifact/org.eclipse.persistence/eclipselink
 2. Add META-INF/persistence.xml to your classpath.  You can start with an in memory database by using [derby](jpa-examples/derby/META-INF/persistence.xml).  When you ready to use a real DB, here is the [visual db design](datastore/sqrl-db-design.png), [ddl](datastore/sqrl.ddl), and [mysql](persistenceMysql.xml) persistence.xml.  Other databases can be supported simply by editing persistence.xml accordingly.  
-1. Define `com.github.dbadia.sqrl.server.SQRLConfig` and set the the 2 required fields accordingly (see javadoc).  You can store your settings on the classpath in a file named sqrlconfig.xml and call `com.github.dbadia.sqrl.server.SQRLConfigHelper#loadFromClasspath().`  Or inject the bean via Spring, etc.  
-1. In your application code, you can now create a `com.github.dbadia.sqrl.server.SqrlServerOperations` object using the `SqrlConfig` object from the previous step.
+1. Define `com.github.sqrlserverjava.SQRLConfig` and set the the 2 required fields accordingly (see javadoc).  You can store your settings on the classpath in a file named sqrlconfig.xml and call `com.github.sqrlserverjava.SQRLConfigHelper#loadFromClasspath().`  Or inject the bean via Spring, etc.  
+1. In your application code, you can now create a `com.github.sqrlserverjava.SqrlServerOperations` object using the `SqrlConfig` object from the previous step.
 1. Create a servlet (or equivalent endpoint in your framework of choice) to handle SQRL client requests.  The `doPost` method of this servlet should invoke `SqrlServerOperations.handleSqrlClientRequest(ServletRequest, ServletResponse)`
 1. Authentication Page Impact
 	* Decide on one of the two approaches explained in [Browser to SQRL Client Correlation](#browser-to-sqrl-client-correlation) 
