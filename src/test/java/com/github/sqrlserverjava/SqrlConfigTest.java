@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.util.Arrays;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -56,7 +55,6 @@ public class SqrlConfigTest {
 			assertEquals(SqrlQrCodeImageFormat.PNG, config.getQrCodeFileType());
 			assertEquals("/sqrlbc", config.getBackchannelServletPath());
 			assertEquals("SQRL Java Server Demo", config.getServerFriendlyName());
-			System.out.println(Arrays.toString(config.getAESKeyBytes()));
 			final byte[] expectedKeyBytes = new byte[] { 40, 34, 52, 4, -78, 19, 113, -104, -111, -15, -65, 33, -89,
 					117, 86, -76 };
 			ArrayAssert.assertEquals(expectedKeyBytes, config.getAESKeyBytes());

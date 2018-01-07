@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sqrlConfig>
+	<clientAuthStateUpdaterClass>com.MyClass</clientAuthStateUpdaterClass>
+	<nutValidityInSeconds>900</nutValidityInSeconds>
+	<qrCodeFileType>PNG</qrCodeFileType>
+	<sqrlPersistenceFactoryClass>com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory</sqrlPersistenceFactoryClass>
+	<correlatorCookieName>sqrlcorrelator</correlatorCookieName>
+	<cleanupTaskExecInMinutes>15</cleanupTaskExecInMinutes>
+	<authSyncCheckInMillis>500</authSyncCheckInMillis>
+	<firstNutCookieName>sqrlfirstnut</firstNutCookieName>
+	<cookiePath>/</cookiePath>
+	<sqrlLoginServletPath>/sqrllogin</sqrlLoginServletPath>
+	<enableCps>true</enableCps>
+</sqrlConfig>

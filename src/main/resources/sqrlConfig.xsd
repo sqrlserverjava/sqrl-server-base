@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <xsd:complexType name="sqrlConfig">
+      <xsd:sequence>
+         <xsd:element name="nutValidityInSeconds" type="xsd:int" minOccurs="0">
+         <xsd:annotation>
+			<xsd:documentation> The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time 
+			that can pass between us (server) generating the QR code and us receiving the clients response
+			
+	 		It is strongly recommended that this value be set to 15 minutes (default) or more as this is a new protocol. The
+	 		user may use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it
+	 		works etc.</xsd:documentation>
+			<xsd:documentation>Example: 900</xsd:documentation>
+		</xsd:annotation>
+         </xsd:element>
+         <xsd:element name="qrCodeFileType" type="sqrlQrCodeImageFormat" minOccurs="0"/>
+         <xsd:element name="backchannelServletPath" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="serverFriendlyName" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="aesKeyBytes" type="xsd:base64Binary" minOccurs="0"/>
+         <xsd:element name="ipForwardedForHeaders" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="sqrlPersistenceFactoryClass" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="correlatorCookieName" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="clientAuthStateUpdaterClass" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="cleanupTaskExecInMinutes" type="xsd:int" minOccurs="0"/>
+         <xsd:element name="authSyncCheckInMillis" type="xsd:long" minOccurs="0"/>
+         <xsd:element name="firstNutCookieName" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="cookieDomain" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="cookiePath" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="sqrlLoginServletPath" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="enableCps" type="xsd:boolean" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="sqrlConfig" type="sqrlConfig"/>
+   <xsd:simpleType name="sqrlQrCodeImageFormat">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="PNG"/>
+         <xsd:enumeration value="JPG"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+</xsd:schema>

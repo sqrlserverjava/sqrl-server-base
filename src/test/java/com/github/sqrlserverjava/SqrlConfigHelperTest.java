@@ -1,8 +1,8 @@
 package com.github.sqrlserverjava;
 
+import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.security.SecureRandom;
 
@@ -12,6 +12,7 @@ import javax.xml.bind.Marshaller;
 
 import org.junit.Test;
 
+import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.util.SqrlConfigHelper;
 
 import junitx.framework.ObjectAssert;
@@ -47,6 +48,16 @@ public class SqrlConfigHelperTest {
 		} catch (final Exception e) {
 			ObjectAssert.assertInstanceOf(IllegalStateException.class, e);
 			StringAssert.assertContains("Error unmarshalling", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testInvalidXml() throws Exception {
+		try {
+			SqrlConfigHelper.loadFromClasspath("sqrlconfigInvalid.xml");
+			fail("Exception expected");
+		} catch (final SqrlIllegalStateException e) {
+			StringAssert.assertContains("schema validation failed", e.getMessage());
 		}
 	}
 
