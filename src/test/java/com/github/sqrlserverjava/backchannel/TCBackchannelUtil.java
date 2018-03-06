@@ -13,8 +13,7 @@ import com.github.sqrlserverjava.enums.SqrlServerSideKey;
 public class TCBackchannelUtil {
 
 	public static SqrlClientRequest buildMockSqrlRequest(final String idk, final SqrlRequestCommand command,
-			final String correlator,
-			final boolean hasUrsSignature, final SqrlRequestOpt... optArray) {
+			final String correlator, final boolean hasUrsSignature, final SqrlRequestOpt... optArray) {
 		final SqrlClientRequest mock = Mockito.mock(SqrlClientRequest.class);
 		Mockito.when(mock.containsUrs()).thenReturn(false);
 		Mockito.when(mock.getKey(SqrlServerSideKey.idk)).thenReturn(idk);

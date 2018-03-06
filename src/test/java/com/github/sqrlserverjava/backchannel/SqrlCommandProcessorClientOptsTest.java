@@ -97,4 +97,26 @@ public class SqrlCommandProcessorClientOptsTest {
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
+	
+
+	@Test
+	public void testOptNoIpTest() throws Throwable {
+		// Setup
+		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
+		TCUtil.setupIdk(idk, correlator, "123");
+
+		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+				correlator, false, SqrlRequestOpt.noiptest);
+
+		// Execute
+		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
+				TCUtil.buildTestSqrlConfig());
+		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
+
+		// Validate
+		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
+		// Ensure nothing got disabled
+		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
+		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
+	}
 }

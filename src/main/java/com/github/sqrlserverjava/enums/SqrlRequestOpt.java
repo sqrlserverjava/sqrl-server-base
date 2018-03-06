@@ -76,6 +76,19 @@ public enum SqrlRequestOpt {
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
 	cps(true, false),
+	
+	/**
+	 * this is needed to prevent split-authentication attacks from allowing 'query' 
+	 * commands to succeed before perhaps intercepting a follow-up 'ident' command whose IPs do not match
+	 * 
+	 * if the server does not receive the "noiptest" option and the IP do not match, the operation 
+	 * will be hard failed with the server's TIF flags having "0x40 Command failed" =SET= and 
+	 * "0x04 IPs matched" =RESET=.  Since this is not a client failure, the 
+	 * "0x80 Client failure" bit will not be set
+	 *
+	 * from https://www.grc.com/x/news.exe?cmd=article&group=grc.sqrl&item=18016&utag=
+	 */
+	noiptest(false, false),
 
 	;
 
