@@ -5,7 +5,7 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/204/badge)](https://bestpractices.coreinfrastructure.org/projects/204)
 # sqrl-server-base
 
-Java SQRL authentication library that implements the server side portions of the SQRL [SQRL](https://www.grc.com/sqrl/sqrl.htm) protocol.  It can be integrated into existing JEE apps in order to add SQRL as an authentication option to existing methods (username/password, etc).
+Java SQRL authentication library that implements the server side portions of the [SQRL](https://www.grc.com/sqrl/sqrl.htm) protocol.  It can be integrated into existing JEE apps in order to add SQRL as an authentication option to existing methods (username/password, etc).
 
 The intent is that additional libraries will be built on top of this for popular authentication frameworks such as Spring, Apache Shiro, etc.  It can also be used directly by an application as is.
 
@@ -13,9 +13,9 @@ The intent is that additional libraries will be built on top of this for popular
 
 
 #### Interoperability
- * This library is fully functional for basic SQRL authentication.  Advanced operations such as SQRL identity replacement are not yet implemented
+ * This library is fully functional for SQRL authentication, including SQRL QR code generation
  * As of June 2016, the SQRL protocol has been declared ["done with caveats"](https://www.grc.com/sn/sn-562.txt) by it's creator.  SQRL clients built prior to this may still be using an older version of the protocol and may not be compatible
-* There is a example application using this library at the url below.  You <b>must</b> install a SQRL client (such as sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl/) before running the demo:
+* There is a example application using this library at the url below.  You <b>must</b> install a SQRL client (such as sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl.exe) before running the demo:
  https://sqrljava.com:20000/sqrlexample
 
 #### Dependencies
