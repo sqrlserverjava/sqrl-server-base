@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -291,14 +292,12 @@ public class SqrlClientFacingOperations {
 
 	static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)
 			throws SqrlException {
-		final String[] headersToCheck = config.getIpForwardedForHeaders();
+		final List<String> headersToCheckList = config.getIpForwardedForHeaderList();
 		String ipToParse = null;
-		if (headersToCheck != null) {
-			for (final String headerToFind : headersToCheck) {
-				ipToParse = servletRequest.getHeader(headerToFind);
-				if (SqrlUtil.isNotBlank(ipToParse)) {
-					break;
-				}
+		for (final String headerToFind : headersToCheckList) {
+			ipToParse = servletRequest.getHeader(headerToFind);
+			if (SqrlUtil.isNotBlank(ipToParse)) {
+				break;
 			}
 		}
 		if (SqrlUtil.isBlank(ipToParse)) {

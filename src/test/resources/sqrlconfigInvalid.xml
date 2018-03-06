@@ -2,7 +2,7 @@
 <sqrlConfig>
 	<BOOM>900</BOOM>
 	<clientAuthStateUpdaterClass>com.MyClass</clientAuthStateUpdaterClass>
-	<qrCodeFileType>PNG</qrCodeFileType>
+	<qrCodeImageFormat>PNG</qrCodeImageFormat>
 	<sqrlPersistenceFactoryClass>com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory</sqrlPersistenceFactoryClass>
 	<correlatorCookieName>sqrlcorrelator</correlatorCookieName>
 	<cleanupTaskExecInMinutes>15</cleanupTaskExecInMinutes>

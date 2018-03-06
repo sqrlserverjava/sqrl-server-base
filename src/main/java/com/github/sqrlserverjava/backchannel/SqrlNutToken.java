@@ -29,7 +29,7 @@ public class SqrlNutToken {
 	private final long		issuedTimestamp;
 	private final int		randomInt;
 	/**
-	 * The encrypted nut in sqbase64 format as it appeared in the query string
+	 * The encrypted nut in base64url format as it appeared in the query string
 	 */
 	private final String	base64UrlEncryptedNut;
 

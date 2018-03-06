@@ -8,6 +8,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * break java convention and do the same for readability
  */
 public enum SqrlSignatureType {
+	/*
+	 * The spec defines these in lower case, so we do the same. It breaks java convention but is more readable 
+	 */
+	
 	// @formatter:off
 	ids,
 	urs,

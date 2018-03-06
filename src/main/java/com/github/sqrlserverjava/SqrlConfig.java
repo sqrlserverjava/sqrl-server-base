@@ -1,6 +1,10 @@
 package com.github.sqrlserverjava;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,6 +16,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import com.github.sqrlserverjava.backchannel.SqrlNutToken;
 import com.github.sqrlserverjava.enums.SqrlQrCodeImageFormat;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
+import com.github.sqrlserverjava.util.SqrlConstants;
 
 // @formatter:off
 /**
@@ -33,44 +38,50 @@ import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
  */
 //@formatter:on
 @XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
 public class SqrlConfig {
 
 	/* *********************************************************************************************/
 	/* *************************************** REQUIRED ********************************************/
 	/* *********************************************************************************************/
 	/**
-	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call TODO:
-	 * examples
+	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call.  
+	 * For example:  https://sqrljava.com:20000/sqrlexample/backchannel or /sqrlexample/backchannel
 	 */
-	@XmlElement(required = true)
 	private String backchannelServletPath;
 
 	/**
 	 * REQUIRED: The base64 encoded 16 byte AES key used to encrypt {@link SqrlNutToken}
 	 */
-	@XmlElement(required = true)
-	private byte[] aesKeyBytes;
+	private String aesKeyBase64;
 
 	/* *********************************************************************************************/
-	/* *************************************** RECOMMENDED ********************************************/
+	/* *************************************** RECOMMENDED *****************************************/
 	/* *********************************************************************************************/
 	/**
-	 * RECOMMENDED: The full classname of the SqrlClientAuthStateUpdater that will push status updates to the client
-	 * browser. The sqrl-sever-atomosphere project contains a prebuit updated which uses the atmosphere framework
+	 * The header name (X-Forwarded-For, etc) from which to get the users real IP. SQRL
+	 * requires the users real IP to respond to the client correctly.  Multiple header names
+	 * can be defined; the headers will be checked in the order given.
+	 * 
+	 * Default: X-Forwarded-For
+	 */
+	private String[] ipForwardedForHeader;
+	
+	/* *********************************************************************************************/
+	/* *************************************** OPTIONAL ********************************************/
+	/* *********************************************************************************************/
+	
+	/**
+	 * The full classname of the SqrlClientAuthStateUpdater that will push status updates to the client
+	 * browser. If this value is not defined and the sqrl-sever-atomosphere library is on the classpath, this
+	 * will automatically be set to com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater
 	 * 
 	 * Example: com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater
 	 * 
 	 * @see {@link SqrlClientAuthStateUpdater}
 	 * @see <a href="https://github.com/sqrlserverjava/sqrl-server-atmosphere">sqrl-server-atmosphere</a>
 	 */
-	@XmlElement(required = false)
 	private String clientAuthStateUpdaterClass = null;
-
-	/* *********************************************************************************************/
-	/* *************************************** OPTIONAL ********************************************/
-	/* *********************************************************************************************/
-
+	
 	/**
 	 * The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time
 	 * that can pass between us (server) generating the QR code and us receiving the clients response
@@ -78,168 +89,112 @@ public class SqrlConfig {
 	 * It is strongly recommended that this value be set to 15 minutes (default) or more as this is a new protocol. The
 	 * user may use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it
 	 * works etc.
+	 * 
+	 * Default: 900
 	 */
-	@XmlElement(required = false)
 	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toSeconds(15);
+	
+	/**
+	 * Computed from {@link #nutValidityInSeconds}, cannot be set directly.
+	 * Updated by {@link #setNutValidityInSeconds(int)} when invoked
+	 */
+	private long nutValidityInMillis = nutValidityInSeconds * 1000;
 
 	/**
-	 * The image format to generate QR codes in; default is PNG
+	 * The image format to generate QR codes in
+	 * 
+	 * Default: PNG
 	 */
-	@XmlElement(required = false)
-	private SqrlQrCodeImageFormat qrCodeFileType = SqrlQrCodeImageFormat.PNG;
+	private SqrlQrCodeImageFormat qrCodeImageFormat = SqrlQrCodeImageFormat.PNG;
 
 	/**
-	 * The SQRL Server Friendly Name; default: the hostname of the site
+	 * The SQRL Server Friendly Name
+	 * 
+	 * Default: the hostname of the site
 	 */
-	@XmlElement(required = false)
 	private String serverFriendlyName;
 
 	/**
 	 * The secureRandom instance that is used to generate various random tokens; defaults to
-	 * {@link SecureRandom#SecureRandom()}. Can only be set via setter
+	 * {@link SecureRandom#SecureRandom()}. Can only be set via setter, not by config file
 	 * 
 	 * @see #setSecureRandom(SecureRandom)
 	 */
-	@XmlTransient
 	private SecureRandom secureRandom;
 
 	/**
-	 * A list of one or more comma separated headers (X-Forwarded-For, etc) from which to get the users real IP. SQRL
-	 * requires the users real IP to respond to the client correctly. The headers will be checked in the order given.
+	 * The SQRL persistence provider class which implements {@link SqrlPersistenceFactory}
 	 * 
-	 * Example: X-Forwarded-For
+	 * Default: {@link SqrlJpaPersistenceFactory}
 	 */
-	@XmlElement(required = false)
-	private String[] ipForwardedForHeaders;
-
-	/**
-	 * The SQRL JPA persistence provider class which implements {@link SqrlPersistenceFactory}; defaults to
-	 * {@link SqrlJpaPersistenceFactory}
-	 */
-	@XmlElement(required = false)
 	private String sqrlPersistenceFactoryClass = "com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory";
 
 	/**
-	 * The cookie name to use for the SQRL correlator during authentication; defaults to {@code sqrlcorrelator}
-	 */
-	@XmlElement(required = false)
-	private String correlatorCookieName = "sqrlcorrelator";
-
-	/**
 	 * The frequency with which to execute {@link SqrlPersistence#cleanUpExpiredEntries()} via {@link java.util.Timer};
-	 * defaults to 15. If an alternate cleanup mechanism is in use (DB stored procedure, etc), this should be set to -1
+	 * Default: 15. 
+	 * 
+	 * If an alternate cleanup mechanism is in use (DB stored procedure, etc), this should be set to -1
 	 * to disable the background task completely
 	 */
-	@XmlElement(required = false)
 	private int cleanupTaskExecInMinutes = 15;
 
 	/**
 	 * The amount of time in millis to pause in between persistence queries to see if the SQRL client has finished
-	 * authenticating users; defaults to 500
+	 * authenticating users.
+	 * 
+	 * Default: 500
 	 */
-	@XmlElement(required = false)
 	private long authSyncCheckInMillis = 500;
 
 	/**
-	 * The cookie name to use for the SQRL first nut during authentication; defaults to sqrlfirstnut
+	 * The path to the servlet or request handler that processes SQRL <b>client</b> (not web browser) requests.
+	 * Default: /sqrllogin
 	 */
-	@XmlElement(required = false)
-	private String firstNutCookieName = "sqrlfirstnut";
+	private String sqrlLoginServletPath = "/sqrllogin"; // TODO: what is the difference between this and sqrlbackchannel?
 
 	/**
-	 * The domain to set on SQRL cookies. defaults to the domain (including subdomain) that the browser request came in
-	 * on
+	 * Whether or not CPS is enabled for this server
+	 * Default: true
 	 */
-	@XmlElement(required = false)
-	private String cookieDomain = null;
-
-	/**
-	 * The path to set on SQRL cookies; defaults to "/"
-	 */
-	@XmlElement(required = false)
-	private String cookiePath = "/";
-
-	/**
-	 * The path to the servlet or request handler that processes SQRL <b>client</b> (not web browser) requests. defaults
-	 * to "/sqrllogin"
-	 */
-	@XmlElement(required = false)
-	private String sqrlLoginServletPath = "/sqrllogin";
-
-	/**
-	 * Whether or not CPS is enabled for this server, defaults to true
-	 */
-	@XmlElement(required = false)
 	private boolean enableCps = true;
 
 	/**
-	 * Computed from {@link #nutValidityInSeconds}, cannot be set directly
+	 * The cookie name to use for the SQRL correlator during authentication
+	 * Default: sqrlcorrelator
 	 */
-	@XmlTransient
-	private long nutValidityInMillis = nutValidityInSeconds * 1000;
-
-	public String[] getIpForwardedForHeaders() {
-		return ipForwardedForHeaders;
-	}
-
-	public void setIpForwardedForHeaders(final String[] ipForwardedForHeaders) {
-		this.ipForwardedForHeaders = ipForwardedForHeaders;
-	}
-
-	public int getNutValidityInSeconds() {
-		return nutValidityInSeconds;
-	}
-
-	public long getNutValidityInMillis() {
-		return nutValidityInMillis;
-	}
+	private String correlatorCookieName = "sqrlcorrelator";
+	/**
+	 * The cookie name to use for storage of first SQRL nut generated during authentication.
+	 * 
+	 * Default: sqrlfirstnut
+	 */
+	private String firstNutCookieName = "sqrlfirstnut";
 
 	/**
-	 * Set the length of time (in seconds) that the nut will be valid for
-	 *
-	 * @param nutValidityInSeconds
-	 * @throws IllegalArgumentException
-	 *             if nutValidityInSeconds is less than 0
+	 * The domain to set on all SQRL cookies. 
+	 * 
+	 * Default: the domain (including subdomain) that the browser request came in on
 	 */
-	public void setNutValidityInSeconds(final int nutValidityInSeconds) {
-		if (nutValidityInSeconds < 0) {
-			throw new IllegalArgumentException("nutValidityInSeconds must be greater than zero");
-		}
-		this.nutValidityInSeconds = nutValidityInSeconds;
-		this.nutValidityInMillis = nutValidityInSeconds * 1000;
-	}
+	private String cookieDomain = null;
 
-	public SqrlQrCodeImageFormat getQrCodeFileType() {
-		return qrCodeFileType;
-	}
-
-	public void setQrCodeFileType(final SqrlQrCodeImageFormat qrCodeFileType) {
-		this.qrCodeFileType = qrCodeFileType;
-	}
-
-	public SecureRandom getSecureRandom() {
-		return secureRandom;
-	}
-
-	public void setSecureRandom(final SecureRandom secureRandom) {
-		this.secureRandom = secureRandom;
-	}
-
-	public void setAESKeyBytes(final byte[] aesKeyBytes) {
-		this.aesKeyBytes = aesKeyBytes;
-	}
-
-	public byte[] getAESKeyBytes() {
-		return aesKeyBytes;
-	}
-
+	/**
+	 * The path to set on SQRL cookies
+	 * Default: /
+	 */
+	private String cookiePath = "/";
+	
+	/* *********************************************************************************************/
+	/* *************************************** ACCESSORS *******************************************/
+	/* *********************************************************************************************/
+	
+	@XmlElement(required = true)
 	public String getBackchannelServletPath() {
 		return backchannelServletPath;
 	}
 
 	// @formatter:off
 	/**
-	 * Required: sets the URL to the servlet endpoint which will handle SQRL client requests, can be either a full URL,
+	 * Required: sets the path to the servlet endpoint which will handle SQRL client requests, can be either a full URL,
 	 * a full URI, or a partial URI.
 	 * <p/>
 	 *
@@ -267,6 +222,213 @@ public class SqrlConfig {
 		this.backchannelServletPath = backchannelServletPath;
 	}
 
+	@XmlElement(required = true)
+	public String getAesKeyBase64() {
+		return aesKeyBase64;
+	}
+
+	/**
+	 * @see #aesKeyBytes
+	 */
+	public void setAesKeyBase64(final String aesKeyBase64) {
+		this.aesKeyBase64 = aesKeyBase64;
+	}
+	
+	/* *********************************************************************************************/
+	/* *************************************** OPTIONAL ********************************************/
+	/* *********************************************************************************************/
+
+	
+	@XmlElement(required = false)
+	public String getClientAuthStateUpdaterClass() {
+		return clientAuthStateUpdaterClass;
+	}
+
+	/**
+	 * @see #clientAuthStateUpdaterClass
+	 */
+	public void setClientAuthStateUpdaterClass(final String clientAuthStateUpdaterClass) {
+		this.clientAuthStateUpdaterClass = clientAuthStateUpdaterClass;
+	}
+	
+	@XmlElement(required = false)
+	public int getNutValidityInSeconds() {
+		return nutValidityInSeconds;
+	}
+
+	/**
+	 * 
+	 * @see nutValidityInSeconds
+	 * @throws IllegalArgumentException
+	 *             if nutValidityInSeconds is less than 0
+	 */
+	public void setNutValidityInSeconds(final int nutValidityInSeconds) {
+		if (nutValidityInSeconds < 0) {
+			throw new IllegalArgumentException("nutValidityInSeconds must be greater than zero");
+		}
+		this.nutValidityInSeconds = nutValidityInSeconds;
+		this.nutValidityInMillis = nutValidityInSeconds * 1000;
+	}
+	
+	/**
+	 * Helper method which converts to millis
+	 */
+	public long getNutValidityInMillis() {
+		return nutValidityInMillis;
+	}
+
+	@XmlElement(required = false)
+	public SqrlQrCodeImageFormat getQrCodeImageFormat() {
+		return qrCodeImageFormat;
+	}
+
+	/**
+	 * @see #qrCodeImageFormat
+	 */
+	public void setQrCodeImageFormat(final SqrlQrCodeImageFormat qrCodeFileType) {
+		this.qrCodeImageFormat = qrCodeFileType;
+	}	
+	
+	@XmlElement(required = false)
+	public String[] getIpForwardedForHeader() {
+		return ipForwardedForHeader;
+	}
+	
+	/**
+	 * @see #ipForwardedForHeaders
+	 */
+	public void setIpForwardedForHeader(final String[] ipForwardedForHeader) {
+		this.ipForwardedForHeader = ipForwardedForHeader;
+	}
+
+	public List<String> getIpForwardedForHeaderList() {
+		if(ipForwardedForHeader == null) {
+			return Collections.emptyList();
+		}
+		return Arrays.asList(ipForwardedForHeader);
+	}
+	
+	public String getSqrlPersistenceFactoryClass() {
+		return sqrlPersistenceFactoryClass;
+	}
+
+	/**
+	 * @see #sqrlPersistenceFactoryClass
+	 */
+	public void setSqrlPersistenceFactoryClass(final String sqrlPersistenceFactoryClass) {
+		this.sqrlPersistenceFactoryClass = sqrlPersistenceFactoryClass;
+	}
+
+	@XmlElement(required = false)
+	public int getCleanupTaskExecInMinutes() {
+		return cleanupTaskExecInMinutes;
+	}
+
+	/**
+	 * @see #sqrlPersistenceFactoryClass
+	 */
+	public void setCleanupTaskExecInMinutes(final int cleanupTaskExecInMinutes) {
+		this.cleanupTaskExecInMinutes = cleanupTaskExecInMinutes;
+	}
+	
+	@XmlElement(required = false)
+	public long getAuthSyncCheckInMillis() {
+		return authSyncCheckInMillis;
+	}
+
+	/**
+	 * @see #authSyncCheckInMillis
+	 */
+	public void setAuthSyncCheckInMillis(final long authSyncCheckInMillis) {
+		this.authSyncCheckInMillis = authSyncCheckInMillis;
+	}
+	
+	@XmlElement(required = false)
+	public String getSqrlLoginServletPath() {
+		return sqrlLoginServletPath;
+	}
+
+	/**
+	 * @see #sqrlLoginServletPath
+	 */
+	public void setSqrlLoginServletPath(final String sqrlLoginServletPath) {
+		this.sqrlLoginServletPath = sqrlLoginServletPath;
+	}
+	
+	@XmlElement(required = false)
+	public boolean isEnableCps() {
+		return enableCps;
+	}
+	
+	/**
+	 * @see #enableCps
+	 */
+	public void setEnableCps(final boolean enableCps) {
+		this.enableCps = enableCps;
+	}
+
+	@XmlElement(required = false)
+	public String getCorrelatorCookieName() {
+		return correlatorCookieName;
+	}
+	
+	/**
+	 * @see #correlatorCookieName
+	 */
+	public void setCorrelatorCookieName(final String correlatorCookieName) {
+		this.correlatorCookieName = correlatorCookieName;
+	}
+
+	@XmlElement(required = false)
+	public String getFirstNutCookieName() {
+		return firstNutCookieName;
+	}
+
+	/**
+	 * @see #firstNutCookieName
+	 */
+	public void setFirstNutCookieName(final String firstNutCookieName) {
+		this.firstNutCookieName = firstNutCookieName;
+	}
+	
+	@XmlElement(required = false)
+	public String getCookieDomain() {
+		return cookieDomain;
+	}
+
+	/**
+	 * @see #cookieDomain
+	 */
+	public void setCookieDomain(final String cookieDomain) {
+		this.cookieDomain = cookieDomain;
+	}
+	
+	@XmlElement(required = false)
+	public String getCookiePath() {
+		return cookiePath;
+	}
+	
+	/**
+	 * @see #cookiePath
+	 */
+	public void setCookiePath(final String cookiePath) {
+		this.cookiePath = cookiePath;
+	}
+
+	@XmlTransient // Can only be overridden in code
+	public SecureRandom getSecureRandom() {
+		return secureRandom;
+	}
+
+	/**
+	 * @see #secureRandom
+	 */
+	public void setSecureRandom(final SecureRandom secureRandom) {
+		this.secureRandom = secureRandom;
+	}
+
+
+	@XmlElement(required = false)
 	public String getServerFriendlyName() {
 		return serverFriendlyName;
 	}
@@ -274,88 +436,15 @@ public class SqrlConfig {
 	public void setServerFriendlyName(final String serverFriendlyName) {
 		this.serverFriendlyName = serverFriendlyName;
 	}
-
+	
+	/**
+	 * The system time is certainly not part of our config, but this
+	 * provides an easy way for test cases to hardcode a time to 
+	 * generate repeatable tests
+	 * 
+	 * @return {@link System#currentTimeMillis()} 
+	 */
 	public long getCurrentTimeMs() {
 		return System.currentTimeMillis();
-	}
-
-	public String getSqrlPersistenceFactoryClass() {
-		return sqrlPersistenceFactoryClass;
-	}
-
-	public String getCorrelatorCookieName() {
-		return correlatorCookieName;
-	}
-
-	public String getFirstNutCookieName() {
-		return firstNutCookieName;
-	}
-
-	public void setFirstNutCookieName(final String firstNutCookieName) {
-		this.firstNutCookieName = firstNutCookieName;
-	}
-
-	public void setSqrlPersistenceFactoryClass(final String sqrlPersistenceFactoryClass) {
-		this.sqrlPersistenceFactoryClass = sqrlPersistenceFactoryClass;
-	}
-
-	public void setCorrelatorCookieName(final String correlatorCookieName) {
-		this.correlatorCookieName = correlatorCookieName;
-	}
-
-	public int getCleanupTaskExecInMinutes() {
-		return cleanupTaskExecInMinutes;
-	}
-
-	public void setCleanupTaskExecInMinutes(final int cleanupTaskExecInMinutes) {
-		this.cleanupTaskExecInMinutes = cleanupTaskExecInMinutes;
-	}
-
-	public String getClientAuthStateUpdaterClass() {
-		return clientAuthStateUpdaterClass;
-	}
-
-	public void setClientAuthStateUpdaterClass(final String clientAuthStateUpdaterClass) {
-		this.clientAuthStateUpdaterClass = clientAuthStateUpdaterClass;
-	}
-
-	public String getCookieDomain() {
-		return cookieDomain;
-	}
-
-	public void setCookieDomain(final String cookieDomain) {
-		this.cookieDomain = cookieDomain;
-	}
-
-	public String getCookiePath() {
-		return cookiePath;
-	}
-
-	public void setCookiePath(final String cookiePath) {
-		this.cookiePath = cookiePath;
-	}
-
-	public long getAuthSyncCheckInMillis() {
-		return authSyncCheckInMillis;
-	}
-
-	public void setAuthSyncCheckInMillis(final long authSyncCheckInMillis) {
-		this.authSyncCheckInMillis = authSyncCheckInMillis;
-	}
-
-	public String getSqrlLoginServletPath() {
-		return sqrlLoginServletPath;
-	}
-
-	public void setSqrlLoginServletPath(final String sqrlLoginServletPath) {
-		this.sqrlLoginServletPath = sqrlLoginServletPath;
-	}
-
-	public boolean isEnableCps() {
-		return enableCps;
-	}
-
-	public void setEnableCps(final boolean enableCps) {
-		this.enableCps = enableCps;
 	}
 }

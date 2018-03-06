@@ -19,6 +19,7 @@ import com.github.sqrlserverjava.SqrlPersistence;
 import com.github.sqrlserverjava.exception.SqrlClientRequestProcessingException;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.exception.SqrlNutTokenReplayedException;
+import com.github.sqrlserverjava.util.SqrlConfigHelper;
 import com.github.sqrlserverjava.util.SqrlConstants;
 
 /**
@@ -171,7 +172,7 @@ public class SqrlNutTokenUtil {
 		try {
 			final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 			// salt with aes key bytes
-			messageDigest.update(config.getAESKeyBytes());
+			messageDigest.update(SqrlConfigHelper.getAESKeyBytes(config));
 			final byte[] result = messageDigest.digest(requesterIpAddress.getAddress());
 			// Get the least significant 32 bits of the hash result
 			final byte[] toPack = new byte[IPV6_TO_PACK_BYTES];

@@ -96,7 +96,7 @@ public class SqrlClientRequestProcessor {
 		final List<SqrlRequestOpt> optList = new ArrayList<>(sqrlClientRequest.getOptList());
 
 		// Remove the key opts from the list since they are processed in SqrlServerOperations
-		for (final SqrlRequestOpt keyOpt : SqrlRequestOpt.getKeyOpts()) {
+		for (final SqrlRequestOpt keyOpt : SqrlRequestOpt.getKeyOpts()) { // TODO: rename core  opts?
 			optList.remove(keyOpt);
 		}
 

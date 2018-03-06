@@ -1,5 +1,9 @@
 package com.github.sqrlserverjava.enums;
 
 public enum SqrlQrCodeImageFormat {
-	PNG, JPG;
+	// @formatter:off
+	PNG, 
+	JPG,
+	;
+	// @formatter:on
 }

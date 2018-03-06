@@ -66,6 +66,6 @@ public class SqrlServerOperationsQrCodeTest {
 	public SqrlServerOperationsQrCodeTest(final SqrlQrCodeImageFormat imageFormat) {
 		super();
 		config = TCUtil.buildTestSqrlConfig();
-		config.setQrCodeFileType(imageFormat);
+		config.setQrCodeImageFormat(imageFormat);
 	}
 }

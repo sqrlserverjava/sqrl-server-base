@@ -1,5 +1,7 @@
 package com.github.sqrlserverjava;
 
+import java.util.Base64;
+
 import org.junit.Test;
 
 import com.github.sqrlserverjava.SqrlConfig;
@@ -31,31 +33,40 @@ public class SqrlConfigOperationsTest {
 	@Test
 	public void testValidateSqrlConfig_ConfigAesKeyTooBig() {
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
-		final int badLength = SqrlConstants.AES_KEY_LENGTH + 5;
-		config.setAESKeyBytes(new byte[badLength]);
+		config.setAesKeyBase64("oYqoDiWZiODUWDFSD2eJ5y8dNA==");
 		try {
 			new SqrlConfigOperations(config);
 			TestCase.fail("Exception expected");
 		} catch (final Exception e) {
 			StringAssert.assertContains("AES", e.getMessage());
 			StringAssert.assertContains("must be", e.getMessage());
-			StringAssert.assertContains(Integer.toString(badLength), e.getMessage());
 			StringAssert.assertContains(Integer.toString(SqrlConstants.AES_KEY_LENGTH), e.getMessage());
 		}
 	}
 
 	@Test
+	public void testValidateSqrlConfig_ConfigAesKeyNotBase64() {
+		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		config.setAesKeyBase64("oYqoDiW8dNA==");
+		try {
+			new SqrlConfigOperations(config);
+			TestCase.fail("Exception expected");
+		} catch (final Exception e) {
+			StringAssert.assertContains("Error base64 decoding", e.getMessage());
+		}
+	}
+	
+	@Test
 	public void testValidateSqrlConfig_ConfigAesKeyTooSmall() {
 		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
-		final int badLength = SqrlConstants.AES_KEY_LENGTH - 5;
-		config.setAESKeyBytes(new byte[badLength]);
+		String base64 = Base64.getEncoder().encodeToString(new byte[14]);
+		config.setAesKeyBase64("AAAAAAAAAAAAAAAAAAA=");
 		try {
 			new SqrlConfigOperations(config);
 			TestCase.fail("Exception expected");
 		} catch (final Exception e) {
 			StringAssert.assertContains("AES", e.getMessage());
 			StringAssert.assertContains("must be", e.getMessage());
-			StringAssert.assertContains(Integer.toString(badLength), e.getMessage());
 			StringAssert.assertContains(Integer.toString(SqrlConstants.AES_KEY_LENGTH), e.getMessage());
 		}
 	}

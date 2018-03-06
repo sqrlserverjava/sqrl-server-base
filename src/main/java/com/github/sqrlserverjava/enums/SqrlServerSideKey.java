@@ -5,9 +5,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public enum SqrlServerSideKey {
-	/**
-	 * The spec refers to all of these in lower case, so we will too. It breaks java convention but is more readable
+	/*
+	 * The spec defines these in lower case, so we do the same. It breaks java convention but is more readable 
 	 */
+	
 	// @formatter:off
 	idk(false),
 	pidk(false),

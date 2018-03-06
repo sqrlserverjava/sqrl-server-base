@@ -3,4 +3,6 @@
     <backchannelServletPath>sqrlbc</backchannelServletPath>
     <!-- Be sure to change this key! -->
     <aesKeyBase64>DhMncY4ErDcLRfwfyeN02Q==</aesKeyBase64>
+    <ipForwardedForHeader>one</ipForwardedForHeader>
+    <ipForwardedForHeader>two</ipForwardedForHeader>
 </sqrlConfig>

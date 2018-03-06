@@ -2,35 +2,129 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
    <xsd:complexType name="sqrlConfig">
       <xsd:sequence>
-         <xsd:element name="nutValidityInSeconds" type="xsd:int" minOccurs="0">
-         <xsd:annotation>
-			<xsd:documentation> The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time 
-			that can pass between us (server) generating the QR code and us receiving the clients response
-			
-	 		It is strongly recommended that this value be set to 15 minutes (default) or more as this is a new protocol. The
-	 		user may use SQRl quite infrequently at first and my need time to recall their SQRL password, remember how it
-	 		works etc.</xsd:documentation>
-			<xsd:documentation>Example: 900</xsd:documentation>
-		</xsd:annotation>
+    	<!--  *********************************************************************************************  -->
+		<!--  ********************************* REQUIRED ELEMENTS *****************************************  -->
+		<!--  *********************************************************************************************  -->
+         <xsd:element name="backchannelServletPath" type="xsd:string" minOccurs="1">
+            <xsd:annotation>
+	         	<xsd:documentation>the path to the servlet endpoint which will handle SQRL client backchannel requests
+	         	can be either a full URL,  a full URI, or a partial URI.  
+		 			Examples:  https://sqrljava.com:20000/sqrlexample/backchannel or /sqrlexample/backchannel
+		 			See TODO: point to sqrl-base-server SqrlCOnfig# javadoc> for more details</xsd:documentation>
+			</xsd:annotation>
          </xsd:element>
-         <xsd:element name="qrCodeFileType" type="sqrlQrCodeImageFormat" minOccurs="0"/>
-         <xsd:element name="backchannelServletPath" type="xsd:string" minOccurs="0"/>
+         
+         <xsd:element name="aesKeyBase64" type="xsd:base64Binary" minOccurs="1">
+            <xsd:annotation>
+	         	<xsd:documentation>The base64 encoded 16 byte AES key used to encrypt the SqrlNutToken
+	         	Example: DhMncY4ErDcLRfwfyeN02Q== </xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+      	<!--  *********************************************************************************************  -->
+		<!--  ******************************** RECOMMENDED ELEMENTS ******************************************  -->
+		<!--  *********************************************************************************************  -->
+         
+         <xsd:element name="ipForwardedForHeader" type="xsd:string" minOccurs="0" maxOccurs="10">
+        	<xsd:annotation>
+				<xsd:documentation> The header name (X-Forwarded-For, etc) from which to get the users real IP. SQRL
+	 				requires the users real IP to respond to the client correctly.  Multiple header names
+	 				can be defined; the headers will be checked in the order given.</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+      	<!--  *********************************************************************************************  -->
+		<!--  ******************************** OPTIONAL ELEMENTS ******************************************  -->
+		<!--  *********************************************************************************************  -->
+         <xsd:element name="clientAuthStateUpdaterClass" type="xsd:string" minOccurs="0">
+   			<xsd:annotation>
+	         	<xsd:documentation>The full classname of the SqrlClientAuthStateUpdater that will push status updates to the client
+	 				browser. The sqrl-sever-atomosphere project contains a prebuit updated which uses the atmosphere framework
+					Default: com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater</xsd:documentation>
+			</xsd:annotation>         
+         </xsd:element>
+
+         <xsd:element name="nutValidityInSeconds" type="xsd:int" minOccurs="0">
+	         <xsd:annotation>
+				<xsd:documentation> The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time 
+				that can pass between us (server) generating the QR code and us receiving the clients response
+				
+		 		It is strongly recommended that this value be set to 15 minutes (default) or more as this is a new protocol. The
+		 		user may use SQRL quite infrequently at first and my need time to recall their SQRL password, remember how it
+		 		works etc.  Default: 900</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+         <xsd:element name="qrCodeImageFormat" type="sqrlQrCodeImageFormat" minOccurs="0">
+     	 	<xsd:annotation>
+				<xsd:documentation> The image format (PNG or JPG) to generate QR codes in.  Default is PNG</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
          <xsd:element name="serverFriendlyName" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="aesKeyBytes" type="xsd:base64Binary" minOccurs="0"/>
-         <xsd:element name="ipForwardedForHeaders" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="sqrlPersistenceFactoryClass" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="correlatorCookieName" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="clientAuthStateUpdaterClass" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="cleanupTaskExecInMinutes" type="xsd:int" minOccurs="0"/>
-         <xsd:element name="authSyncCheckInMillis" type="xsd:long" minOccurs="0"/>
-         <xsd:element name="firstNutCookieName" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="cookieDomain" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="cookiePath" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="sqrlLoginServletPath" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="enableCps" type="xsd:boolean" minOccurs="0"/>
+         
+         <xsd:element name="sqrlPersistenceFactoryClass" type="xsd:string" minOccurs="0">
+           	<xsd:annotation>
+				<xsd:documentation> The SQRL persistence provider class which implements the SqrlPersistenceFactory interface.
+				Default: com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+         <xsd:element name="cleanupTaskExecInMinutes" type="xsd:int" minOccurs="0">
+           	<xsd:annotation>
+				<xsd:documentation>	 The frequency with which to execute {@link SqrlPersistence#cleanUpExpiredEntries()} via {@link java.util.Timer};
+					If an alternate cleanup mechanism is in use (DB stored procedure, etc), this should be set to -1
+					to disable the background task completely.  Default: 15</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+         <xsd:element name="authSyncCheckInMillis" type="xsd:long" minOccurs="0">
+             <xsd:annotation>
+				<xsd:documentation>	The amount of time in millis to pause in between persistence queries to see if the SQRL client has finished
+	 				authenticating users.  Default: 500</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+
+         <xsd:element name="sqrlLoginServletPath" type="xsd:string" minOccurs="0">
+              <xsd:annotation>
+				<xsd:documentation> The path to the servlet or request handler that processes SQRL <b>client</b> (not web browser) requests.  Default: /sqrllogin</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+         <xsd:element name="enableCps" type="xsd:boolean" minOccurs="0">
+              <xsd:annotation>
+				<xsd:documentation>	Whether or not CPS is enabled for this server.  Default: true</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+                  
+         <xsd:element name="correlatorCookieName" type="xsd:string" minOccurs="0">
+           	<xsd:annotation>
+				<xsd:documentation> The cookie name to use for the SQRL correlator during authentication.  Default: sqrlcorrelator</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+         <xsd:element name="firstNutCookieName" type="xsd:string" minOccurs="0">
+             <xsd:annotation>
+				<xsd:documentation>	The cookie name to use for storage of first SQRL nut generated during authentication.  Default: sqrlfirstnut</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+         <xsd:element name="cookieDomain" type="xsd:string" minOccurs="0">
+              <xsd:annotation>
+				<xsd:documentation>	The domain to set on all SQRL cookie.  Default: the domain (including subdomain) that the browser request came in on</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
+         <xsd:element name="cookiePath" type="xsd:string" minOccurs="0">
+              <xsd:annotation>
+				<xsd:documentation>	he path to set on SQRL cookies.  Default: /</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
       </xsd:sequence>
    </xsd:complexType>
+   
    <xsd:element name="sqrlConfig" type="sqrlConfig"/>
+   
    <xsd:simpleType name="sqrlQrCodeImageFormat">
       <xsd:restriction base="xsd:string">
          <xsd:enumeration value="PNG"/>

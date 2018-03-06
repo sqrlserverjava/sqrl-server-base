@@ -1,5 +1,6 @@
 package com.github.sqrlserverjava.util;
 
+import static com.github.sqrlserverjava.util.SqrlConstants.SQRL_ATOMOSPHERE_LIB_UPDATER_CLASS;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.stream.Collectors;
 
 import javax.xml.XMLConstants;
@@ -25,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.github.sqrlserverjava.SqrlConfig;
+import com.github.sqrlserverjava.exception.SqrlConfigSettingException;
 import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 
 public class SqrlConfigHelper {
@@ -100,6 +103,28 @@ public class SqrlConfigHelper {
 		logger.info("Found resource {} at {}", name, url.getPath());
 		return url;
 	}
+	
+	public static byte[] getAESKeyBytes(SqrlConfig sqrlConfig) {
+		String aesKeyBase64 = sqrlConfig.getAesKeyBase64();
+		byte[] aesKeyBytes = null;
+		if(SqrlUtil.isBlank(aesKeyBase64)) {
+			logger.warn("No AES key set, generating new one");
+			aesKeyBytes = new byte[SqrlConstants.AES_KEY_LENGTH];
+			sqrlConfig.getSecureRandom().nextBytes(aesKeyBytes);
+			sqrlConfig.setAesKeyBase64(Base64.getEncoder().encodeToString(aesKeyBytes));
+		} else {
+			try {
+				aesKeyBytes = Base64.getDecoder().decode(aesKeyBase64);
+			} catch (IllegalArgumentException e) {
+				throw new SqrlConfigSettingException("Error base64 decoding SqrlConfig AES key", e);
+			}
+			if (aesKeyBytes.length != SqrlConstants.AES_KEY_LENGTH) {
+				throw new SqrlConfigSettingException("SqrlConfig AES key must be " + SqrlConstants.AES_KEY_LENGTH
+						+ " bytes, found " + aesKeyBytes.length);
+			}
+		}
+		return aesKeyBytes;
+	}
 
 	/**
 	 * Populates any optional data on the given SqrlConfig object
@@ -110,6 +135,11 @@ public class SqrlConfigHelper {
 		// Set secure random if it is null
 		if (sqrlConfig.getSecureRandom() == null) {
 			sqrlConfig.setSecureRandom(new SecureRandom());
+		}
+		// If clientAuthStateUpdatedClass was not explicitly set and the sqrl-sever-atomosphere library
+		// is present, then use the sqrl-sever-atomosphere librarys updater class
+		if(sqrlConfig.getClientAuthStateUpdaterClass() == null && SqrlUtil.isClassOnClasspath(SQRL_ATOMOSPHERE_LIB_UPDATER_CLASS)) {
+			sqrlConfig.setClientAuthStateUpdaterClass(SQRL_ATOMOSPHERE_LIB_UPDATER_CLASS);
 		}
 	}
 

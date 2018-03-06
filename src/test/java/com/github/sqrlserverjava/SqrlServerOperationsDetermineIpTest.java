@@ -45,7 +45,7 @@ public class SqrlServerOperationsDetermineIpTest {
 			final String ipToSetOnRequest, final String[] headersToSetOnRequest) throws UnknownHostException {
 		super();
 		this.expectedIp = InetAddress.getByName(expectedIp);
-		config.setIpForwardedForHeaders(headerConfigSetting);
+		config.setIpForwardedForHeader(headerConfigSetting);
 		request.setRemoteHost(ipToSetOnRequest);
 		if (headersToSetOnRequest != null) {
 			for (int i = 0; i < headersToSetOnRequest.length; i += 2) {

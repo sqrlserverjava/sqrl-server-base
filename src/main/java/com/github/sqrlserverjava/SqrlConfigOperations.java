@@ -9,6 +9,7 @@ import java.net.URL;
 import java.security.Key;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.github.sqrlserverjava.exception.SqrlConfigSettingException;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
+import com.github.sqrlserverjava.util.SqrlConfigHelper;
 import com.github.sqrlserverjava.util.SqrlConstants;
 import com.github.sqrlserverjava.util.SqrlServiceExecutor;
 import com.github.sqrlserverjava.util.SqrlUtil;
@@ -59,7 +61,7 @@ public class SqrlConfigOperations {
 	public SqrlConfigOperations(final SqrlConfig config) {
 		this.config = config;
 
-		// SecureRandom init
+		// SecureRandom
 		final SecureRandom secureRandom = config.getSecureRandom();
 		if (secureRandom == null) {
 			throw new SqrlConfigSettingException("config.getSecureRandom() was null");
@@ -76,15 +78,7 @@ public class SqrlConfigOperations {
 		// Server Friendly Name - not required, we can compute from server name if necessary
 
 		// AES key init
-		byte[] aesKeyBytes = config.getAESKeyBytes();
-		if (aesKeyBytes == null || aesKeyBytes.length == 0) {
-			logger.warn("No AES key set, generating new one");
-			aesKeyBytes = new byte[SqrlConstants.AES_KEY_LENGTH];
-			secureRandom.nextBytes(aesKeyBytes);
-		} else if (aesKeyBytes.length != SqrlConstants.AES_KEY_LENGTH) {
-			throw new SqrlConfigSettingException("SqrlConfig AES key must be " + SqrlConstants.AES_KEY_LENGTH
-					+ " bytes, found " + aesKeyBytes.length);
-		}
+		byte[] aesKeyBytes = SqrlConfigHelper.getAESKeyBytes(config);
 		aesKey = new SecretKeySpec(aesKeyBytes, 0, aesKeyBytes.length, "AES");
 
 		// backchannelServletPath

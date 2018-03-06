@@ -156,7 +156,7 @@ public class SqrlBrowserFacingOperations {
 				}
 			}
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			ImageIO.write(image, config.getQrCodeFileType().toString().toLowerCase(), os);
+			ImageIO.write(image, config.getQrCodeImageFormat().toString().toLowerCase(), os);
 			return os;
 		} catch (final IOException | WriterException e) {
 			throw new SqrlException("Caught exception during QR code generation", e);

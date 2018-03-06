@@ -65,7 +65,7 @@ public class SqrlServerOperations {
 		this.sqrlBrowserFacingOperations = new SqrlBrowserFacingOperations(config, configOperations);
 		this.sqrlClientFacingOperations = new SqrlClientFacingOperations(config, configOperations);
 
-		// It's bad form to pass this to another object from our constructor since technically, we aren't
+		// It's bad form to pass "this" to another object from our constructor since technically, we aren't
 		// completely initialized. But here we do so as the only tasks left are administrative
 		if (authStateMonitorInitialized.get() == false) {
 			initializeSqrlClientAuthStateUpdater(config, this);

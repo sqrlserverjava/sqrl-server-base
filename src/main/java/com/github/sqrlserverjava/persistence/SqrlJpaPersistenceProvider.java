@@ -32,9 +32,11 @@ import com.github.sqrlserverjava.exception.SqrlPersistenceException;
 /**
  * The default implementation of {@link SqrlPersistence} which uses JPA in order to provide SQL and no-SQL connectivity.
  * <p>
- * Web apps should not use this class directly, instead {@link SqrlServerOperations} should be used
+ * Web apps should not use this class directly, use {@link SqrlServerOperations} instead 
  *
  * @author Dave Badia
+ * 
+ * @see SqrlServerOperations
  *
  */
 public class SqrlJpaPersistenceProvider implements SqrlPersistence {

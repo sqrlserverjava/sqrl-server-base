@@ -29,10 +29,9 @@ import com.github.sqrlserverjava.util.SqrlServiceExecutor;
 import junitx.util.PrivateAccessor;
 
 public class TCUtil {
-	public static final Date	AWHILE_FROM_NOW							= new Date(
-			System.currentTimeMillis() + 1000000);
-	static final String			DEFAULT_CONFIG_SQRL_BACKCHANNEL_PATH	= "http://127.0.0.1:8080/sqrlbc";
-	static final byte[]			AES_TEST_KEY							= new byte[16];
+	public static final Date AWHILE_FROM_NOW = new Date(System.currentTimeMillis() + 1000000);
+	static final String DEFAULT_CONFIG_SQRL_BACKCHANNEL_PATH = "http://127.0.0.1:8080/sqrlbc";
+	static final String AES_TEST_KEY = Base64.getEncoder().encodeToString(new byte[16]);
 
 	static class TCSqrlConfig extends SqrlConfig {
 		private final long timestampForNextNut;
@@ -65,7 +64,7 @@ public class TCUtil {
 		config.setServerFriendlyName("Dave Test");
 		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
 		// set AES key to all zeros for test cases
-		config.setAESKeyBytes(AES_TEST_KEY);
+		config.setAesKeyBase64(AES_TEST_KEY);
 
 		return config;
 	}
@@ -78,7 +77,7 @@ public class TCUtil {
 		config.setServerFriendlyName("Dave Test");
 		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
 		// set AES key to all zeros for test cases
-		config.setAESKeyBytes(AES_TEST_KEY);
+		config.setAesKeyBase64(AES_TEST_KEY);
 		// TestSecureRandom isn't random at all which is very fast
 		// If we didn't set a secure random, SecureRandom.getInstance will be called
 		// which would slow down most of our test cases for no good reason

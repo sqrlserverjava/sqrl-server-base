@@ -421,4 +421,13 @@ public class SqrlUtil {
 		}
 		return buf.toString();
 	}
+
+	public static boolean isClassOnClasspath(String classToFind) {
+		try {
+			Class.forName(classToFind);
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+	}
 }

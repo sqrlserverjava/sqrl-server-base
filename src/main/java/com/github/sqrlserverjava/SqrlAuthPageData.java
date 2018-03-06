@@ -41,7 +41,7 @@ public class SqrlAuthPageData {
 	}
 
 	public String getHtmlFileType(final SqrlConfig sqrlConfig) {
-		return sqrlConfig.getQrCodeFileType().toString().toLowerCase();
+		return sqrlConfig.getQrCodeImageFormat().toString().toLowerCase();
 	}
 
 }

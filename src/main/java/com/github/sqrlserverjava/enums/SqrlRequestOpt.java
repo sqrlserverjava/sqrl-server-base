@@ -9,6 +9,10 @@ import java.util.Set;
  * @author Dave Badia
  */
 public enum SqrlRequestOpt {
+	/*
+	 * The spec defines these in lower case, so we do the same. It breaks java convention but is more readable 
+	 */
+	
 	/**
 	 * “suk” is the abbreviation for Server Unlock Key. The presence of this flag instructs the SQRL server to return
 	 * the stored server unlock key (SUK) associated with whichever identity matches the identity supplied by the SQRL

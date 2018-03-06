@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sqrlConfig>
-	<clientAuthStateUpdaterClass>com.MyClass</clientAuthStateUpdaterClass>
-	<nutValidityInSeconds>900</nutValidityInSeconds>
-	<qrCodeFileType>PNG</qrCodeFileType>
-	<sqrlPersistenceFactoryClass>com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory</sqrlPersistenceFactoryClass>
-	<correlatorCookieName>sqrlcorrelator</correlatorCookieName>
-	<cleanupTaskExecInMinutes>15</cleanupTaskExecInMinutes>
-	<authSyncCheckInMillis>500</authSyncCheckInMillis>
-	<firstNutCookieName>sqrlfirstnut</firstNutCookieName>
-	<cookiePath>/</cookiePath>
-	<sqrlLoginServletPath>/sqrllogin</sqrlLoginServletPath>
-	<enableCps>true</enableCps>
+    <backchannelServletPath>sqrlbc</backchannelServletPath>
+    <aesKeyBase64>oYqoDiWZiODUW2eJ5y8dNA==</aesKeyBase64>
+    <ipForwardedForHeader>one</ipForwardedForHeader>
+    <clientAuthStateUpdaterClass>com.me.MyClientAuthStateUpdaterClass</clientAuthStateUpdaterClass>
+    <nutValidityInSeconds>300</nutValidityInSeconds>
+    <qrCodeImageFormat>PNG</qrCodeImageFormat>
+    <sqrlPersistenceFactoryClass>com.me.MySqrlPersistenceFactoryClass</sqrlPersistenceFactoryClass>
+    <cleanupTaskExecInMinutes>9</cleanupTaskExecInMinutes>
+    <authSyncCheckInMillis>200</authSyncCheckInMillis>
+    <sqrlLoginServletPath>/customPath</sqrlLoginServletPath>
+    <enableCps>false</enableCps>
+    <correlatorCookieName>cc</correlatorCookieName>
+    <firstNutCookieName>sfnc</firstNutCookieName>
+    <cookieDomain>sauth.me.com</cookieDomain>
+    <cookiePath>/sauth</cookiePath>
 </sqrlConfig>

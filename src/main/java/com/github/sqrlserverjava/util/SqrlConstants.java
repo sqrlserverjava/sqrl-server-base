@@ -1,5 +1,7 @@
 package com.github.sqrlserverjava.util;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
@@ -26,6 +28,7 @@ public class SqrlConstants {
 	// @formatter:off
 
 	public static final String	UTF8				= "UTF-8";
+	public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
 	public static final String	SCHEME_HTTP			= "http";
 	public static final String	SCHEME_HTTP_COLON	= SCHEME_HTTP + ":";
 	public static final String	SCHEME_HTTPS		= "https";
@@ -47,6 +50,8 @@ public class SqrlConstants {
 	 * Token being any request param, correlator, nut token, etc
 	 */
 	public static final int		MAX_SQRL_TOKEN_SIZE	= 30000;
+
+	public static final String SQRL_ATOMOSPHERE_LIB_UPDATER_CLASS = "com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater";
 
 	private SqrlConstants() {
 		// Constants class
