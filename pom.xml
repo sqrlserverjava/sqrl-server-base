@@ -51,26 +51,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
-						</configuration>
-						<phase>verify</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 	<scm>
 		<connection>scm:git:git@github.com:sqrlserverjava/sqrl-server-base.git</connection>
 		<developerConnection>scm:git:git@github.com:sqrlserverjava/sqrl-server-base.git</developerConnection>
