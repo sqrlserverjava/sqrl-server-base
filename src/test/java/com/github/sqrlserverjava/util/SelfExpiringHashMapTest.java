@@ -12,7 +12,7 @@ import org.junit.Test;
  */
 public class SelfExpiringHashMapTest {
 
-	private final static int SLEEP_MULTIPLIER = 10;
+	private final static int SLEEP_MULTIPLIER = 50;
 
 	@Test
 	public void basicGetTest() throws InterruptedException {
