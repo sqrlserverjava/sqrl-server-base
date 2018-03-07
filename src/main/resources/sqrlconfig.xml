@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sqrlConfig>
+    <backchannelServletPath>sqrlbc</backchannelServletPath>
+    <!-- Be sure to change this key! -->
+    <aesKeyBase64>DhMncY4ErDcLRfwfyeN02Q==</aesKeyBase64>
+</sqrlConfig>
