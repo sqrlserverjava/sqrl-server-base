@@ -43,14 +43,6 @@ public class SqrlUtilTest {
 	}
 
 	@Test
-	public void testIt() throws Exception {
-		final String loginRequestUrl = "http://sqrljava.tech/sqrlexample/app";
-		final MockHttpServletRequest request = TCUtil.buildMockRequest(loginRequestUrl);
-		final String actual = SqrlUtil.computeSfnFromUrl(request);
-		assertEquals("sqrljava.tech", actual);
-	}
-
-	@Test
 	public void testExtractCookieDomain() throws Exception {
 		final String loginRequestUrl = "http://sqrljava.tech/sqrlexample/app";
 		final MockHttpServletRequest request = TCUtil.buildMockRequest(loginRequestUrl);

@@ -85,14 +85,6 @@ public class SqrlBrowserFacingOperations {
 		// Now we append the nut and our SFN
 		final SqrlNutToken nut = SqrlNutTokenUtil.buildNut(config, configOperations, backchannelUri, userInetAddress);
 		urlBuf.append("?nut=").append(nut.asBase64UrlEncryptedNut());
-		// Append the SFN
-		String sfn = config.getServerFriendlyName();
-		if (sfn == null) {
-			// Auto compute the SFN from the server URL
-			sfn = SqrlUtil.computeSfnFromUrl(request);
-			config.setServerFriendlyName(sfn);
-		}
-		urlBuf.append("&sfn=").append(SqrlUtil.sqrlBase64UrlEncode(sfn));
 		try (SqrlAutoCloseablePersistence sqrlPersistence = SqrlServerOperations
 				.createSqrlPersistence(configOperations)) {
 			// Append our correlation id

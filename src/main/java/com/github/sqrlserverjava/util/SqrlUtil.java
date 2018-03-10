@@ -242,17 +242,6 @@ public class SqrlUtil {
 	}
 
 	/**
-	 * Internal use only. Computes the SQRL server friendly name (SFN) from the servers URl. Typically used if a SFN is
-	 * not specified in the config
-	 *
-	 * @param request
-	 * @return
-	 */
-	public static String computeSfnFromUrl(final HttpServletRequest request) {
-		return request.getServerName();
-	}
-
-	/**
 	 * Internal use only. Builds a string of name value pairs from the request
 	 *
 	 * @param servletRequest
