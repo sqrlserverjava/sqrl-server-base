@@ -9,7 +9,6 @@ import java.net.URL;
 import java.security.Key;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -54,11 +53,11 @@ public class SqrlConfigOperations {
 
 	/**
 	 * Internal use only.
-	 *
+	 *	
 	 * @param config
 	 *            the SQRL config object
 	 */
-	public SqrlConfigOperations(final SqrlConfig config) {
+	SqrlConfigOperations(final SqrlConfig config) {
 		this.config = config;
 
 		// SecureRandom

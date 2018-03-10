@@ -1,14 +1,10 @@
 package com.github.sqrlserverjava;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.Base64;
 
 import javax.xml.bind.JAXBContext;
@@ -19,8 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.github.sqrlserverjava.enums.SqrlQrCodeImageFormat;
-
-import junitx.framework.ArrayAssert;
 
 public class SqrlConfigTest {
 	private static JAXBContext jaxbContext = null;

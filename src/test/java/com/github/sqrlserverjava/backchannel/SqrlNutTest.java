@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlConfigOperations;
+import com.github.sqrlserverjava.SqrlConfigOperationsFactory;
 import com.github.sqrlserverjava.TCUtil;
 
 public class SqrlNutTest {
@@ -22,7 +23,7 @@ public class SqrlNutTest {
 	@Test
 	public void testNut_getters() throws Exception {
 		config.setBackchannelServletPath("http://davetest.com/sqrl");
-		final SqrlConfigOperations configOps = new SqrlConfigOperations(config);
+		final SqrlConfigOperations configOps = SqrlConfigOperationsFactory.get(config);
 		final long timestamp = 1461244576746L;
 		final int inetInt = 4;
 		final int counter = 234;
@@ -47,7 +48,7 @@ public class SqrlNutTest {
 	@Test
 	public void testNut_parse() throws Exception {
 		config.setBackchannelServletPath("http://davetest.com/sqrl");
-		final SqrlConfigOperations configOps = new SqrlConfigOperations(config);
+		final SqrlConfigOperations configOps = SqrlConfigOperationsFactory.get(config);
 		final SqrlNutToken nut = new SqrlNutToken(configOps, "QwJJFrvH1jBXakjOh_vVqg");
 		assertEquals(4, nut.getInetInt());
 		assertEquals(234, nut.getCounter());

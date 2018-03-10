@@ -60,7 +60,7 @@ public class SqrlServerOperations {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
 		this.config = config;
-		this.configOperations = new SqrlConfigOperations(config);
+		this.configOperations = SqrlConfigOperationsFactory.get(config);
 		this.persistenceFactory = configOperations.getSqrlPersistenceFactory();
 		this.sqrlBrowserFacingOperations = new SqrlBrowserFacingOperations(config, configOperations);
 		this.sqrlClientFacingOperations = new SqrlClientFacingOperations(config, configOperations);

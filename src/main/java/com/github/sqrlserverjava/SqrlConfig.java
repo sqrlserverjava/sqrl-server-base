@@ -2,13 +2,10 @@ package com.github.sqrlserverjava;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -16,7 +13,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import com.github.sqrlserverjava.backchannel.SqrlNutToken;
 import com.github.sqrlserverjava.enums.SqrlQrCodeImageFormat;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
-import com.github.sqrlserverjava.util.SqrlConstants;
 
 // @formatter:off
 /**
@@ -446,5 +442,149 @@ public class SqrlConfig {
 	 */
 	public long getCurrentTimeMs() {
 		return System.currentTimeMillis();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((aesKeyBase64 == null) ? 0 : aesKeyBase64.hashCode());
+		result = prime * result + (int) (authSyncCheckInMillis ^ (authSyncCheckInMillis >>> 32));
+		result = prime * result + ((backchannelServletPath == null) ? 0 : backchannelServletPath.hashCode());
+		result = prime * result + cleanupTaskExecInMinutes;
+		result = prime * result + ((clientAuthStateUpdaterClass == null) ? 0 : clientAuthStateUpdaterClass.hashCode());
+		result = prime * result + ((cookieDomain == null) ? 0 : cookieDomain.hashCode());
+		result = prime * result + ((cookiePath == null) ? 0 : cookiePath.hashCode());
+		result = prime * result + ((correlatorCookieName == null) ? 0 : correlatorCookieName.hashCode());
+		result = prime * result + (enableCps ? 1231 : 1237);
+		result = prime * result + ((firstNutCookieName == null) ? 0 : firstNutCookieName.hashCode());
+		result = prime * result + Arrays.hashCode(ipForwardedForHeader);
+		result = prime * result + (int) (nutValidityInMillis ^ (nutValidityInMillis >>> 32));
+		result = prime * result + nutValidityInSeconds;
+		result = prime * result + ((qrCodeImageFormat == null) ? 0 : qrCodeImageFormat.hashCode());
+		result = prime * result + ((secureRandom == null) ? 0 : secureRandom.hashCode());
+		result = prime * result + ((serverFriendlyName == null) ? 0 : serverFriendlyName.hashCode());
+		result = prime * result + ((sqrlLoginServletPath == null) ? 0 : sqrlLoginServletPath.hashCode());
+		result = prime * result + ((sqrlPersistenceFactoryClass == null) ? 0 : sqrlPersistenceFactoryClass.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		SqrlConfig other = (SqrlConfig) obj;
+		if (aesKeyBase64 == null) {
+			if (other.aesKeyBase64 != null) {
+				return false;
+			}
+		} else if (!aesKeyBase64.equals(other.aesKeyBase64)) {
+			return false;
+		}
+		if (authSyncCheckInMillis != other.authSyncCheckInMillis) {
+			return false;
+		}
+		if (backchannelServletPath == null) {
+			if (other.backchannelServletPath != null) {
+				return false;
+			}
+		} else if (!backchannelServletPath.equals(other.backchannelServletPath)) {
+			return false;
+		}
+		if (cleanupTaskExecInMinutes != other.cleanupTaskExecInMinutes) {
+			return false;
+		}
+		if (clientAuthStateUpdaterClass == null) {
+			if (other.clientAuthStateUpdaterClass != null) {
+				return false;
+			}
+		} else if (!clientAuthStateUpdaterClass.equals(other.clientAuthStateUpdaterClass)) {
+			return false;
+		}
+		if (cookieDomain == null) {
+			if (other.cookieDomain != null) {
+				return false;
+			}
+		} else if (!cookieDomain.equals(other.cookieDomain)) {
+			return false;
+		}
+		if (cookiePath == null) {
+			if (other.cookiePath != null) {
+				return false;
+			}
+		} else if (!cookiePath.equals(other.cookiePath)) {
+			return false;
+		}
+		if (correlatorCookieName == null) {
+			if (other.correlatorCookieName != null) {
+				return false;
+			}
+		} else if (!correlatorCookieName.equals(other.correlatorCookieName)) {
+			return false;
+		}
+		if (enableCps != other.enableCps) {
+			return false;
+		}
+		if (firstNutCookieName == null) {
+			if (other.firstNutCookieName != null) {
+				return false;
+			}
+		} else if (!firstNutCookieName.equals(other.firstNutCookieName)) {
+			return false;
+		}
+		if (!Arrays.equals(ipForwardedForHeader, other.ipForwardedForHeader)) {
+			return false;
+		}
+		if (nutValidityInMillis != other.nutValidityInMillis) {
+			return false;
+		}
+		if (nutValidityInSeconds != other.nutValidityInSeconds) {
+			return false;
+		}
+		if (qrCodeImageFormat != other.qrCodeImageFormat) {
+			return false;
+		}
+		if (secureRandom == null) {
+			if (other.secureRandom != null) {
+				return false;
+			}
+		} else if (!secureRandom.equals(other.secureRandom)) {
+			return false;
+		}
+		if (serverFriendlyName == null) {
+			if (other.serverFriendlyName != null) {
+				return false;
+			}
+		} else if (!serverFriendlyName.equals(other.serverFriendlyName)) {
+			return false;
+		}
+		if (sqrlLoginServletPath == null) {
+			if (other.sqrlLoginServletPath != null) {
+				return false;
+			}
+		} else if (!sqrlLoginServletPath.equals(other.sqrlLoginServletPath)) {
+			return false;
+		}
+		if (sqrlPersistenceFactoryClass == null) {
+			if (other.sqrlPersistenceFactoryClass != null) {
+				return false;
+			}
+		} else if (!sqrlPersistenceFactoryClass.equals(other.sqrlPersistenceFactoryClass)) {
+			return false;
+		}
+		return true;
 	}
 }
