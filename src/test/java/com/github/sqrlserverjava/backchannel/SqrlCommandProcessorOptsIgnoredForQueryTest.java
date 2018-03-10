@@ -14,7 +14,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
@@ -49,15 +49,15 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 	public void testIt() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		TCUtil.createEmptySqrlPersistence();
-		TCUtil.setupIdk(idk, "abc", "123");
+		TestCaseUtil.createEmptySqrlPersistence();
+		TestCaseUtil.setupIdk(idk, "abc", "123");
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.QUERY,
 				correlator, false,
 				opt);
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate - everything should be normal since these flags are ignored on a query command
@@ -80,8 +80,8 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 	public SqrlCommandProcessorOptsIgnoredForQueryTest(final SqrlRequestOpt opt) throws Exception {
 		super();
 		this.opt = opt;
-		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
-		config = TCUtil.buildTestSqrlConfig();
+		sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
+		config = TestCaseUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 	}
 }

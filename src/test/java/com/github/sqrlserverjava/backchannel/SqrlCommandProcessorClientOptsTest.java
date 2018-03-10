@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
@@ -22,8 +22,8 @@ public class SqrlCommandProcessorClientOptsTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
-		config = TCUtil.buildTestSqrlConfig();
+		sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
+		config = TestCaseUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 	}
 
@@ -36,7 +36,7 @@ public class SqrlCommandProcessorClientOptsTest {
 	public void testOptCps_NotSupported() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		TCUtil.setupIdk(idk, correlator, "123");
+		TestCaseUtil.setupIdk(idk, correlator, "123");
 
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
 				correlator, false,
@@ -44,7 +44,7 @@ public class SqrlCommandProcessorClientOptsTest {
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
@@ -58,7 +58,7 @@ public class SqrlCommandProcessorClientOptsTest {
 	public void testOptHardlock_NotSupported() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		TCUtil.setupIdk(idk, correlator, "123");
+		TestCaseUtil.setupIdk(idk, correlator, "123");
 
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
 				correlator, false,
@@ -66,7 +66,7 @@ public class SqrlCommandProcessorClientOptsTest {
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
@@ -80,7 +80,7 @@ public class SqrlCommandProcessorClientOptsTest {
 	public void testOptSqrlOnly_NotSupported() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		TCUtil.setupIdk(idk, correlator, "123");
+		TestCaseUtil.setupIdk(idk, correlator, "123");
 
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
 				correlator, false,
@@ -88,7 +88,7 @@ public class SqrlCommandProcessorClientOptsTest {
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate
@@ -103,14 +103,14 @@ public class SqrlCommandProcessorClientOptsTest {
 	public void testOptNoIpTest() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		TCUtil.setupIdk(idk, correlator, "123");
+		TestCaseUtil.setupIdk(idk, correlator, "123");
 
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
 				correlator, false, SqrlRequestOpt.noiptest);
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 
 		// Validate

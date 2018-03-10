@@ -26,14 +26,14 @@ public class SqrlServerOperationsTest {
 		final String loginRequestUrl = "https://sqrljava.com:20000/sqrlexample/sqrllogin";
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 		config.setBackchannelServletPath(configBackchannelPath);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 
 		// Generate the login page data
-		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);
+		final MockHttpServletRequest loginPageRequest = TestCaseUtil.buildMockRequest(loginRequestUrl);
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
 		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
 				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,

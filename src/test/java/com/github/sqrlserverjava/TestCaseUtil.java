@@ -28,7 +28,7 @@ import com.github.sqrlserverjava.util.SqrlServiceExecutor;
 
 import junitx.util.PrivateAccessor;
 
-public class TCUtil {
+public class TestCaseUtil {
 	public static final Date AWHILE_FROM_NOW = new Date(System.currentTimeMillis() + 1000000);
 	static final String DEFAULT_CONFIG_SQRL_BACKCHANNEL_PATH = "http://127.0.0.1:8080/sqrlbc";
 	static final String AES_TEST_KEY = Base64.getEncoder().encodeToString(new byte[16]);
@@ -48,7 +48,7 @@ public class TCUtil {
 
 	@SuppressWarnings("deprecation")
 	public static final SqrlConfig buildTestSqrlConfig(final String nutString) throws Exception {
-		final SqrlNutToken nutToken = new SqrlNutToken(new SqrlConfigOperations(TCUtil.buildTestSqrlConfig()),
+		final SqrlNutToken nutToken = new SqrlNutToken(new SqrlConfigOperations(TestCaseUtil.buildTestSqrlConfig()),
 				nutString);
 
 		final SqrlConfig config = new TCSqrlConfig(nutToken.getIssuedTimestampMillis());
@@ -88,9 +88,9 @@ public class TCUtil {
 
 	public static void setupSqrlPersistence(final String correlatorFromServerParam, final String serverParam)
 			throws Throwable {
-		final SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
+		final SqrlPersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
 		final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlatorFromServerParam,
-				TCUtil.AWHILE_FROM_NOW);
+				TestCaseUtil.AWHILE_FROM_NOW);
 		if (serverParam != null) {
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		}
@@ -100,7 +100,7 @@ public class TCUtil {
 	@SuppressWarnings("deprecation") // OK for test case use
 	public static SqrlPersistence setupIdk(final String idk, final String correlator, final String serverParam) {
 		final SqrlPersistence persistence = new SqrlJpaPersistenceProvider();
-		final SqrlCorrelator sqrlCorrelator = persistence.createCorrelator(correlator, TCUtil.AWHILE_FROM_NOW);
+		final SqrlCorrelator sqrlCorrelator = persistence.createCorrelator(correlator, TestCaseUtil.AWHILE_FROM_NOW);
 		if (serverParam != null) {
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		}
@@ -202,7 +202,7 @@ public class TCUtil {
 	}
 
 	public static SqrlAutoCloseablePersistence createSqrlPersistence() {
-		return new SqrlAutoCloseablePersistence(new SqrlConfigOperations(TCUtil.buildTestSqrlConfig())
+		return new SqrlAutoCloseablePersistence(new SqrlConfigOperations(TestCaseUtil.buildTestSqrlConfig())
 				.getSqrlPersistenceFactory().createSqrlPersistence());
 	}
 

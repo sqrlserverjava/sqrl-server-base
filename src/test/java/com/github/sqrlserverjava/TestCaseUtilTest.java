@@ -19,7 +19,7 @@ import junit.framework.TestCase;
  *
  */
 @RunWith(Parameterized.class)
-public class TCUtilTest {
+public class TestCaseUtilTest {
 
 	@Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
 	public static Collection<Object[]> data() {
@@ -39,7 +39,7 @@ public class TCUtilTest {
 
 	@Test
 	public void testBuildMockHttpRequest() throws URISyntaxException {
-		final MockHttpServletRequest request = TCUtil.buildMockRequest(urlString);
+		final MockHttpServletRequest request = TestCaseUtil.buildMockRequest(urlString);
 		TestCase.assertNotNull(request);
 		TestCase.assertEquals(expectedProtocol, request.getScheme());
 		TestCase.assertEquals(expectedHostname, request.getServerName());
@@ -54,7 +54,7 @@ public class TCUtilTest {
 	private final int		expectedPort;
 	private final String	expectedQueryString;
 
-	public TCUtilTest(final String urlString, final String expectedProtocol, final String expectedHostname,
+	public TestCaseUtilTest(final String urlString, final String expectedProtocol, final String expectedHostname,
 			final int expectedPort, final String expectedQueryString) {
 		super();
 		this.urlString = urlString;

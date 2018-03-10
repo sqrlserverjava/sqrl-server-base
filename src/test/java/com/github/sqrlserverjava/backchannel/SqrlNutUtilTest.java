@@ -16,20 +16,20 @@ import org.junit.Test;
 
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.exception.SqrlException;
 
 import junitx.framework.ArrayAssert;
 import junitx.framework.ObjectAssert;
 
 public class SqrlNutUtilTest {
-	private SqrlConfig		config		= TCUtil.buildTestSqrlConfig();
+	private SqrlConfig		config		= TestCaseUtil.buildTestSqrlConfig();
 	private SqrlPersistence	persistence	= null;
 
 	@Before
 	public void setup() throws Exception {
-		config = TCUtil.buildTestSqrlConfig();
-		persistence = TCUtil.createEmptySqrlPersistence();
+		config = TestCaseUtil.buildTestSqrlConfig();
+		persistence = TestCaseUtil.createEmptySqrlPersistence();
 	}
 
 	/* *************** URLs with http:// or https:// *****************/
@@ -180,7 +180,7 @@ public class SqrlNutUtilTest {
 	public void testNutExpiry() throws SqrlException {
 		final int nutValidityInSeconds = 1000;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
-		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config);
+		final SqrlNutToken nut = TestCaseUtil.buildValidSqrlNut(config);
 		final long nutIssuedTime = nut.getIssuedTimestampMillis();
 		final long expiresAt = SqrlNutTokenUtil.computeNutExpiresAt(nut, config);
 		assertTrue(expiresAt > nutIssuedTime);
@@ -191,7 +191,7 @@ public class SqrlNutUtilTest {
 	public void testNutExpiry2() throws SqrlException {
 		final int nutValidityInSeconds = 180;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
-		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config);
+		final SqrlNutToken nut = TestCaseUtil.buildValidSqrlNut(config);
 		final long nutIssuedTime = nut.getIssuedTimestampMillis();
 		final long expiresAt = SqrlNutTokenUtil.computeNutExpiresAt(nut, config);
 		assertTrue(expiresAt > nutIssuedTime);
@@ -209,7 +209,7 @@ public class SqrlNutUtilTest {
 		final int nutValidityInSeconds = 1000;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
-		final SqrlNutToken nut = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
+		final SqrlNutToken nut = TestCaseUtil.buildValidSqrlNut(config, tokenIssuedAt);
 		final long nutIssuedTime = nut.getIssuedTimestampMillis();
 		final long expiresAt = SqrlNutTokenUtil.computeNutExpiresAt(nut, config);
 		assertTrue(expiresAt > nutIssuedTime);
@@ -222,7 +222,7 @@ public class SqrlNutUtilTest {
 		final int nutValidityInSeconds = 1000;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final LocalDateTime tokenIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
-		final SqrlNutToken nutToken = TCUtil.buildValidSqrlNut(config, tokenIssuedAt);
+		final SqrlNutToken nutToken = TestCaseUtil.buildValidSqrlNut(config, tokenIssuedAt);
 		try {
 			SqrlNutTokenUtil.validateNut("123", nutToken, config, persistence);
 			fail("Exception expected");

@@ -45,16 +45,16 @@ public class SqrlUtilTest {
 	@Test
 	public void testExtractCookieDomain() throws Exception {
 		final String loginRequestUrl = "http://sqrljava.tech/sqrlexample/app";
-		final MockHttpServletRequest request = TCUtil.buildMockRequest(loginRequestUrl);
-		final String result = SqrlUtil.computeCookieDomain(request, TCUtil.buildTestSqrlConfig());
+		final MockHttpServletRequest request = TestCaseUtil.buildMockRequest(loginRequestUrl);
+		final String result = SqrlUtil.computeCookieDomain(request, TestCaseUtil.buildTestSqrlConfig());
 		assertEquals("sqrljava.tech", result);
 	}
 
 	@Test
 	public void testExtractCookieDomainFromConfig() throws Exception {
 		final String loginRequestUrl = "http://sqrljava.tech/sqrlexample/app";
-		final MockHttpServletRequest request = TCUtil.buildMockRequest(loginRequestUrl);
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final MockHttpServletRequest request = TestCaseUtil.buildMockRequest(loginRequestUrl);
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		final String expected = "sqrl.sqrljava.tech";
 		config.setCookieDomain(expected);
 		final String result = SqrlUtil.computeCookieDomain(request, config);

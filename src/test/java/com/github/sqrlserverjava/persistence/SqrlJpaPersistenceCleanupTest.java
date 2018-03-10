@@ -14,7 +14,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import com.github.sqrlserverjava.SqrlPersistence;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.exception.SqrlPersistenceException;
 
 import junitx.framework.ObjectAssert;
@@ -38,7 +38,7 @@ public class SqrlJpaPersistenceCleanupTest {
 
 	@Test
 	public void testCleanupCorrelator() throws Throwable {
-		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
+		SqrlPersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
 
 		final long now = System.currentTimeMillis();
 		final String keepCorrelator = "keep";
@@ -49,12 +49,12 @@ public class SqrlJpaPersistenceCleanupTest {
 		sqrlPersistence.closeCommit();
 
 		// Execute
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		sqrlPersistence.cleanUpExpiredEntries();
 		sqrlPersistence.closeCommit();
 
 		// Verify
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		assertNotNull(sqrlPersistence.fetchSqrlCorrelatorRequired(keepCorrelator));
 		try {
 			sqrlPersistence.fetchSqrlCorrelatorRequired(deleteCorrelator);
@@ -66,7 +66,7 @@ public class SqrlJpaPersistenceCleanupTest {
 
 	@Test
 	public void testCleanupNutToken() throws Throwable {
-		SqrlPersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence();
+		SqrlPersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
 
 		final long now = System.currentTimeMillis();
 		final Date expectedDate = new Date(now + 6000);
@@ -78,12 +78,12 @@ public class SqrlJpaPersistenceCleanupTest {
 		sqrlPersistence.closeCommit();
 
 		// Execute
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		sqrlPersistence.cleanUpExpiredEntries();
 		sqrlPersistence.closeCommit();
 
 		// Verify
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		assertTrue(sqrlPersistence.hasTokenBeenUsed(keepToken));
 		assertFalse(sqrlPersistence.hasTokenBeenUsed(deleteToken));
 		sqrlPersistence.closeCommit();

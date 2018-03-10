@@ -10,14 +10,14 @@ import org.junit.Test;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlConfigOperations;
 import com.github.sqrlserverjava.SqrlConfigOperationsFactory;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 
 public class SqrlNutTest {
-	private SqrlConfig config = TCUtil.buildTestSqrlConfig();
+	private SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 
 	@Before
 	public void setup() throws Exception {
-		config = TCUtil.buildTestSqrlConfig();
+		config = TestCaseUtil.buildTestSqrlConfig();
 	}
 
 	@Test

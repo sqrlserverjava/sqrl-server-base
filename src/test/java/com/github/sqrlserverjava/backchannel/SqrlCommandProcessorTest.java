@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
@@ -32,10 +32,10 @@ public class SqrlCommandProcessorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		config = TCUtil.buildTestSqrlConfig();
+		config = TestCaseUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
-		sqrlPersistence = TCUtil.createEmptySqrlPersistence();
-		nutToken = TCUtil.buildValidSqrlNut(config, LocalDateTime.now());
+		sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
+		nutToken = TestCaseUtil.buildValidSqrlNut(config, LocalDateTime.now());
 	}
 
 	@After
@@ -53,13 +53,13 @@ public class SqrlCommandProcessorTest {
 				correlator, true);
 
 		// Execute - call start/commit since it is usually done by the caller
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
@@ -72,11 +72,11 @@ public class SqrlCommandProcessorTest {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		sqrlPersistence.createAndEnableSqrlIdentity(idk);
 		sqrlPersistence.closeCommit();
 
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, false);
 		sqrlPersistence.closeCommit();
 
@@ -88,10 +88,10 @@ public class SqrlCommandProcessorTest {
 		SqrlInternalUserState sqrlInternalUserState = null;
 		try {
 			// Execute - call start/commit since it is usually done by the caller
-			sqrlPersistence = TCUtil.createSqrlPersistence();
+			sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 
 			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-					TCUtil.buildTestSqrlConfig());
+					TestCaseUtil.buildTestSqrlConfig());
 			sqrlInternalUserState = processor.processClientCommand();
 			sqrlPersistence.closeCommit();
 			fail("Exception expected");
@@ -102,14 +102,14 @@ public class SqrlCommandProcessorTest {
 		}
 		assertNull(sqrlInternalUserState);
 		// Verify that it's still disabled
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 	}
 
 	@Test
 	public void testCmdRemove_SqrlIdentityExists() throws Throwable {
 		// Setup
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk);
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.REMOVE,
@@ -117,16 +117,16 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence.closeCommit();
 
 		// Execute all start/commit manually since it is usually done by the caller
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		assertFalse(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));
 	}
 
@@ -140,10 +140,10 @@ public class SqrlCommandProcessorTest {
 
 		// Execute
 		try {
-			sqrlPersistence = TCUtil.createSqrlPersistence();
+			sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 
 			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-					TCUtil.buildTestSqrlConfig());
+					TestCaseUtil.buildTestSqrlConfig());
 			processor.processClientCommand();
 			fail("Exception expected");
 		} catch (final Exception e) {
@@ -156,24 +156,24 @@ public class SqrlCommandProcessorTest {
 	public void testCmdDisable_SqrlIdentityExists() throws Throwable {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		;
-		TCUtil.setupIdk(idk, correlator, "123");
+		TestCaseUtil.setupIdk(idk, correlator, "123");
 		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.DISABLE,
 				correlator, true);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 
 		// Execute - call start/commit since it is usually done by the caller
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
-				TCUtil.buildTestSqrlConfig());
+				TestCaseUtil.buildTestSqrlConfig());
 		final SqrlInternalUserState sqrlInternalUserState = processor.processClientCommand();
 		sqrlPersistence.closeCommit();
 
 		// Validate
 		assertEquals(SqrlInternalUserState.IDK_EXISTS, sqrlInternalUserState);
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		;
 		assertFalse(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 		assertTrue(sqrlPersistence.doesSqrlIdentityExistByIdk(idk));

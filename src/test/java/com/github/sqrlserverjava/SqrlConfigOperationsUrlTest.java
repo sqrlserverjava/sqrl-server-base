@@ -37,16 +37,16 @@ public class SqrlConfigOperationsUrlTest {
 	@Test
 	public void testBuildReturnPaths() throws Throwable {
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setBackchannelServletPath(configBackchannelPath);
 
 		final SqrlConfigOperations ops = new SqrlConfigOperations(config);
 
 		// Execute
-		final MockHttpServletRequest loginServletRequest = TCUtil.buildMockRequest(loginRequestUrl);
+		final MockHttpServletRequest loginServletRequest = TestCaseUtil.buildMockRequest(loginRequestUrl);
 		assertEquals(expectedFullSqrlUrl, ops.getBackchannelRequestUrl(loginServletRequest).toString());
 
-		final MockHttpServletRequest sqrlServletRequest = TCUtil.buildMockRequest(expectedFullSqrlUrl);
+		final MockHttpServletRequest sqrlServletRequest = TestCaseUtil.buildMockRequest(expectedFullSqrlUrl);
 		assertEquals(expectedSubsequentPath, ops.getSubsequentRequestPath(sqrlServletRequest));
 	}
 

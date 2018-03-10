@@ -128,7 +128,7 @@ public class SqrlConfigHelperTest {
 		final SecureRandom secureRandom = new SecureRandom();
 		final byte[] aesKeyBytes = new byte[16];
 		secureRandom.nextBytes(aesKeyBytes);
-		sqrlConfig.setAesKeyBase64(TCUtil.AES_TEST_KEY);
+		sqrlConfig.setAesKeyBase64(TestCaseUtil.AES_TEST_KEY);
 		sqrlConfig.setClientAuthStateUpdaterClass("com.me.MyClientAuthStateUpdaterClass");
 		sqrlConfig.setNutValidityInSeconds(200);
 		sqrlConfig.setQrCodeImageFormat(SqrlQrCodeImageFormat.JPG);

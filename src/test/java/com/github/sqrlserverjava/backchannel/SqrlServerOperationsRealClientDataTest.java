@@ -25,7 +25,7 @@ import com.github.sqrlserverjava.SqrlClientFacingOperations;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
 import com.github.sqrlserverjava.SqrlServerOperations;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.enums.SqrlServerSideKey;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
 import com.github.sqrlserverjava.util.SqrlConstants;
@@ -45,8 +45,8 @@ public class SqrlServerOperationsRealClientDataTest {
 
 	@Before
 	public void setUp() throws NoSuchFieldException {
-		TCUtil.createEmptySqrlPersistence();
-		TCUtil.clearStaticFields();
+		TestCaseUtil.createEmptySqrlPersistence();
+		TestCaseUtil.clearStaticFields();
 	}
 
 	@Test
@@ -60,14 +60,14 @@ public class SqrlServerOperationsRealClientDataTest {
 		// (correlatorFromServerParam, serverParam);
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig("GiXid26ALy2THQ7GT0a8sg");
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig("GiXid26ALy2THQ7GT0a8sg");
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 		final SqrlClientFacingOperations clientFacingOperations = sqrlServerOps.clientFacingOperations();
 
 		// Store the server parrot
-		SqrlPersistence sqrlPersistence = TCUtil.createSqrlPersistence();
+		SqrlPersistence sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlatorFromServerParam, expiryTime);
 		sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		sqrlPersistence.closeCommit();
@@ -76,7 +76,7 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=aFZSlUvZFwiqCN2ycjui1ZdSQwtjVRVGqPy6IB-GUHJeDsF03LatdAdJ5XFYNB_R85a0s_v6UHXVtIV4yMX-AA";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -101,11 +101,11 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=P94csUjLIrSJTx21axMdEnR7GFJJ78lTIvJ9oGU1KIDu46ATteZFiK1up-RHLcIcZxA2V7MW9LGNUod7j2jmCg";
 
-		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
+		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
 		servletResponse = new MockHttpServletResponse();
 
 		// Store the server parrot in the DB
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelator(sqrlCorrelator.getCorrelatorString());
 		sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		sqrlPersistence.closeCommit();
@@ -126,7 +126,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertNull(responseDataTable.get(SqrlServerSideKey.suk.toString()));
 
 		// but... the suk must exist in the DB
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		final String idk = "CW6EXEMdclZc3JEJky_KwMF_DhMbkV15E6Q14pyqMNY";
 		final String sukValue = sqrlPersistence.fetchSqrlIdentityDataItem(idk, SqrlServerSideKey.suk.toString());
 		assertEquals("Ly47hSvzYMN2dAY1oOTAx0ouNk5ieNmDUqUEwoLKVQs", sukValue);
@@ -146,22 +146,22 @@ public class SqrlServerOperationsRealClientDataTest {
 
 		final String correlatorFromServerParam = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
 		String serverParam = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
-		TCUtil.setupSqrlPersistence(correlatorFromServerParam, serverParam);
+		TestCaseUtil.setupSqrlPersistence(correlatorFromServerParam, serverParam);
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 		final SqrlClientFacingOperations clientFacingOperations = sqrlServerOps.clientFacingOperations();
 		// Store the server parrot
-		TCUtil.setupSqrlPersistence(correlatorFromServerParam, serverParam);
+		TestCaseUtil.setupSqrlPersistence(correlatorFromServerParam, serverParam);
 
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
 				+ "&server=" + serverParam
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -183,7 +183,7 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=SFEHcCzTb_cnaMaInR3nFt-L_fguMGEEXHVRATq3naTlCJ6TCTfarjjYRH8HR-tua-k4HLiSVtvdLRKqM6KFDg";
 
-		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
+		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
 		servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(identRequest, servletResponse);
@@ -213,13 +213,13 @@ public class SqrlServerOperationsRealClientDataTest {
 
 		String serverParam = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 
-		SqrlPersistence sqrlPersistence = TCUtil.setupIdk(idk, correlatorFromServerParam, serverParam);
+		SqrlPersistence sqrlPersistence = TestCaseUtil.setupIdk(idk, correlatorFromServerParam, serverParam);
 		sqrlPersistence.storeSqrlDataForSqrlIdentity(idk,
 				Collections.singletonMap(SqrlServerSideKey.suk.toString(), suk));
 		sqrlPersistence.closeCommit();
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
@@ -229,7 +229,7 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -251,12 +251,12 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=SFEHcCzTb_cnaMaInR3nFt-L_fguMGEEXHVRATq3naTlCJ6TCTfarjjYRH8HR-tua-k4HLiSVtvdLRKqM6KFDg";
 		// Store the server parrot so request validation will pass
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorFromServerParam).getTransientAuthDataTable()
 		.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		sqrlPersistence.closeCommit();
 
-		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
+		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
 		servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(identRequest, servletResponse);
@@ -284,17 +284,17 @@ public class SqrlServerOperationsRealClientDataTest {
 
 		String serverParam = "c3FybDovLzEyNy4wLjAuMTo4MDgyL3NxcmxleGFtcGxlL3NxcmxiYz9udXQ9ZGJSQTZ2ZUVuQjdPMkN1V1hoNmRKUSZzZm49Ykc5allXeG9iM04wTG1OdmJRJmNvcj1BRWdtck9XRGhRazFhbU45ajhzalJ3Q1hmbm03RmpCNVdoNmpyclRCZDZr";
 
-		SqrlPersistence sqrlPersistence = TCUtil.setupIdk(idk, correlatorFromServerParam, serverParam);
+		SqrlPersistence sqrlPersistence = TestCaseUtil.setupIdk(idk, correlatorFromServerParam, serverParam);
 		sqrlPersistence.storeSqrlDataForSqrlIdentity(idk,
 				Collections.singletonMap(SqrlServerSideKey.suk.toString(), suk));
 		sqrlPersistence.closeCommit();
 
 		// Since there is no front side facing call from this test case, we need to set this manually
 		final String browserFacingSqrlLoginUrl = "https://sqrljava.com:20000/sqrlexample/sqrllogin";
-		TCUtil.setSqrlServerOpsBrowserFacingUrl(new URL(browserFacingSqrlLoginUrl));
+		TestCaseUtil.setSqrlServerOpsBrowserFacingUrl(new URL(browserFacingSqrlLoginUrl));
 
 		// Data from a real transaction with a long expiry
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setNutValidityInSeconds(Integer.MAX_VALUE);
 
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
@@ -304,7 +304,7 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=xKpxHhhpviglCEnKgzVR8V75KIFhZjG93ulLO89TP1mkZNRLAoeQTh446YRkZv8zcgBOsqgm5wmLmMesDQ8dDQ";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -326,12 +326,12 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=n4jzxR3kHScltt__wiZkkHnCaZwOxiY2HnA6E-zHyWNgZZRxj07Os-9PLNPO5j_mGPMnro2B3xFPAtH22aP2Dg";
 		// Store the server parrot so request validation will pass
-		sqrlPersistence = TCUtil.createSqrlPersistence();
+		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorFromServerParam).getTransientAuthDataTable()
 		.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		sqrlPersistence.closeCommit();
 
-		final MockHttpServletRequest identRequest = TCUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
+		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
 		servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(identRequest, servletResponse);

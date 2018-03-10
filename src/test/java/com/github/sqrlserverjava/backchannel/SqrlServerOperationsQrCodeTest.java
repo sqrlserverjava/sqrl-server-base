@@ -17,7 +17,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import com.github.sqrlserverjava.SqrlAuthPageData;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlServerOperations;
-import com.github.sqrlserverjava.TCUtil;
+import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.enums.SqrlQrCodeImageFormat;
 
 /**
@@ -52,7 +52,7 @@ public class SqrlServerOperationsQrCodeTest {
 		final SqrlServerOperations sqrlServerOps = new SqrlServerOperations(config);
 
 		// Emulate the login page generation
-		final MockHttpServletRequest loginPageRequest = TCUtil.buildMockRequest(loginRequestUrl);
+		final MockHttpServletRequest loginPageRequest = TestCaseUtil.buildMockRequest(loginRequestUrl);
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
 		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
 				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
@@ -65,7 +65,7 @@ public class SqrlServerOperationsQrCodeTest {
 
 	public SqrlServerOperationsQrCodeTest(final SqrlQrCodeImageFormat imageFormat) {
 		super();
-		config = TCUtil.buildTestSqrlConfig();
+		config = TestCaseUtil.buildTestSqrlConfig();
 		config.setQrCodeImageFormat(imageFormat);
 	}
 }

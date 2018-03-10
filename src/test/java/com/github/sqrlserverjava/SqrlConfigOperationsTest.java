@@ -15,7 +15,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigGivesFullInvalidUrl() {
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setBackchannelServletPath("www.yahoo.com/sqrl");
 		try {
 			new SqrlConfigOperations(config);
@@ -32,7 +32,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigAesKeyTooBig() {
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setAesKeyBase64("oYqoDiWZiODUWDFSD2eJ5y8dNA==");
 		try {
 			new SqrlConfigOperations(config);
@@ -46,7 +46,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigAesKeyNotBase64() {
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setAesKeyBase64("oYqoDiW8dNA==");
 		try {
 			new SqrlConfigOperations(config);
@@ -58,7 +58,7 @@ public class SqrlConfigOperationsTest {
 	
 	@Test
 	public void testValidateSqrlConfig_ConfigAesKeyTooSmall() {
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		String base64 = Base64.getEncoder().encodeToString(new byte[14]);
 		config.setAesKeyBase64("AAAAAAAAAAAAAAAAAAA=");
 		try {
@@ -73,7 +73,7 @@ public class SqrlConfigOperationsTest {
 
 	@Test
 	public void testValidateSqrlConfig_ConfigGivesUrlWithoutSceme() {
-		final SqrlConfig config = TCUtil.buildTestSqrlConfig();
+		final SqrlConfig config = TestCaseUtil.buildTestSqrlConfig();
 		config.setBackchannelServletPath("www.yahoo.com");
 		try {
 			new SqrlConfigOperations(config);

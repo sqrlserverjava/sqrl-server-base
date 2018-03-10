@@ -35,7 +35,7 @@ public class SqrlAuthStateEventServletTest {
 
 		SqrlCorrelator corrAbc = null;
 		SqrlCorrelator corrDef = null;
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence()) {
 			corrAbc = sqrlPersistence.createCorrelator(abc, minutesFromNow(3));
 			corrDef = sqrlPersistence.createCorrelator(def, minutesFromNow(3));
 			sqrlPersistence.createCorrelator(ghi, minutesFromNow(3));
@@ -47,7 +47,7 @@ public class SqrlAuthStateEventServletTest {
 		correlatorsToCheck.add(def);
 
 		Map<String, SqrlCorrelator> correlatorTable = null;
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createSqrlPersistence()) {
 			correlatorTable = sqrlPersistence.fetchSqrlCorrelatorsDetached(correlatorsToCheck);
 			sqrlPersistence.closeCommit();
 		}
@@ -64,7 +64,7 @@ public class SqrlAuthStateEventServletTest {
 
 		SqrlCorrelator corrAbc = null;
 		SqrlCorrelator corrDef = null;
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence()) {
 			corrAbc = sqrlPersistence.createCorrelator(abc, minutesFromNow(3));
 			corrDef = sqrlPersistence.createCorrelator(def, minutesFromNow(3));
 			sqrlPersistence.closeCommit();
@@ -75,7 +75,7 @@ public class SqrlAuthStateEventServletTest {
 		correlatorToCurrentStatusTable.put(def, corrDef.getAuthenticationStatus());
 
 		Map<String, SqrlAuthenticationStatus> statusChangedTable = null;
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createSqrlPersistence()) {
 			statusChangedTable = sqrlPersistence.fetchSqrlCorrelatorStatusUpdates(correlatorToCurrentStatusTable);
 			sqrlPersistence.closeCommit();
 		}
@@ -92,7 +92,7 @@ public class SqrlAuthStateEventServletTest {
 
 		final List<String> stringList = Arrays.asList(abc, def, ghi, "xyz");
 
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createEmptySqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence()) {
 			sqrlPersistence.createCorrelator(abc, minutesFromNow(3));
 			sqrlPersistence.createCorrelator(def, minutesFromNow(3));
 			sqrlPersistence.createCorrelator(ghi, minutesFromNow(3));
@@ -102,7 +102,7 @@ public class SqrlAuthStateEventServletTest {
 		final List<SqrlMiniCorrelator> correlatorsToCheck = fetchCorrelatorIdsAndState(stringList);
 		// Correlaotr that got expired
 		correlatorsToCheck.add(new SqrlMiniCorrelator(5, "xyz", SqrlAuthenticationStatus.CORRELATOR_ISSUED));
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createSqrlPersistence()) {
 			final SqrlCorrelator correlator = sqrlPersistence.fetchSqrlCorrelator(def);
 			correlator.setAuthenticationStatus(SqrlAuthenticationStatus.ERROR_BAD_REQUEST);
 			sqrlPersistence.closeCommit();
@@ -112,8 +112,8 @@ public class SqrlAuthStateEventServletTest {
 
 	private void monitorCorrelatorsForStateChange(final List<SqrlMiniCorrelator> correaltorList)
 			throws NoSuchFieldException {
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
-			final EntityManagerFactory entityManagerFactory = TCUtil.extractEntityManagerFactory(sqrlPersistence);
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createSqrlPersistence()) {
+			final EntityManagerFactory entityManagerFactory = TestCaseUtil.extractEntityManagerFactory(sqrlPersistence);
 			final EntityManager entityManager = entityManagerFactory.createEntityManager();
 			final StringBuilder buf = new StringBuilder(
 					"SELECT c.id, c.value, c.authenticationStatus FROM SqrlCorrelator AS c WHERE ");
@@ -147,8 +147,8 @@ public class SqrlAuthStateEventServletTest {
 		if (correaltorStringList.isEmpty()) {
 			return Collections.emptyList();
 		}
-		try (SqrlAutoCloseablePersistence sqrlPersistence = TCUtil.createSqrlPersistence()) {
-			final EntityManagerFactory entityManagerFactory = TCUtil.extractEntityManagerFactory(sqrlPersistence);
+		try (SqrlAutoCloseablePersistence sqrlPersistence = TestCaseUtil.createSqrlPersistence()) {
+			final EntityManagerFactory entityManagerFactory = TestCaseUtil.extractEntityManagerFactory(sqrlPersistence);
 			final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
 			final StringBuilder buf = new StringBuilder(
