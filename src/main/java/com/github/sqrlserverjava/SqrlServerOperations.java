@@ -272,4 +272,8 @@ public class SqrlServerOperations {
 			sqrlPersistence.closeCommit();
 		}
 	}
+	
+	public void shutdwon() {
+		sqrlServiceExecutor.shutdown();
+	}
 }
