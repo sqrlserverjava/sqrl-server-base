@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <sqrlConfig>
+<!--  TODO: why doesn't this work 
+<sqrlConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:noNamespaceSchemaLocation="https://github.com/sqrlserverjava/sqrl-server-base/blob/master/src/main/resources/sqrlconfig.xsd">
+ -->
 	<authSyncCheckInMillis>500</authSyncCheckInMillis>
 	<cleanupTaskExecInMinutes>15</cleanupTaskExecInMinutes>
 	<clientAuthStateUpdaterClass>com.MyClass</clientAuthStateUpdaterClass>
