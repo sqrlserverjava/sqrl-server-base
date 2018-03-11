@@ -51,7 +51,7 @@ public class SqrlCommandProcessorOptsIgnoredForQueryTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TestCaseUtil.createEmptySqrlPersistence();
 		TestCaseUtil.setupIdk(idk, "abc", "123");
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.QUERY,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.QUERY,
 				correlator, false,
 				opt);
 

@@ -352,7 +352,7 @@ public class SqrlServerOperationsRealClientDataTest {
 	}
 
 	/* ************* Util methods **************************/
-	static Map<String, String> parseSqrlResponse(final String contentAsString) throws IOException {
+	public static Map<String, String> parseSqrlResponse(final String contentAsString) throws IOException {
 		final Map<String, String> dataTable = new ConcurrentHashMap<String, String>();
 		final String data = new String(Base64.getUrlDecoder().decode(contentAsString));
 		try (BufferedReader reader = new BufferedReader(new StringReader(data))) {

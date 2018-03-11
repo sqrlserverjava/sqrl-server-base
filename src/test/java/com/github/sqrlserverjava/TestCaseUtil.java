@@ -7,17 +7,25 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
+import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import com.github.sqrlserverjava.backchannel.SqrlClientRequest;
 import com.github.sqrlserverjava.backchannel.SqrlNutToken;
 import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
+import com.github.sqrlserverjava.enums.SqrlRequestCommand;
+import com.github.sqrlserverjava.enums.SqrlRequestOpt;
+import com.github.sqrlserverjava.enums.SqrlServerSideKey;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.persistence.SqrlAutoCloseablePersistence;
@@ -239,6 +247,20 @@ public class TestCaseUtil {
 
 	public static void clearStaticFields() {
 		SqrlServerOperations.browserFacingUrlAndContextPath = null;
+	}
+
+	public static SqrlClientRequest buildMockSqrlRequest(final String idk, final SqrlRequestCommand command,
+			final String correlator, final boolean hasUrsSignature, final SqrlRequestOpt... optArray) {
+		final SqrlClientRequest mock = Mockito.mock(SqrlClientRequest.class);
+		Mockito.when(mock.containsUrs()).thenReturn(false);
+		Mockito.when(mock.getKey(SqrlServerSideKey.idk)).thenReturn(idk);
+		Mockito.when(mock.getCorrelator()).thenReturn(correlator);
+		Mockito.when(mock.getClientCommand()).thenReturn(command);
+		Mockito.when(mock.containsUrs()).thenReturn(hasUrsSignature);
+		final List<SqrlRequestOpt> optList = new ArrayList<>();
+		optList.addAll(Arrays.asList(optArray));
+		Mockito.when(mock.getOptList()).thenReturn(optList);
+		return mock;
 	}
 
 }

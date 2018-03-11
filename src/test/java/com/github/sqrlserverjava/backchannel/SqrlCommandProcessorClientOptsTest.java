@@ -38,7 +38,7 @@ public class SqrlCommandProcessorClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TestCaseUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
 				correlator, false,
 				SqrlRequestOpt.cps);
 
@@ -60,9 +60,8 @@ public class SqrlCommandProcessorClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TestCaseUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
-				correlator, false,
-				SqrlRequestOpt.hardlock);
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+				correlator, false, SqrlRequestOpt.hardlock);
 
 		// Execute
 		final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlRequest, sqrlPersistence,
@@ -82,7 +81,7 @@ public class SqrlCommandProcessorClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TestCaseUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
 				correlator, false,
 				SqrlRequestOpt.sqrlonly);
 
@@ -105,7 +104,7 @@ public class SqrlCommandProcessorClientOptsTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		TestCaseUtil.setupIdk(idk, correlator, "123");
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.IDENT,
 				correlator, false, SqrlRequestOpt.noiptest);
 
 		// Execute

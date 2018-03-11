@@ -49,7 +49,7 @@ public class SqrlCommandProcessorTest {
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk);
 		sqrlPersistence.closeCommit();
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.ENABLE,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.ENABLE,
 				correlator, true);
 
 		// Execute - call start/commit since it is usually done by the caller
@@ -80,7 +80,7 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence.setSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, false);
 		sqrlPersistence.closeCommit();
 
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.ENABLE,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.ENABLE,
 				correlator, false); // No
 		// urs
 
@@ -112,7 +112,7 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk);
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.REMOVE,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.REMOVE,
 				correlator, true);
 		sqrlPersistence.closeCommit();
 
@@ -134,7 +134,7 @@ public class SqrlCommandProcessorTest {
 		// Setup
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		sqrlPersistence.createAndEnableSqrlIdentity(idk);
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.REMOVE,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.REMOVE,
 				correlator, false); // No
 		// urs
 
@@ -159,7 +159,7 @@ public class SqrlCommandProcessorTest {
 		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
 		;
 		TestCaseUtil.setupIdk(idk, correlator, "123");
-		final SqrlClientRequest sqrlRequest = TCBackchannelUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.DISABLE,
+		final SqrlClientRequest sqrlRequest = TestCaseUtil.buildMockSqrlRequest(idk, SqrlRequestCommand.DISABLE,
 				correlator, true);
 		assertTrue(sqrlPersistence.fetchSqrlFlagForIdentity(idk, SqrlIdentityFlag.SQRL_AUTH_ENABLED));
 
