@@ -217,7 +217,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 			counter++;
 		}
 
-		logger.debug("monitor correaltor for change SQL: {}", debugBuf.toString());
+		logger.trace("monitor correaltor for change SQL: {}", debugBuf);
 		// Parse the result into a table
 		final Map<String, SqrlAuthenticationStatus> resultTable = new ConcurrentHashMap<>();
 		for (final SqrlCorrelator correlator : query.getResultList()) {
