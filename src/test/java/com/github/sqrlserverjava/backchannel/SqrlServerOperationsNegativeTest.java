@@ -36,6 +36,7 @@ public class SqrlServerOperationsNegativeTest {
 
 	@Before
 	public void setUp() throws NoSuchFieldException {
+		TestCaseUtil.createEmptySqrlPersistence();
 		TestCaseUtil.clearStaticFields();
 	}
 

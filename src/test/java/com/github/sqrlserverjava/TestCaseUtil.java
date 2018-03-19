@@ -105,7 +105,10 @@ public class TestCaseUtil {
 		sqrlPersistence.closeCommit();
 	}
 
-	@SuppressWarnings("deprecation") // OK for test case use
+	/**
+	 * @deprecated OK for test case use
+	 */
+	@Deprecated
 	public static SqrlPersistence setupIdk(final String idk, final String correlator, final String serverParam) {
 		final SqrlPersistence persistence = new SqrlJpaPersistenceProvider();
 		final SqrlCorrelator sqrlCorrelator = persistence.createCorrelator(correlator, TestCaseUtil.AWHILE_FROM_NOW);
