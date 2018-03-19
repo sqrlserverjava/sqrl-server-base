@@ -172,11 +172,12 @@ public class SqrlConfigOperations {
 			throw new SqrlException("Don't know how to handle BackchannelSettingType: " + backchannelSettingType);
 		}
 		// Some SQRL clients require a dotted ip, so replace localhost with 127.0.0.1
-		if (backchannelRequestString.contains(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST)) {
-			backchannelRequestString = backchannelRequestString.replace(SqrlConstants.FORWARD_SLASH_X2_LOCALHOST,
+		if (backchannelRequestString.contains("//localhost/") || backchannelRequestString.contains("//localhost:")) {
+			backchannelRequestString = backchannelRequestString.replace("//localhost",
 					SqrlConstants.FORWARD_SLASH_X2_127_0_0_1);
 			// Some testers use a localhost.com alias, replace the .com if it's there
-			backchannelRequestString = backchannelRequestString.replace(".com", "");
+			// backchannelRequestString = backchannelRequestString.replace(".com", "");
+			// TODO:
 		}
 		final URI backchannelRequestUrl = changeToSqrlScheme(backchannelRequestString);
 		logger.trace("backchannelRequestUrl: " + backchannelRequestUrl);
