@@ -387,7 +387,8 @@ public class SqrlUtil {
 
 	public static String buildLogMessageForSqrlClientRequest(final HttpServletRequest request) {
 		final StringBuilder buf = new StringBuilder(500);
-		buf.append(SqrlClientRequestLoggingUtil.getLogHeader()).append("full params from  client: ");
+		buf.append("sqrlClientOnRequest ");
+		buf.append(SqrlClientRequestLoggingUtil.getLogHeader()).append("params: ");
 		for (final Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
 			buf.append(entry.getKey()).append("=").append(Arrays.toString(entry.getValue())).append("   ");
 		}

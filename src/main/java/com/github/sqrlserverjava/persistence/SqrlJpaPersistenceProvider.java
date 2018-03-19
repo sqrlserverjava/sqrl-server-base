@@ -418,7 +418,7 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 		public void run() {
 			try {
 				final long threshold = computeThresholdInMillis();
-				logger.debug("Running EntityManagerMonitorTimerTask");
+				logger.trace("Running EntityManagerMonitorTimerTask");
 				final Iterator<EntityManager> iter = CREATED_BY_STACK_TABLE.keySet().iterator();
 				while (iter.hasNext()) {
 					final EntityManager entityManager = iter.next();
