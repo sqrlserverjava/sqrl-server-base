@@ -20,7 +20,7 @@ import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
 import com.github.sqrlserverjava.SqrlServerOperations;
 import com.github.sqrlserverjava.TestCaseUtil;
-import com.github.sqrlserverjava.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
 import com.github.sqrlserverjava.enums.SqrlServerSideKey;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
 import com.github.sqrlserverjava.util.SqrlConstants;
@@ -30,7 +30,7 @@ import junitx.framework.StringAssert;
 public class SqrlServerOperationsNegativeTest {
 	private static final String CLIENT_DATA_1_CORRELATOR = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
 
-	private static final SqrlTifBuilder	BUILDER	= new SqrlTifBuilder(false);
+	private static final SqrlTifResponseBuilder	BUILDER	= new SqrlTifResponseBuilder(false);
 	private static final String EXPECTED_BAD_CLIENT_REQUEST = BUILDER.clearAllFlags()
 			.addFlag(SqrlTifFlag.COMMAND_FAILED).addFlag(SqrlTifFlag.CLIENT_FAILURE).createTif().toHexString();
 
@@ -273,7 +273,7 @@ public class SqrlServerOperationsNegativeTest {
 		// failed with the server's TIF flags having "0x40 Command failed"
 		// =SET= and "0x04 IPs matched" =RESET=. Since this is not a
 		// client failure, the "0x80 Client failure" bit will not be set.
-		SqrlTif expectedSqrlTif = new SqrlTifBuilder(false).addFlag(SqrlTifFlag.COMMAND_FAILED).createTif();
+		SqrlTifResponse expectedSqrlTif = new SqrlTifResponseBuilder(false).addFlag(SqrlTifFlag.COMMAND_FAILED).createTif();
 
 		assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, servletResponse.getStatus());
 		responseDataTable = SqrlServerOperationsRealClientDataTest

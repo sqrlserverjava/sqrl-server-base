@@ -8,13 +8,13 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.github.sqrlserverjava.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
 
 public class SqrlTifTest {
 
 	@Test
 	public void testAddSameMultiple() {
-		final SqrlTifBuilder builder = new SqrlTifBuilder(false);
+		final SqrlTifResponseBuilder builder = new SqrlTifResponseBuilder(false);
 		builder.addFlag(SqrlTifFlag.CURRENT_ID_MATCH);
 		// 2nd add should have no effect
 		builder.addFlag(SqrlTifFlag.CURRENT_ID_MATCH);
@@ -31,20 +31,20 @@ public class SqrlTifTest {
 		return absentTifList;
 	}
 
-	static final void assertTifPresent(final SqrlTif tif, final SqrlTifFlag tifToLookFor) {
+	static final void assertTifPresent(final SqrlTifResponse tif, final SqrlTifFlag tifToLookFor) {
 		assertTrue("Expected " + tifToLookFor + " in tif " + tif, isTifPresent(tif, tifToLookFor));
 	}
 
-	static final boolean isTifPresent(final SqrlTif tif, final SqrlTifFlag tifToLookFor) {
+	static final boolean isTifPresent(final SqrlTifResponse tif, final SqrlTifFlag tifToLookFor) {
 		final int tifInt = Integer.parseInt(tif.toHexString(), 16);
 		return (tifInt & tifToLookFor.getMask()) == tifToLookFor.getMask();
 	}
 
-	static final boolean isTifAbsent(final SqrlTif tif, final SqrlTifFlag tifToLookFor) {
+	static final boolean isTifAbsent(final SqrlTifResponse tif, final SqrlTifFlag tifToLookFor) {
 		return !isTifPresent(tif, tifToLookFor);
 	}
 
-	public static final void assertTif(final SqrlTif tif, final SqrlTifFlag... expectedTifArray) {
+	public static final void assertTif(final SqrlTifResponse tif, final SqrlTifFlag... expectedTifArray) {
 		for (final SqrlTifFlag expectedTifInt : expectedTifArray) {
 			assertTifPresent(tif, expectedTifInt);
 		}
@@ -54,7 +54,7 @@ public class SqrlTifTest {
 		}
 	}
 
-	static void assertTifAbsent(final SqrlTif tif, final SqrlTifFlag absentTifInt) {
+	static void assertTifAbsent(final SqrlTifResponse tif, final SqrlTifFlag absentTifInt) {
 		assertTrue("Found expected absent " + absentTifInt + " in tif " + tif, isTifAbsent(tif, absentTifInt));
 	}
 }

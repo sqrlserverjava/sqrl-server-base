@@ -32,8 +32,8 @@ import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestProcessor;
 import com.github.sqrlserverjava.backchannel.SqrlNutToken;
 import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
-import com.github.sqrlserverjava.backchannel.SqrlTif;
-import com.github.sqrlserverjava.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.sqrlserverjava.backchannel.SqrlTifResponse;
+import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
 import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
@@ -94,7 +94,7 @@ public class SqrlClientFacingOperations {
 			logger.info(SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString());
 		}
 		String correlator = "unknown";
-		final SqrlTifBuilder tifBuilder = new SqrlTifBuilder();
+		final SqrlTifResponseBuilder tifBuilder = new SqrlTifResponseBuilder();
 		SqrlInternalUserState sqrlInternalUserState = SqrlInternalUserState.NONE_EXIST;
 		String requestState = "invalid";
 		try {
@@ -158,7 +158,7 @@ public class SqrlClientFacingOperations {
 			String serverReplyString = ""; // for logging
 			sqrlPersistence = persistenceFactory.createSqrlPersistence();
 			try {
-				final SqrlTif tif = tifBuilder.createTif();
+				final SqrlTifResponse tif = tifBuilder.createTif();
 				final boolean isInErrorState = exception != null;
 				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
 				serverReplyString = buildReply(servletRequest, sqrlClientRequest, tif, sqrlCorrelator,
@@ -201,7 +201,7 @@ public class SqrlClientFacingOperations {
 	}
 
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlClientRequest sqrlRequest,
-			final SqrlTif tif, final SqrlCorrelator sqrlCorrelator, final SqrlInternalUserState sqrlInternalUserState,
+			final SqrlTifResponse tif, final SqrlCorrelator sqrlCorrelator, final SqrlInternalUserState sqrlInternalUserState,
 			final boolean isInErrorState) throws SqrlException {
 		final String logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();

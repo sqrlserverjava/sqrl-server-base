@@ -7,20 +7,20 @@ import static junit.framework.TestCase.assertTrue;
 
 import org.junit.Test;
 
-import com.github.sqrlserverjava.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
 
 public class SqrlTifConstructorTest {
 
 	@Test
 	public void testIpsMatched() throws Exception {
-		final SqrlTif tif = new SqrlTifBuilder(true).createTif();
+		final SqrlTifResponse tif = new SqrlTifResponseBuilder(true).createTif();
 		assertTrue(isTifPresent(tif, SqrlTifFlag.IPS_MATCHED));
 		assertEquals("4", tif.toHexString());
 	}
 
 	@Test
 	public void testIpsNotMatched() throws Exception {
-		final SqrlTif tif = new SqrlTifBuilder(false).createTif();
+		final SqrlTifResponse tif = new SqrlTifResponseBuilder(false).createTif();
 		assertTrue(isTifAbsent(tif, SqrlTifFlag.IPS_MATCHED));
 		assertEquals("0", tif.toHexString());
 	}

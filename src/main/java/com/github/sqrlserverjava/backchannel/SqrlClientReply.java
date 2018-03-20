@@ -33,7 +33,7 @@ public class SqrlClientReply {
 		suk=mC5wBKDXPkbk3J5ohpkM1ksgv0l996DG2BWWOvOXmF4
 
 	 */
-	public SqrlClientReply(final String nut, final SqrlTif tif, final String queryWithoutNut, final String correlator,
+	public SqrlClientReply(final String nut, final SqrlTifResponse tif, final String queryWithoutNut, final String correlator,
 			final Map<String, String> additionalDataTable) {
 		super();
 		this.nut = nut;

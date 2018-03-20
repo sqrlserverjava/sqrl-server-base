@@ -1,7 +1,7 @@
 package com.github.sqrlserverjava.backchannel;
 
 import static com.github.sqrlserverjava.backchannel.SqrlTifTest.*;
-import com.github.sqrlserverjava.backchannel.SqrlTif.SqrlTifBuilder;
+import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
@@ -33,7 +33,7 @@ public class SqrlTifParameterizedTest {
 
 	@Test
 	public void testIt() throws Exception {
-		final SqrlTifBuilder builder = new SqrlTifBuilder(ipsMatched);
+		final SqrlTifResponseBuilder builder = new SqrlTifResponseBuilder(ipsMatched);
 		final List<SqrlTifFlag> absentTifList = new ArrayList<>(Arrays.asList(SqrlTifFlag.values()));
 		if (ipsMatched) {
 			absentTifList.remove(SqrlTifFlag.IPS_MATCHED);
@@ -43,7 +43,7 @@ public class SqrlTifParameterizedTest {
 			absentTifList.remove(tif);
 		}
 
-		final SqrlTif tif = builder.createTif();
+		final SqrlTifResponse tif = builder.createTif();
 
 		if (ipsMatched) {
 			assertTrue(isTifPresent(tif, SqrlTifFlag.IPS_MATCHED));
