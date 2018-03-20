@@ -1,6 +1,5 @@
 package com.github.sqrlserverjava.util;
 
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.exception.SqrlException;
-import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.exception.SqrlInvalidRequestException;
 
 import net.i2p.crypto.eddsa.EdDSAEngine;
@@ -58,15 +56,12 @@ public class SqrlUtil {
 	 * @return the encoded string
 	 */
 	public static String sqrlBase64UrlEncode(final byte[] bytes) {
-		try {
-			String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8);
-			while (encoded.endsWith("=")) {
-				encoded = encoded.substring(0, encoded.length() - 1);
-			}
-			return encoded;
-		} catch (final UnsupportedEncodingException e) {
-			throw new SqrlIllegalStateException("UnsupportedEncodingException during base64 encode", e);
+		String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8_CHARSET);
+		// TODO: is this really necessary?
+		while (encoded.endsWith("=")) {
+			encoded = encoded.substring(0, encoded.length() - 1);
 		}
+		return encoded;
 	}
 
 	/**
@@ -77,11 +72,7 @@ public class SqrlUtil {
 	 * @return the encoded string
 	 */
 	public static String sqrlBase64UrlEncode(final String toEncode) {
-		try {
-			return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8));
-		} catch (final UnsupportedEncodingException e) {
-			throw new SqrlIllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
-		}
+		return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8_CHARSET));
 	}
 
 	/**
@@ -129,12 +120,7 @@ public class SqrlUtil {
 	 *             if UTF8 is not supported
 	 */
 	public static String base64UrlDecodeToString(final String toDecode) throws SqrlException {
-		try {
-			return new String(base64UrlDecode(toDecode), SqrlConstants.UTF8);
-		} catch (final UnsupportedEncodingException e) {
-			// This should never happen as the java specification requires that all JVMs support UTF8
-			throw new SqrlIllegalStateException("UnsupportedEncodingException for " + SqrlConstants.UTF8, e);
-		}
+			return new String(base64UrlDecode(toDecode), SqrlConstants.UTF8_CHARSET);
 	}
 
 	/**

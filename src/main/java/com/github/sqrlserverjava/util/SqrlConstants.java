@@ -27,7 +27,6 @@ public class SqrlConstants {
 			})).descendingSet());
 	// @formatter:off
 
-	public static final String	UTF8				= "UTF-8";
 	public static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
 	public static final String	SCHEME_HTTP			= "http";
 	public static final String	SCHEME_HTTP_COLON	= SCHEME_HTTP + ":";

@@ -1,6 +1,5 @@
 package com.github.sqrlserverjava;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -27,7 +26,6 @@ import com.github.sqrlserverjava.enums.SqrlRequestCommand;
 import com.github.sqrlserverjava.enums.SqrlRequestOpt;
 import com.github.sqrlserverjava.enums.SqrlServerSideKey;
 import com.github.sqrlserverjava.exception.SqrlException;
-import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.persistence.SqrlAutoCloseablePersistence;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceProvider;
@@ -237,23 +235,12 @@ public class TestCaseUtil {
 	 * @return the encoded string
 	 */
 	protected static String sqrlBase64UrlEncode(final String toEncode) {
-		try {
-			return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8));
-		} catch (final UnsupportedEncodingException e) {
-			throw new SqrlIllegalStateException("UnsupportedEncodingException ", e);
-		}
+		return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8_CHARSET));
 	}
 
 	public static String sqrlBase64UrlEncode(final byte[] bytes) {
-		try {
-			String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8);
-			while (encoded.endsWith("=")) {
-				encoded = encoded.substring(0, encoded.length() - 1);
-			}
-			return encoded;
-		} catch (final UnsupportedEncodingException e) {
-			throw new SqrlIllegalStateException("UnsupportedEncodingException during base64 encode", e);
-		}
+		String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8_CHARSET);
+		return encoded;
 	}
 
 	public static void setSqrlServerOpsBrowserFacingUrl(final URL browserFacingUrlAndContextPath) {
