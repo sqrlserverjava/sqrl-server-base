@@ -76,7 +76,8 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=aFZSlUvZFwiqCN2ycjui1ZdSQwtjVRVGqPy6IB-GUHJeDsF03LatdAdJ5XFYNB_R85a0s_v6UHXVtIV4yMX-AA";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams,
+				"129.112.177.225");
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -90,7 +91,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("0", responseDataTable.get("tif"));
+		assertEquals("4", responseDataTable.get("tif"));
 
 		// Now simulate ident call
 		// 'server=' value :
@@ -101,7 +102,8 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=P94csUjLIrSJTx21axMdEnR7GFJJ78lTIvJ9oGU1KIDu46ATteZFiK1up-RHLcIcZxA2V7MW9LGNUod7j2jmCg";
 
-		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
+		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams,
+				"229.179.39.232");
 		servletResponse = new MockHttpServletResponse();
 
 		// Store the server parrot in the DB
@@ -121,7 +123,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("0", responseDataTable.get("tif"));
+		assertEquals("4", responseDataTable.get("tif"));
 		// suk should not be returned as transactions are atomic and it did not exist before
 		assertNull(responseDataTable.get(SqrlServerSideKey.suk.toString()));
 
@@ -161,7 +163,8 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams,
+				"141.119.117.205");
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -174,7 +177,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("0", responseDataTable.get("tif"));
+		assertEquals("4", responseDataTable.get("tif"));
 
 		// Now sent ident
 		serverParam = "dmVyPTENCm51dD1UZjBoVWZXenpocG1zeEdyNS1kaDdRDQp0aWY9MA0KcXJ5PS9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PVRmMGhVZld6emhwbXN4R3I1LWRoN1EmY29yPWpVSlZVSXBGV0NQMlBFTWdpdkNJRW1lM2QzMkdWSDNVVGFmdkFtTDFVcWcNCg";
@@ -229,7 +232,8 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=ROkIkpNyMrUsaD_Y6JIioE1shQ18ddM7b_PWQ5xmtkjdiZ1NtOTri-zOpSj1qptmNjCuKfG-Cpll3tgF1dqvBg";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams,
+				"141.119.117.205");
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -242,7 +246,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("1", responseDataTable.get("tif"));
+		assertEquals("5", responseDataTable.get("tif"));
 
 		// Now the ident call
 		serverParam = "dmVyPTENCm51dD1UZjBoVWZXenpocG1zeEdyNS1kaDdRDQp0aWY9MA0KcXJ5PS9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PVRmMGhVZld6emhwbXN4R3I1LWRoN1EmY29yPWpVSlZVSXBGV0NQMlBFTWdpdkNJRW1lM2QzMkdWSDNVVGFmdkFtTDFVcWcNCg";
@@ -256,7 +260,8 @@ public class SqrlServerOperationsRealClientDataTest {
 		.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		sqrlPersistence.closeCommit();
 
-		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
+		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams,
+				"85.89.31.222");
 		servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(identRequest, servletResponse);
@@ -270,7 +275,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
 		assertNull("url is only returned when cps param is sent", responseDataTable.get("url"));
-		assertEquals("1", responseDataTable.get("tif"));
+		assertEquals("5", responseDataTable.get("tif"));
 		assertNull("suk is only returned on query command", responseDataTable.get("suk"));
 	}
 
@@ -304,7 +309,8 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&server=" + serverParam
 				+ "&ids=xKpxHhhpviglCEnKgzVR8V75KIFhZjG93ulLO89TP1mkZNRLAoeQTh446YRkZv8zcgBOsqgm5wmLmMesDQ8dDQ";
 		// Emulate the login page generation
-		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams);
+		final MockHttpServletRequest queryRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawQueryParams,
+				"166.62.161.147");
 		MockHttpServletResponse servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(queryRequest, servletResponse);
@@ -317,7 +323,7 @@ public class SqrlServerOperationsRealClientDataTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals("1", responseDataTable.get("tif"));
+		assertEquals("5", responseDataTable.get("tif"));
 
 		// Now the ident call
 		serverParam = "dmVyPTENCm51dD1fWTJNMkJBQkI2MkkxV1JRaGE1MGhBDQp0aWY9NQ0KcXJ5PS9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PV9ZMk0yQkFCQjYySTFXUlFoYTUwaEEmY29yPUFFZ21yT1dEaFFrMWFtTjlqOHNqUndDWGZubTdGakI1V2g2anJyVEJkNmsNCnN1az1CT1hKZ2xMSEVOQUFaTU1KMWtWcjRmZ25vXzBueWR6cDhpSDJVZjh6NUdJDQo";
@@ -331,7 +337,8 @@ public class SqrlServerOperationsRealClientDataTest {
 		.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
 		sqrlPersistence.closeCommit();
 
-		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams);
+		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams,
+				"123.132.235.165");
 		servletResponse = new MockHttpServletResponse();
 
 		clientFacingOperations.handleSqrlClientRequest(identRequest, servletResponse);
@@ -340,7 +347,6 @@ public class SqrlServerOperationsRealClientDataTest {
 
 		// Check the response generated by our code
 		assertEquals(HttpServletResponse.SC_OK, servletResponse.getStatus());
-		System.out.println(servletResponse.getContentAsString());
 		responseDataTable = parseSqrlResponse(servletResponse.getContentAsString());
 		assertEquals("1", responseDataTable.get("ver"));
 		// TODO: finish this

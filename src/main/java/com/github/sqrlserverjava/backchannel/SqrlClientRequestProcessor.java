@@ -6,8 +6,8 @@ import static com.github.sqrlserverjava.enums.SqrlInternalUserState.PIDK_EXISTS;
 import static com.github.sqrlserverjava.enums.SqrlServerSideKey.idk;
 import static com.github.sqrlserverjava.enums.SqrlServerSideKey.pidk;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,32 +93,33 @@ public class SqrlClientRequestProcessor {
 	 */
 	private void processNonKeyOptions() {
 		// Create a copy so we can track which flags we have processed
-		final List<SqrlRequestOpt> optList = new ArrayList<>(sqrlClientRequest.getOptList());
+		final Set<SqrlRequestOpt> unsupportedOpList = new HashSet<>(sqrlClientRequest.getOptList());
 
 		// Remove the key opts from the list since they are processed in SqrlServerOperations
 		for (final SqrlRequestOpt keyOpt : SqrlRequestOpt.getKeyOpts()) { // TODO: rename core  opts?
-			optList.remove(keyOpt);
+			unsupportedOpList.remove(keyOpt);
 		}
 
 		// The absence of given flags means they should be disabled. So loop through all known flags and take the
 		// appropriate action
 		for (final SqrlIdentityFlag flag : SqrlIdentityFlag.values()) {
-			if (flag.hasOptEquivalent()) {
-				final SqrlRequestOpt opt = flag.getSqrlClientOpt();
+			final SqrlRequestOpt opt = flag.getSqrlClientOpt();
+			if (flag.hasOptEquivalent() && opt.isPersist()) {
 				updateOptValueAsNeeded(flag, opt);
 				// Return type of remove is irrelevant since absence of opt means disable
-				optList.remove(flag.getSqrlClientOpt());
+				unsupportedOpList.remove(flag.getSqrlClientOpt());
 			}
 		}
 
 		// Some flags require special processing and were not handled above
 		// CPS is a request flag that is per request
-		optList.remove(SqrlRequestOpt.cps);
+		unsupportedOpList.remove(SqrlRequestOpt.cps);
+		unsupportedOpList.remove(SqrlRequestOpt.noiptest);
 
 		// What's left is unknown or unsupported to us
-		if (!optList.isEmpty()) {
+		if (!unsupportedOpList.isEmpty()) {
 			logger.warn("{}The SQRL client option(s) are not yet supported by the library: {}",
-					logHeader, optList);
+					logHeader, unsupportedOpList);
 		}
 
 	}
@@ -157,7 +158,7 @@ public class SqrlClientRequestProcessor {
 			}
 			return;
 		default:
-			// This should have been caught before here
+			// This should have been handled prior to here
 			throw new SqrlClientRequestProcessingException(
 					logHeader + "Don't know how to process SQRL command " + command);
 		}

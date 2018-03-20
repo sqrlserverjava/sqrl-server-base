@@ -27,7 +27,7 @@ public enum SqrlRequestOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	suk(false, true),
+	suk(false, true, false),
 
 	/**
 	 * When present, this option requests the web server to set a flag on this user's account to disable any alternative
@@ -41,7 +41,7 @@ public enum SqrlRequestOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	sqrlonly(true, false),
+	sqrlonly(true, false, true),
 
 	/**
 	 * When present, this option requests the web server to set a flag on this user's account to disable any alternative
@@ -56,7 +56,7 @@ public enum SqrlRequestOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	hardlock(true, false),
+	hardlock(true, false, true),
 
 	/**
 	 * “cps” is the abbreviation for Client Provided Session. The presence of this flag alters the system's final
@@ -75,7 +75,7 @@ public enum SqrlRequestOpt {
 	 *
 	 * from https://www.grc.com/sqrl/semantics.htm
 	 */
-	cps(true, false),
+	cps(true, false, false),
 	
 	/**
 	 * this is needed to prevent split-authentication attacks from allowing 'query' 
@@ -88,16 +88,25 @@ public enum SqrlRequestOpt {
 	 *
 	 * from https://www.grc.com/x/news.exe?cmd=article&group=grc.sqrl&item=18016&utag=
 	 */
-	noiptest(false, false),
+	noiptest(false, false, false),
 
 	;
 
-	private boolean nonQueryOnly;
-	private boolean	keyOpt;
+	private final boolean nonQueryOnly;
+	private final boolean keyOpt;
+	/**
+	 * Some opts are user preferences and therefore need to be persisted in storage
+	 */
+	private final boolean persist;
 
-	private SqrlRequestOpt(final boolean nonQueryOnly, final boolean keyOpt) {
+	private SqrlRequestOpt(final boolean nonQueryOnly, final boolean keyOpt, boolean persist) {
 		this.nonQueryOnly = nonQueryOnly;
 		this.keyOpt = keyOpt;
+		if (keyOpt) {
+			this.persist = false;
+		} else {
+			this.persist = persist;
+		}
 	}
 
 	/**
@@ -117,5 +126,12 @@ public enum SqrlRequestOpt {
 			}
 		}
 		return keyOptSet;
+	}
+
+	/**
+	 * Some opts are user preferences and therefore need to be persisted in storage
+	 */
+	public boolean isPersist() {
+		return persist;
 	}
 }

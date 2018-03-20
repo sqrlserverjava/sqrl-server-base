@@ -2,10 +2,10 @@ package com.github.sqrlserverjava.backchannel;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,7 +48,7 @@ public class SqrlClientRequest {
 	private final SqrlRequestCommand	clientCommand;
 	private final Map<SqrlServerSideKey, byte[]>	requestKeyTableRaw			= new ConcurrentHashMap<>();
 	private final Map<SqrlServerSideKey, String>	requestKeyTableBase64	= new ConcurrentHashMap<>();
-	private final List<SqrlRequestOpt>	optList				= new ArrayList<>();
+	private final Set<SqrlRequestOpt> optList = new HashSet<>();
 
 	private final HttpServletRequest	servletRequest;
 	private final String				clientParam;
@@ -298,7 +298,7 @@ public class SqrlClientRequest {
 		return requestKeyTableBase64.get(key);
 	}
 
-	public List<SqrlRequestOpt> getOptList() {
+	public Set<SqrlRequestOpt> getOptList() {
 		return optList;
 	}
 

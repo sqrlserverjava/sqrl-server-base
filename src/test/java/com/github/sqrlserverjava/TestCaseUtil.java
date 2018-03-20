@@ -7,11 +7,11 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.EntityManager;
@@ -33,6 +33,7 @@ import com.github.sqrlserverjava.persistence.SqrlCorrelator;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceProvider;
 import com.github.sqrlserverjava.util.SqrlConstants;
 import com.github.sqrlserverjava.util.SqrlServiceExecutor;
+import com.github.sqrlserverjava.util.SqrlUtil;
 
 import junitx.util.PrivateAccessor;
 
@@ -128,18 +129,29 @@ public class TestCaseUtil {
 	 *
 	 * @param loginRequestUrl
 	 * @param mockDataParams
-	 *            a URI string from the GRC client log such as "client=123&server=456&ids=789"
+	 *            a URI string from the GRC client log such as
+	 *            "client=123&server=456&ids=789"
+	 * @param requestIpOnServletRequest
 	 * @return
 	 * @throws URISyntaxException
 	 */
-	public static MockHttpServletRequest buildMockRequest(final String requestUrl, final String mockDataParams)
+	public static MockHttpServletRequest buildMockRequest(final String requestUrl, final String mockDataParams,
+			String requestIpOnServletRequest)
 			throws URISyntaxException {
 		final MockHttpServletRequest mockRequest = buildMockRequest(requestUrl);
 		for (final String nameValuePair : mockDataParams.split("&")) {
 			final String[] parts = nameValuePair.split("=");
 			mockRequest.addParameter(parts[0], parts[1]);
 		}
+		if (SqrlUtil.isNotBlank(requestIpOnServletRequest)) {
+			mockRequest.setRemoteAddr(requestIpOnServletRequest);
+		}
 		return mockRequest;
+	}
+
+	public static MockHttpServletRequest buildMockRequest(final String requestUrl, final String mockDataParams)
+			throws URISyntaxException {
+		return buildMockRequest(requestUrl, mockDataParams, null);
 	}
 
 	public static MockHttpServletRequest buildMockRequest(final URI uri) {
@@ -260,7 +272,7 @@ public class TestCaseUtil {
 		Mockito.when(mock.getCorrelator()).thenReturn(correlator);
 		Mockito.when(mock.getClientCommand()).thenReturn(command);
 		Mockito.when(mock.containsUrs()).thenReturn(hasUrsSignature);
-		final List<SqrlRequestOpt> optList = new ArrayList<>();
+		final Set<SqrlRequestOpt> optList = new HashSet<>();
 		optList.addAll(Arrays.asList(optArray));
 		Mockito.when(mock.getOptList()).thenReturn(optList);
 		return mock;

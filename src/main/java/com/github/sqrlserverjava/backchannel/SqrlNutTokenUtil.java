@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -69,9 +70,8 @@ public class SqrlNutTokenUtil {
 		}
 	}
 
-	public static boolean validateInetAddress(final InetAddress requesterIpAddress, final int inetInt,
-			final SqrlConfig config)
-					throws SqrlException {
+	public static Optional<String> validateInetAddress(final InetAddress requesterIpAddress, final int inetInt,
+			final SqrlConfig config) throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
 		// perform a match/no-match comparison to detect same-device phishing attacks. Therefore, any 128-bit IPv6
@@ -79,19 +79,29 @@ public class SqrlNutTokenUtil {
 		// retaining the least significant 32 bits of the hash result. The hash's salt can be the same AES key being
 		// used to encrypt and decrypt the nut.
 		if (inetInt == 0) {
-			return false;
+			return Optional.of("inetInt was zero");
 		}
 		if (requesterIpAddress instanceof Inet4Address) {
 			final byte[] bytes = SqrlNutTokenUtil.unpack(inetInt);
 			try {
 				final InetAddress fromNut = InetAddress.getByAddress(bytes);
-				return requesterIpAddress.equals(fromNut);
+				if (requesterIpAddress.equals(fromNut)) {
+					return Optional.empty();
+				} else {
+					return Optional
+							.of("original IP=" + fromNut.toString() + ", current IP=" + requesterIpAddress.toString());
+				}
 			} catch (final UnknownHostException e) {
 				throw new SqrlException("Got UnknownHostException for inet " + inetInt, e);
 			}
 		} else if (requesterIpAddress instanceof Inet6Address) {
 			final int currentIpPacked = packInet6Address((Inet6Address) requesterIpAddress, config);
-			return currentIpPacked == inetInt;
+			if (currentIpPacked == inetInt) {
+				return Optional.empty();
+			} else {
+				return Optional
+						.of("original packed=" + inetInt + ", current packed=" + currentIpPacked);
+			}
 		} else {
 			throw new SqrlException("Unknown InetAddress type of " + requesterIpAddress.getClass());
 		}

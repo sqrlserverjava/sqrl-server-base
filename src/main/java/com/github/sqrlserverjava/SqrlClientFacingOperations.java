@@ -16,6 +16,7 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -115,8 +116,13 @@ public class SqrlClientFacingOperations {
 						.updateLogHeader(new StringBuilder(sqrlClientRequest.getNegotiatedSqrlProtocolVersion())
 								.append(" ").append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
 
-				if (checkIfIpsMatch(sqrlClientRequest.getNut(), servletRequest)) {
+				Optional<String> mismatchDetail = testIfIpsMatch(sqrlClientRequest.getNut(), servletRequest);
+				boolean ipsMatched = !mismatchDetail.isPresent();
+				if (ipsMatched) {
 					tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);
+				} else if (!sqrlClientRequest.getOptList().contains(SqrlRequestOpt.noiptest)) {
+					throw new SqrlException(
+							"Client did not sent noiptest opt and IPs did not match: " + mismatchDetail.get());
 				}
 				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
 				sqrlInternalUserState = processor.processClientCommand();
@@ -322,8 +328,10 @@ public class SqrlClientFacingOperations {
 		}
 	}
 
-	private boolean checkIfIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest)
+	private Optional<String> testIfIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest)
 			throws SqrlException {
+		// TODO: check ipforwarded for headers
+		// TODO: support IPV6
 		final String ipAddressString = servletRequest.getRemoteAddr();
 		if (SqrlUtil.isBlank(ipAddressString)) {
 			throw new SqrlException(
