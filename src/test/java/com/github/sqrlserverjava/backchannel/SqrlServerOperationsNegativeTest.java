@@ -282,6 +282,6 @@ public class SqrlServerOperationsNegativeTest {
 		assertEquals("1", responseDataTable.get("ver"));
 		StringAssert.assertStartsWith(expectedPath + "?nut=", responseDataTable.get("qry"));
 		StringAssert.assertContains("cor=", responseDataTable.get("qry"));
-		assertEquals(expectedSqrlTif.toString(), responseDataTable.get("tif"));
+		assertEquals(expectedSqrlTif.toHexString(), responseDataTable.get("tif"));
 	}
 }

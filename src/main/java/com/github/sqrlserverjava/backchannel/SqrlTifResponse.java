@@ -1,5 +1,8 @@
 package com.github.sqrlserverjava.backchannel;
 
+import java.util.HashSet;
+import java.util.Set;
+
 // @formatter:off
 /**
  * Represents the SQRL tif response value, containing zero or more
@@ -11,9 +14,11 @@ package com.github.sqrlserverjava.backchannel;
  */
 //@formatter:on
 public class SqrlTifResponse {
+	private final Set<SqrlTifFlag> tifFlagList;
 	private final int tifInt;
 
-	private SqrlTifResponse(final int tifInt) {
+	private SqrlTifResponse(Set<SqrlTifFlag> tifFlagList, final int tifInt) {
+		this.tifFlagList = tifFlagList;
 		this.tifInt = tifInt;
 	}
 
@@ -23,10 +28,11 @@ public class SqrlTifResponse {
 
 	@Override
 	public String toString() {
-		return toHexString();
+		return new StringBuilder(100).append(toHexString()).append(tifFlagList).toString();
 	}
 
 	public static class SqrlTifResponseBuilder {
+		private Set<SqrlTifFlag> tifFlagList = new HashSet<>();
 		private int builderTifInt;
 
 		public SqrlTifResponseBuilder(final boolean ipsMatched) {
@@ -40,6 +46,7 @@ public class SqrlTifResponse {
 
 		public SqrlTifResponseBuilder addFlag(SqrlTifFlag tifFlag) {
 			builderTifInt |= tifFlag.getMask();
+			tifFlagList.add(tifFlag);
 			return this;
 		}
 
@@ -52,7 +59,7 @@ public class SqrlTifResponse {
 		}
 
 		public SqrlTifResponse createTif() {
-			return new SqrlTifResponse(builderTifInt);
+			return new SqrlTifResponse(tifFlagList, builderTifInt);
 		}
 	}
 }
