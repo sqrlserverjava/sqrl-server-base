@@ -32,9 +32,9 @@ import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestProcessor;
 import com.github.sqrlserverjava.backchannel.SqrlNutToken;
 import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
+import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
 import com.github.sqrlserverjava.backchannel.SqrlTifResponse;
 import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
-import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
@@ -270,8 +270,9 @@ public class SqrlClientFacingOperations {
 
 	private String buildCpsLoginUrl(final SqrlCorrelator sqrlCorrelator, final String cpsNonce) throws SqrlException {
 		// The full sqrlAuth browser URL with the cps nonce as a param
-		final String cpsLoginUrl = SqrlUtil.buildString(
-				SqrlServerOperations.getBrowserFacingUrlAndContextPath().toString(),
+		String browserFacingEntryUrl = sqrlCorrelator.getTransientAuthDataTable()
+				.get(SqrlConstants.TRANSIENT_ENTRY_URL);
+		final String cpsLoginUrl = SqrlUtil.buildString(browserFacingEntryUrl,
 				config.getSqrlLoginServletPath(), "?cor=", sqrlCorrelator.getCorrelatorString(), "&cps=", cpsNonce);
 		try {
 			new URL(cpsLoginUrl); // Sanity check

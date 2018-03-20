@@ -9,7 +9,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -78,7 +80,6 @@ public class SqrlBrowserFacingOperations {
 	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest request,
 			final HttpServletResponse response, final InetAddress userInetAddress, final int qrCodeSizeInPixels)
 					throws SqrlException {
-		SqrlServerOperations.storeBrowserFacingUrlAndContextPath(request);
 		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
 		urlBuf.append(backchannelUri.toString());
@@ -100,8 +101,9 @@ public class SqrlBrowserFacingOperations {
 			// Store the url in the server parrot value so it will be there when the SQRL client makes the request
 			final Date expiryTime = new Date(System.currentTimeMillis() + (1000 * config.getNutValidityInSeconds()));
 			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlator, expiryTime);
-			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
-					SqrlUtil.sqrlBase64UrlEncode(url));
+			Map<String, String> transientAuthDataTable = sqrlCorrelator.getTransientAuthDataTable();
+			transientAuthDataTable.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, SqrlUtil.sqrlBase64UrlEncode(url));
+			transientAuthDataTable.put(SqrlConstants.TRANSIENT_ENTRY_URL, buildEntryPointUrl(request));
 			sqrlPersistence.closeCommit();
 			final String cookieDomain = SqrlUtil.computeCookieDomain(request, config);
 
@@ -115,6 +117,14 @@ public class SqrlBrowserFacingOperations {
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(
 					SqrlClientRequestLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
+		}
+	}
+
+	private String buildEntryPointUrl(HttpServletRequest request) throws SqrlException {
+		try {
+			return new URI(request.getRequestURL().toString()).resolve(request.getContextPath()).toURL().toString();
+		} catch (final URISyntaxException | MalformedURLException e) {
+			throw new SqrlException("Error computing currentRequestBrowserFacingUri", e);
 		}
 	}
 

@@ -39,9 +39,11 @@ public class SqrlConstants {
 	public static final CharSequence	FORWARD_SLASH_X2_127_0_0_1	= "//127.0.0.1";
 	public static final int				AES_KEY_LENGTH				= 16;
 
-	public static final String					TRANSIENT_NAME_SERVER_PARROT	= "lastServerParam";
-	public static final String					TRANSIENT_CPS_NONCE				= "cpsNonce";
-	public static final String					ERROR							= "error";
+	// TODO: make enums
+	public static final String			TRANSIENT_NAME_SERVER_PARROT		= "lastServerParam";
+	public static final String			TRANSIENT_ENTRY_URL					= "entryPointUrl";
+	public static final String			TRANSIENT_CPS_NONCE					= "cpsNonce";
+	public static final String			ERROR								= "error";
 
 	public static final String	REGEX_BASE64_URL	= "[a-zA-Z0-9_-]+";
 	/**

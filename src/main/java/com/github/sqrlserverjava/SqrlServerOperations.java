@@ -151,7 +151,8 @@ public class SqrlServerOperations {
 		SqrlServerOperations.sqrlServiceExecutor = sqrlServiceExecutor;
 	}
 
-	static void storeBrowserFacingUrlAndContextPath(final HttpServletRequest request) throws SqrlException {
+	// TODO: remove
+	static void storeBrowserFacingUrlAndContextPathOLD(final HttpServletRequest request) throws SqrlException {
 		URL currentRequestBrowserFacingUri;
 		try {
 			currentRequestBrowserFacingUri = new URI(request.getRequestURL().toString())
@@ -169,7 +170,8 @@ public class SqrlServerOperations {
 		}
 	}
 
-	static URL getBrowserFacingUrlAndContextPath() {
+	// TODO: remove
+	static URL getBrowserFacingUrlAndContextPathOLD() {
 		return browserFacingUrlAndContextPath;
 	}
 
