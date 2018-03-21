@@ -389,7 +389,11 @@ public class SqrlUtil {
 	public static String buildString(final String... stringArray) {
 		int length = 0;
 		for(final String aString : stringArray) {
-			length += aString.length();
+			if (aString == null) {
+				length += 4;
+			} else {
+				length += aString.length();
+			}
 		}
 		final StringBuilder buf = new StringBuilder(length + 1);
 		for(final String aString : stringArray) {
@@ -404,6 +408,37 @@ public class SqrlUtil {
 			return true;
 		} catch (ClassNotFoundException e) {
 			return false;
+		}
+	}
+
+	public static void debugHeaders(HttpServletRequest servletRequest) {
+		// if (!logger.isDebugEnabled()) {
+		// return;
+		// }
+		StringBuilder buf = new StringBuilder(200);
+		buf.append("request headers: ");
+		Enumeration<String> iter = servletRequest.getHeaderNames();
+		while (iter.hasMoreElements()) {
+			String headerName = iter.nextElement();
+			buf.append(headerName).append("=");
+			Enumeration<String> valueIter = servletRequest.getHeaders(headerName);
+			while (valueIter.hasMoreElements()) {
+				buf.append(valueIter.nextElement()).append(" ");
+			}
+			buf.append("|");
+		}
+		logger.error(buf.toString());
+	}
+
+	public static void exceptionIfNull(String stringData, String errorDescription) throws SqrlException {
+		if (SqrlUtil.isBlank(stringData)) {
+			throw new SqrlException(errorDescription);
+		}
+	}
+
+	public static void exceptionIfNull(Object data, String errorDescription) throws SqrlException {
+		if (data == null) {
+			throw new SqrlException(errorDescription);
 		}
 	}
 }

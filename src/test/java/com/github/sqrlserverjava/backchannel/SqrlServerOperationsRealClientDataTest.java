@@ -333,8 +333,9 @@ public class SqrlServerOperationsRealClientDataTest {
 				+ "&ids=n4jzxR3kHScltt__wiZkkHnCaZwOxiY2HnA6E-zHyWNgZZRxj07Os-9PLNPO5j_mGPMnro2B3xFPAtH22aP2Dg";
 		// Store the server parrot so request validation will pass
 		sqrlPersistence = TestCaseUtil.createSqrlPersistence();
-		sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorFromServerParam).getTransientAuthDataTable()
-		.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
+		Map<String, String> transientAuthDataTable = sqrlPersistence.fetchSqrlCorrelatorRequired(correlatorFromServerParam).getTransientAuthDataTable();
+		transientAuthDataTable.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, serverParam);
+		transientAuthDataTable.put(SqrlConstants.TRANSIENT_ENTRY_URL, "http://sqrljava.com/sqrlexample");
 		sqrlPersistence.closeCommit();
 
 		final MockHttpServletRequest identRequest = TestCaseUtil.buildMockRequest(sqrlRequestUrl, rawIdentParams,

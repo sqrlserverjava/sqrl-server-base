@@ -38,7 +38,8 @@ public class SqrlConfigHelperTest {
 		assertEquals(900, sqrlConfig.getNutValidityInSeconds());
 		assertEquals(SqrlQrCodeImageFormat.PNG, sqrlConfig.getQrCodeImageFormat());
 		assertNull(sqrlConfig.getIpForwardedForHeader());
-		assertEquals(0, sqrlConfig.getIpForwardedForHeaderList().size());
+		assertEquals(1, sqrlConfig.getIpForwardedForHeaderList().size());
+		assertEquals("X-Forwarded-For", sqrlConfig.getIpForwardedForHeaderList().get(0));
 		assertEquals("com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory", sqrlConfig.getSqrlPersistenceFactoryClass());
 		assertEquals(15, sqrlConfig.getCleanupTaskExecInMinutes());
 		assertEquals(500, sqrlConfig.getAuthSyncCheckInMillis());

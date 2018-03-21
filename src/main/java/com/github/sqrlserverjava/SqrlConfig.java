@@ -299,7 +299,7 @@ public class SqrlConfig {
 
 	public List<String> getIpForwardedForHeaderList() {
 		if(ipForwardedForHeader == null) {
-			return Collections.emptyList();
+			return Collections.singletonList("X-Forwarded-For");
 		}
 		return Arrays.asList(ipForwardedForHeader);
 	}

@@ -91,8 +91,9 @@ public class SqrlClientFacingOperations {
 			final HttpServletResponse servletResponse) throws IOException {
 		SqrlClientRequestLoggingUtil.initLoggingHeader(servletRequest);
 		if (logger.isInfoEnabled()) {
-			logger.info(SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest).toString());
+			logger.info(SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest));
 		}
+		SqrlUtil.debugHeaders(servletRequest);
 		String correlator = "unknown";
 		final SqrlTifResponseBuilder tifBuilder = new SqrlTifResponseBuilder();
 		SqrlInternalUserState sqrlInternalUserState = SqrlInternalUserState.NONE_EXIST;
@@ -272,6 +273,8 @@ public class SqrlClientFacingOperations {
 		// The full sqrlAuth browser URL with the cps nonce as a param
 		String browserFacingEntryUrl = sqrlCorrelator.getTransientAuthDataTable()
 				.get(SqrlConstants.TRANSIENT_ENTRY_URL);
+		SqrlUtil.exceptionIfNull(browserFacingEntryUrl,
+				SqrlConstants.TRANSIENT_ENTRY_URL + " not found in transientAuthDataTable");
 		final String cpsLoginUrl = SqrlUtil.buildString(browserFacingEntryUrl,
 				config.getSqrlLoginServletPath(), "?cor=", sqrlCorrelator.getCorrelatorString(), "&cps=", cpsNonce);
 		try {
@@ -301,6 +304,7 @@ public class SqrlClientFacingOperations {
 			throws SqrlException {
 		final List<String> headersToCheckList = config.getIpForwardedForHeaderList();
 		String ipToParse = null;
+		SqrlUtil.debugHeaders(servletRequest);
 		for (final String headerToFind : headersToCheckList) {
 			ipToParse = servletRequest.getHeader(headerToFind);
 			if (SqrlUtil.isNotBlank(ipToParse)) {
