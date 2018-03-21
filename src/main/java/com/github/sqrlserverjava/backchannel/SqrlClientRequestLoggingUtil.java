@@ -22,6 +22,7 @@ public class SqrlClientRequestLoggingUtil {
 		// util class
 	}
 
+
 	private static final ThreadLocal<String> threadLocalLogHeader = new ThreadLocal<String>() {
 		@Override
 		protected String initialValue() {
@@ -29,6 +30,7 @@ public class SqrlClientRequestLoggingUtil {
 		}
 	};
 
+	// TODO: fix this, store nvp, then add to header string, make new inner class
 	public static void initLoggingHeader(final HttpServletRequest servletRequest) {
 		String sqrlAgentString = "-";
 		final String header = servletRequest.getHeader("user-agent");
@@ -37,7 +39,7 @@ public class SqrlClientRequestLoggingUtil {
 			logger.trace("setting sqrlagent on thread local to {}", sqrlAgentString);
 		}
 		// - for unknown protocol version
-		threadLocalLogHeader.set(new StringBuilder(sqrlAgentString).append(" - ").toString());
+		threadLocalLogHeader.set(new StringBuilder(50).append("\"").append(sqrlAgentString).append("\" ").toString());
 	}
 
 	/**

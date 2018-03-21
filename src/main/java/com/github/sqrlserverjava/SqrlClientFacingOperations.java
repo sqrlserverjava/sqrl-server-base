@@ -12,9 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -117,14 +115,7 @@ public class SqrlClientFacingOperations {
 						.updateLogHeader(new StringBuilder(sqrlClientRequest.getNegotiatedSqrlProtocolVersion())
 								.append(" ").append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
 
-				Optional<String> mismatchDetail = testIfIpsMatch(sqrlClientRequest.getNut(), servletRequest);
-				boolean ipsMatched = !mismatchDetail.isPresent();
-				if (ipsMatched) {
-					tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);
-				} else if (!sqrlClientRequest.getOptList().contains(SqrlRequestOpt.noiptest)) {
-					throw new SqrlException(
-							"Client did not sent noiptest opt and IPs did not match: " + mismatchDetail.get());
-				}
+				validateIpsMatch(sqrlClientRequest.getNut(), servletRequest, tifBuilder, sqrlClientRequest);
 				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
 				sqrlInternalUserState = processor.processClientCommand();
 				if (sqrlInternalUserState == IDK_EXISTS) {
@@ -218,7 +209,7 @@ public class SqrlClientFacingOperations {
 			} else {
 				// Nut is one time use, so generate a new one for the reply
 				final SqrlNutToken replyNut = SqrlNutTokenUtil.buildNut(config, configOperations, sqrlServerUrl,
-						determineClientIpAddress(servletRequest, config));
+						SqrlUtil.determineClientIpAddress(servletRequest, config));
 
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
 						sqrlCorrelator, sqrlInternalUserState, sqrlPersistence);
@@ -300,27 +291,6 @@ public class SqrlClientFacingOperations {
 				|| sqrlInternalUserState == PIDK_EXISTS;
 	}
 
-	static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)
-			throws SqrlException {
-		final List<String> headersToCheckList = config.getIpForwardedForHeaderList();
-		String ipToParse = null;
-		SqrlUtil.debugHeaders(servletRequest);
-		for (final String headerToFind : headersToCheckList) {
-			ipToParse = servletRequest.getHeader(headerToFind);
-			if (SqrlUtil.isNotBlank(ipToParse)) {
-				break;
-			}
-		}
-		if (SqrlUtil.isBlank(ipToParse)) {
-			ipToParse = servletRequest.getRemoteAddr();
-		}
-		try {
-			return InetAddress.getByName(ipToParse);
-		} catch (final UnknownHostException e) {
-			throw new SqrlException("Caught exception trying to determine clients IP address", e);
-		}
-	}
-
 	private void transmitReplyToSqrlClient(final HttpServletResponse response, final String serverReplyString)
 			throws IOException {
 		// Send the reply to the SQRL client
@@ -333,16 +303,16 @@ public class SqrlClientFacingOperations {
 		}
 	}
 
-	private Optional<String> testIfIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest)
-			throws SqrlException {
-		// TODO: check ipforwarded for headers
-		// TODO: support IPV6
-		final String ipAddressString = servletRequest.getRemoteAddr();
-		if (SqrlUtil.isBlank(ipAddressString)) {
-			throw new SqrlException(
-					SqrlClientRequestLoggingUtil.getLogHeader() + "No ip address found in sqrl request");
+	private void validateIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest,
+			SqrlTifResponseBuilder tifBuilder, SqrlClientRequest sqrlClientRequest) throws SqrlException {
+		final InetAddress clientIpAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
+		Optional<String> mismatchDetail = SqrlNutTokenUtil.validateInetAddress(clientIpAddress, nut.getInetInt(),
+				config);
+		boolean ipsMatched = !mismatchDetail.isPresent();
+		if (ipsMatched) {
+			tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);
+		} else if (!sqrlClientRequest.getOptList().contains(SqrlRequestOpt.noiptest)) {
+			throw new SqrlException("Client did not sent noiptest opt and IPs did not match: " + mismatchDetail.get());
 		}
-		final InetAddress requesterIpAddress = SqrlUtil.ipStringToInetAddresss(servletRequest.getRemoteAddr());
-		return SqrlNutTokenUtil.validateInetAddress(requesterIpAddress, nut.getInetInt(), config);
 	}
 }

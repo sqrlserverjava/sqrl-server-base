@@ -1,5 +1,9 @@
 package com.github.sqrlserverjava.backchannel;
 
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTP;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTPS;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_SQRL;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -21,7 +25,6 @@ import com.github.sqrlserverjava.exception.SqrlClientRequestProcessingException;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.exception.SqrlNutTokenReplayedException;
 import com.github.sqrlserverjava.util.SqrlConfigHelper;
-import com.github.sqrlserverjava.util.SqrlConstants;
 
 /**
  * Various util methods for the {@link SqrlNutToken}
@@ -54,7 +57,8 @@ public class SqrlNutTokenUtil {
 		// retaining the least significant 32 bits of the hash result. The hash's salt can be the same AES key being
 		// used to encrypt and decrypt the nut.
 		final String serverUrlScheme = serverUrl.getScheme();
-		if (serverUrlScheme.equals(SqrlConstants.SCHEME_HTTPS) || serverUrlScheme.equals(SqrlConstants.SCHEME_SQRL)) {
+		if (serverUrlScheme.equals(SCHEME_HTTPS) || serverUrlScheme.equals(SCHEME_HTTP) // HTTP for rev proxy
+				|| serverUrlScheme.equals(SCHEME_SQRL)) {
 			if (requesterIpAddress instanceof Inet4Address) {
 				return SqrlNutTokenUtil.pack(requesterIpAddress.getAddress());
 			} else if (requesterIpAddress instanceof Inet6Address) {

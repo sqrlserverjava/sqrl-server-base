@@ -2,7 +2,6 @@ package com.github.sqrlserverjava.backchannel;
 
 import static junit.framework.TestCase.assertNotNull;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +55,7 @@ public class SqrlServerOperationsQrCodeTest {
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
 		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
 				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
-				InetAddress.getByName("localhost"), 250);
+				250);
 		assertNotNull(authPageData);
 		assertNotNull(authPageData.getQrCodeOutputStream());
 	}

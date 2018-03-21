@@ -1,4 +1,4 @@
-package com.github.sqrlserverjava;
+package com.github.sqrlserverjava.util;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -13,8 +13,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import com.github.sqrlserverjava.SqrlConfig;
+import com.github.sqrlserverjava.util.SqrlUtil;
+
 @RunWith(Parameterized.class)
-public class SqrlServerOperationsDetermineIpTest {
+public class SqrlUtilDetermineIpTest {
 	@Parameters(name = "{index}: url=({0}) escheme=({1}) eurl=({2}) eport=({3}) euri=({4})")
 	public static Collection<Object[]> data() {
 		// @formatter:off
@@ -32,7 +35,7 @@ public class SqrlServerOperationsDetermineIpTest {
 
 	@Test
 	public void testIt() throws Throwable {
-		final InetAddress inetAddress = SqrlClientFacingOperations.determineClientIpAddress(request, config);
+		final InetAddress inetAddress = SqrlUtil.determineClientIpAddress(request, config);
 		assertEquals(expectedIp, inetAddress);
 	}
 
@@ -41,7 +44,7 @@ public class SqrlServerOperationsDetermineIpTest {
 	private final SqrlConfig				config	= new SqrlConfig();
 	private final InetAddress				expectedIp;
 
-	public SqrlServerOperationsDetermineIpTest(final String expectedIp, final String[] headerConfigSetting,
+	public SqrlUtilDetermineIpTest(final String expectedIp, final String[] headerConfigSetting,
 			final String ipToSetOnRequest, final String[] headersToSetOnRequest) throws UnknownHostException {
 		super();
 		this.expectedIp = InetAddress.getByName(expectedIp);

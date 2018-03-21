@@ -1,4 +1,11 @@
 package com.github.sqrlserverjava;
+import static com.github.sqrlserverjava.util.SqrlConstants.FORWARD_SLASH;
+import static com.github.sqrlserverjava.util.SqrlConstants.FORWARD_SLASH_X2_127_0_0_1;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTP;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTPS;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTPS_COLON;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTP_COLON;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_SQRL;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -22,7 +29,6 @@ import com.github.sqrlserverjava.exception.SqrlConfigSettingException;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
 import com.github.sqrlserverjava.util.SqrlConfigHelper;
-import com.github.sqrlserverjava.util.SqrlConstants;
 import com.github.sqrlserverjava.util.SqrlServiceExecutor;
 import com.github.sqrlserverjava.util.SqrlUtil;
 
@@ -160,7 +166,7 @@ public class SqrlConfigOperations {
 		} else if (backchannelSettingType == BackchannelSettingType.PARTIAL_PATH) {
 			// Replace the last path with ours
 			String workingCopy = requestUrl;
-			if (workingCopy.endsWith(SqrlConstants.FORWARD_SLASH)) {
+			if (workingCopy.endsWith(FORWARD_SLASH)) {
 				workingCopy = workingCopy.substring(0, workingCopy.length() - 1);
 			}
 			final int lastIndex = workingCopy.lastIndexOf('/');
@@ -174,7 +180,7 @@ public class SqrlConfigOperations {
 		// Some SQRL clients require a dotted ip, so replace localhost with 127.0.0.1
 		if (backchannelRequestString.contains("//localhost/") || backchannelRequestString.contains("//localhost:")) {
 			backchannelRequestString = backchannelRequestString.replace("//localhost",
-					SqrlConstants.FORWARD_SLASH_X2_127_0_0_1);
+					FORWARD_SLASH_X2_127_0_0_1);
 			// Some testers use a localhost.com alias, replace the .com if it's there
 			// backchannelRequestString = backchannelRequestString.replace(".com", "");
 			// TODO:
@@ -195,12 +201,12 @@ public class SqrlConfigOperations {
 	private static URI changeToSqrlScheme(final String fullBackChannelUrl) throws SqrlException {
 		// Compute the proper protocol
 		StringBuilder urlBuf = new StringBuilder(fullBackChannelUrl.length() + 5);
-		if (fullBackChannelUrl.startsWith(SqrlConstants.SCHEME_HTTPS_COLON)) {
-			urlBuf.append(fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTPS, SqrlConstants.SCHEME_SQRL));
-		} else if (fullBackChannelUrl.startsWith("http:")) {
+		if (fullBackChannelUrl.startsWith(SCHEME_HTTPS_COLON)) {
+			urlBuf.append(fullBackChannelUrl.replace(SCHEME_HTTPS, SCHEME_SQRL));
+		} else if (fullBackChannelUrl.startsWith(SCHEME_HTTP_COLON)) {
 			// reverse proxy may go unencrypted between SSL termination and the JEE
 			// container
-			urlBuf.append(fullBackChannelUrl.replace("http:", SqrlConstants.SCHEME_SQRL));
+			urlBuf.append(fullBackChannelUrl.replace(SCHEME_HTTP, SCHEME_SQRL));
 		} else {
 			throw new SqrlException(
 					"Don't know how to handle protocol of config.getBackChannelUrl(): " + fullBackChannelUrl);

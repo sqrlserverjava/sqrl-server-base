@@ -4,7 +4,6 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 
 import java.io.ByteArrayInputStream;
-import java.net.InetAddress;
 
 import javax.imageio.ImageIO;
 
@@ -37,7 +36,7 @@ public class SqrlServerOperationsTest {
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
 		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
 				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
-				InetAddress.getByName("localhost"), 250);
+				250);
 		assertNotNull(authPageData);
 		assertNotNull(authPageData.getUrl());
 		final String clickUrl = authPageData.getUrl();

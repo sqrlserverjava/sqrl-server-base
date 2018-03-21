@@ -347,14 +347,14 @@ public class SqrlUtil {
 		final StringBuilder buf = new StringBuilder(300);
 		buf.append("In ");
 		buf.append(request.getRequestURI()).append(" with params: ");
-		buf.append(parameterMapToString(request.getParameterMap())).append(" and  cookies: ");
+		buf.append(parameterMapToString(request.getParameterMap())).append(" and cookies: ");
 		buf.append(cookiesToString(request.getCookies()));
 		return buf.toString();
 	}
 
 	public static String parameterMapToString(final Map<String, String[]> parameterMap) {
 		final StringBuilder buf = new StringBuilder(400);
-		buf.append("{");
+		buf.append("<");
 		// {c=12850, 38.6=386540,
 		for (final Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
 			buf.append(entry.getKey()).append(":");
@@ -367,7 +367,7 @@ public class SqrlUtil {
 		if (buf.toString().endsWith(", ")) {
 			buf.delete(buf.length() - 2, buf.length());
 		}
-		buf.append("}");
+		buf.append(">");
 		return buf.toString();
 	}
 
@@ -412,9 +412,9 @@ public class SqrlUtil {
 	}
 
 	public static void debugHeaders(HttpServletRequest servletRequest) {
-		// if (!logger.isDebugEnabled()) {
-		// return;
-		// }
+		if (!logger.isDebugEnabled()) {
+			return;
+		}
 		StringBuilder buf = new StringBuilder(200);
 		buf.append("request headers: ");
 		Enumeration<String> iter = servletRequest.getHeaderNames();
@@ -427,7 +427,30 @@ public class SqrlUtil {
 			}
 			buf.append("|");
 		}
-		logger.error(buf.toString());
+		logger.debug(buf.toString());
+	}
+
+	public static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)
+			throws SqrlException {
+		final List<String> headersToCheckList = config.getIpForwardedForHeaderList();
+		String ipToParse = null;
+		SqrlUtil.debugHeaders(servletRequest);
+		for (final String headerToFind : headersToCheckList) {
+			ipToParse = servletRequest.getHeader(headerToFind);
+			if (SqrlUtil.isNotBlank(ipToParse)) {
+				break;
+			}
+		}
+		if (SqrlUtil.isBlank(ipToParse)) {
+			ipToParse = servletRequest.getRemoteAddr();
+		}
+		try {
+			InetAddress inetAddress = InetAddress.getByName(ipToParse);
+			logger.debug("clientIp={}", inetAddress.toString());
+			return inetAddress;
+		} catch (final UnknownHostException e) {
+			throw new SqrlException("Caught exception trying to determine clients IP address", e);
+		}
 	}
 
 	public static void exceptionIfNull(String stringData, String errorDescription) throws SqrlException {

@@ -1,6 +1,8 @@
 package com.github.sqrlserverjava;
 
 import static com.github.sqrlserverjava.enums.SqrlAuthenticationStatus.AUTHENTICATED_CPS;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTPS_COLON;
+import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTP_COLON;
 import static com.github.sqrlserverjava.util.SqrlUtil.buildString;
 
 import java.awt.Color;
@@ -66,23 +68,22 @@ public class SqrlBrowserFacingOperations {
 	/**
 	 * Called to generate the data the server needs to display to allow a user to authenticate via SQRL
 	 *
-	 * @param request
+	 * @param servletRequest
 	 *            the servlet request
 	 * @param response
-	 * @param userInetAddress
-	 *            the IP address of the users browser
 	 * @param qrCodeSizeInPixels
 	 *            the size (in pixels) that the generated QR code will be
 	 * @return the data the server needs to display to allow a user to authenticate via SQRL
 	 * @throws SqrlException
 	 *             if an error occurs
 	 */
-	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest request,
-			final HttpServletResponse response, final InetAddress userInetAddress, final int qrCodeSizeInPixels)
+	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest servletRequest,
+			final HttpServletResponse response, final int qrCodeSizeInPixels)
 					throws SqrlException {
-		final URI backchannelUri = configOperations.buildBackchannelRequestUrl(request);
+		final URI backchannelUri = configOperations.buildBackchannelRequestUrl(servletRequest);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
 		urlBuf.append(backchannelUri.toString());
+		InetAddress userInetAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
 		// Now we append the nut and our SFN
 		final SqrlNutToken nut = SqrlNutTokenUtil.buildNut(config, configOperations, backchannelUri, userInetAddress);
 		urlBuf.append("?nut=").append(nut.asBase64UrlEncryptedNut());
@@ -103,15 +104,15 @@ public class SqrlBrowserFacingOperations {
 			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlator, expiryTime);
 			Map<String, String> transientAuthDataTable = sqrlCorrelator.getTransientAuthDataTable();
 			transientAuthDataTable.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, SqrlUtil.sqrlBase64UrlEncode(url));
-			transientAuthDataTable.put(SqrlConstants.TRANSIENT_ENTRY_URL, buildEntryPointUrl(request));
+			transientAuthDataTable.put(SqrlConstants.TRANSIENT_ENTRY_URL, buildEntryPointUrl(servletRequest));
 			sqrlPersistence.closeCommit();
-			final String cookieDomain = SqrlUtil.computeCookieDomain(request, config);
+			final String cookieDomain = SqrlUtil.computeCookieDomain(servletRequest, config);
 
 			// Correlator outlives the nut so extend the cookie expiry
 			final int correlatorCookieAgeInSeconds = config.getNutValidityInSeconds() + 120;
-			response.addCookie(SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getCorrelatorCookieName(),
+			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain, config.getCorrelatorCookieName(),
 					correlator, correlatorCookieAgeInSeconds, config));
-			response.addCookie(SqrlUtil.createOrUpdateCookie(request, cookieDomain, config.getFirstNutCookieName(),
+			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain, config.getFirstNutCookieName(),
 					nut.asBase64UrlEncryptedNut(), config.getNutValidityInSeconds(), config));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
@@ -122,7 +123,17 @@ public class SqrlBrowserFacingOperations {
 
 	private String buildEntryPointUrl(HttpServletRequest request) throws SqrlException {
 		try {
-			return new URI(request.getRequestURL().toString()).resolve(request.getContextPath()).toURL().toString();
+			String originalEntryPointString = new URI(request.getRequestURL().toString())
+					.resolve(request.getContextPath()).toURL().toString();
+			// If we are being a reverse proxy, and the connection is clear between the proxy and the JEE server, it
+			// will come through as http. Correct that to https here
+			String entryPointString = originalEntryPointString.replace(SCHEME_HTTP_COLON, SCHEME_HTTPS_COLON);
+			// the reverse proxy may introduce port 443 for SSL, remove it since it is redudant
+			entryPointString = entryPointString.replace(":443", "");
+			
+			logger.debug("{}buildEntryPointUrl resulted in {} from {} ", SqrlClientRequestLoggingUtil.getLogHeader(),
+					entryPointString, originalEntryPointString);
+			return entryPointString;
 		} catch (final URISyntaxException | MalformedURLException e) {
 			throw new SqrlException("Error computing currentRequestBrowserFacingUri", e);
 		}
