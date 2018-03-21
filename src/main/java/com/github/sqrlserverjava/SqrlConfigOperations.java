@@ -148,7 +148,7 @@ public class SqrlConfigOperations {
 	 * @throws SqrlException
 	 *             if an invalid backchannelSettingType is present
 	 */
-	public URI getBackchannelRequestUrl(final HttpServletRequest loginPageRequest) throws SqrlException {
+	public URI buildBackchannelRequestUrl(final HttpServletRequest loginPageRequest) throws SqrlException {
 		// No synchronization as worst case is we compute the value a few times
 		String backchannelRequestString = null;
 		final String requestUrl = loginPageRequest.getRequestURL().toString();
@@ -180,25 +180,27 @@ public class SqrlConfigOperations {
 			// TODO:
 		}
 		final URI backchannelRequestUrl = changeToSqrlScheme(backchannelRequestString);
-		logger.trace("backchannelRequestUrl: " + backchannelRequestUrl);
+		// TODO: debug?
+		logger.info("requestUrl={}, backchannelRequestString={},  backchannelRequestUrl={} ", requestUrl,
+				backchannelRequestString, backchannelRequestUrl);
 		return backchannelRequestUrl;
 	}
 
 	/**
-	 * Converts a URL with http or https to qrl or sqrl, respectively
+	 * Verifies the URL is secure
 	 *
 	 * @param fullBackChannelUrl
 	 * @return
 	 */
 	private static URI changeToSqrlScheme(final String fullBackChannelUrl) throws SqrlException {
 		// Compute the proper protocol
-		StringBuilder urlBuf = null;
+		StringBuilder urlBuf = new StringBuilder(fullBackChannelUrl.length() + 5);
 		if (fullBackChannelUrl.startsWith(SqrlConstants.SCHEME_HTTPS_COLON)) {
-			urlBuf = new StringBuilder(fullBackChannelUrl.length() + 5);
 			urlBuf.append(fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTPS, SqrlConstants.SCHEME_SQRL));
 		} else if (fullBackChannelUrl.startsWith("http:")) {
-			urlBuf = new StringBuilder(fullBackChannelUrl.length() + 5);
-			urlBuf.append(fullBackChannelUrl.replace(SqrlConstants.SCHEME_HTTP, SqrlConstants.SCHEME_QRL));
+			// reverse proxy may go unencrypted between SSL termination and the JEE
+			// container
+			urlBuf.append(fullBackChannelUrl.replace("http:", SqrlConstants.SCHEME_SQRL));
 		} else {
 			throw new SqrlException(
 					"Don't know how to handle protocol of config.getBackChannelUrl(): " + fullBackChannelUrl);

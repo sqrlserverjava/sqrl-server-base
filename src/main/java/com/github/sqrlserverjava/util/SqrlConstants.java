@@ -32,7 +32,6 @@ public class SqrlConstants {
 	public static final String	SCHEME_HTTP_COLON	= SCHEME_HTTP + ":";
 	public static final String	SCHEME_HTTPS		= "https";
 	public static final String	SCHEME_HTTPS_COLON	= SCHEME_HTTPS + ":";
-	public static final String	SCHEME_QRL			= "qrl";
 	public static final String	SCHEME_SQRL			= "sqrl";
 	public static final String	FORWARD_SLASH		= "/";
 

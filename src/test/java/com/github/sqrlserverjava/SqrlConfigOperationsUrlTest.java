@@ -26,10 +26,10 @@ public class SqrlConfigOperationsUrlTest {
 			{ "https://sqrljava.com:20000/sqrlexample/sqrlbc", "https://sqrljava.com:20000/sqrlexample/login", 
 					"sqrl://sqrljava.com:20000/sqrlexample/sqrlbc", "/sqrlexample/sqrlbc",},
 			// Test subdomain
-			{ "http://sqrl.javasqrl.tech/sqrlbc", "http://javasqrl.tech/sqrlexample/login", 
-						"qrl://sqrl.javasqrl.tech/sqrlbc", "/sqrlbc",},
-			{ "http://sqrl.javasqrl.tech/", "http://javasqrl.tech/sqrlexample/login", 
-							"qrl://sqrl.javasqrl.tech/", "/",},
+				{ "https://sqrl.javasqrl.tech/sqrlbc", "https://javasqrl.tech/sqrlexample/login",
+						"sqrl://sqrl.javasqrl.tech/sqrlbc", "/sqrlbc",},
+				{ "https://sqrl.javasqrl.tech/", "https://javasqrl.tech/sqrlexample/login",
+							"sqrl://sqrl.javasqrl.tech/", "/",},
 		});
 	}
 	// @formatter:on
@@ -44,7 +44,7 @@ public class SqrlConfigOperationsUrlTest {
 
 		// Execute
 		final MockHttpServletRequest loginServletRequest = TestCaseUtil.buildMockRequest(loginRequestUrl);
-		assertEquals(expectedFullSqrlUrl, ops.getBackchannelRequestUrl(loginServletRequest).toString());
+		assertEquals(expectedFullSqrlUrl, ops.buildBackchannelRequestUrl(loginServletRequest).toString());
 
 		final MockHttpServletRequest sqrlServletRequest = TestCaseUtil.buildMockRequest(expectedFullSqrlUrl);
 		assertEquals(expectedSubsequentPath, ops.getSubsequentRequestPath(sqrlServletRequest));

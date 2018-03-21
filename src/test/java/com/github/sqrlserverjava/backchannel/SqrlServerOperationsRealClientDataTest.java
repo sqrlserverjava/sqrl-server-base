@@ -52,7 +52,7 @@ public class SqrlServerOperationsRealClientDataTest {
 	@Test
 	public void testFirstTime_SqrlIdentity() throws Throwable {
 		// qrl://127.0.0.1:8081/sqrlexample/sqrlbc?nut=GiXid26ALy2THQ7GT0a8sg&sfn=bG9jYWxob3N0&cor=3Q7N5WBs50uYn__VjG4iv4Pkpkv2Ne1skQgZ48A6DSA
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 
 		final String correlatorFromServerParam = "3Q7N5WBs50uYn__VjG4iv4Pkpkv2Ne1skQgZ48A6DSA";
@@ -143,7 +143,7 @@ public class SqrlServerOperationsRealClientDataTest {
 
 	@Test
 	public void testFirstTime_SqrlIdentity2ndRequestInvalid() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 
 		final String correlatorFromServerParam = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
@@ -208,7 +208,7 @@ public class SqrlServerOperationsRealClientDataTest {
 
 	@Test
 	public void testQueryIdent_SqrlIdentityExists_BrowserAuth() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		final String correlatorFromServerParam = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
@@ -281,7 +281,7 @@ public class SqrlServerOperationsRealClientDataTest {
 
 	@Test
 	public void testQueryIdent_SqrlIdentityExists_CpsAuth() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 		final String idk = "9OX0unQDwcBM6zYvm7X2gWF5hvRETuRqTgdw0FWmcNM";
 		final String correlatorFromServerParam = "AEgmrOWDhQk1amN9j8sjRwCXfnm7FjB5Wh6jrrTBd6k";

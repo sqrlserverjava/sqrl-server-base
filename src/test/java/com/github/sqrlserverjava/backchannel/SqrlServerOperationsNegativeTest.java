@@ -42,7 +42,7 @@ public class SqrlServerOperationsNegativeTest {
 
 	@Test
 	public void testNutReplayed() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 		final String serverValue = "cXJsOi8vc3FybGphdmEudGVjaC9zcXJsZXhhbXBsZS9zcXJsYmM_bnV0PWVCbms4d3hyQ2RTX3VBMUwzX013Z3cmc2ZuPWMzRnliR3BoZG1FdWRHVmphQSZjb3I9alVKVlVJcEZXQ1AyUEVNZ2l2Q0lFbWUzZDMyR1ZIM1VUYWZ2QW1MMVVxZw";
 		final String rawQueryParams = "client=dmVyPTENCmNtZD1xdWVyeQ0KaWRrPW00NzBGYjhPM1hZOHhBcWxOMnBDTDBTb2txUFlOYXp3ZGM1c1Q2U0xuVU0NCm9wdD1zdWsNCg"
@@ -77,7 +77,7 @@ public class SqrlServerOperationsNegativeTest {
 
 	@Test
 	public void testSignatureValidationFailed() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 
 		final SqrlPersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
@@ -118,7 +118,7 @@ public class SqrlServerOperationsNegativeTest {
 
 	@Test
 	public void testServerParamTampered() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 
 		SqrlPersistence sqrlPersistence = TestCaseUtil.createEmptySqrlPersistence();
@@ -166,7 +166,7 @@ public class SqrlServerOperationsNegativeTest {
 
 	@Test
 	public void testNoiptestNotSentAndIpChanged_QueryCall() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		final String correlatorFromServerParam = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";
@@ -210,7 +210,7 @@ public class SqrlServerOperationsNegativeTest {
 
 	@Test
 	public void testNoiptestNotSentAndIpChanged_IdentCall() throws Throwable {
-		final String sqrlRequestUrl = "qrl://127.0.0.1:8080/sqrlexample/sqrlbc";
+		final String sqrlRequestUrl = "sqrl://127.0.0.1:8080/sqrlexample/sqrlbc";
 		final String expectedPath = "/sqrlexample/sqrlbc";
 		final String idk = "m470Fb8O3XY8xAqlN2pCL0SokqPYNazwdc5sT6SLnUM";
 		final String correlatorFromServerParam = "jUJVUIpFWCP2PEMgivCIEme3d32GVH3UTafvAmL1Uqg";

@@ -80,7 +80,7 @@ public class SqrlBrowserFacingOperations {
 	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest request,
 			final HttpServletResponse response, final InetAddress userInetAddress, final int qrCodeSizeInPixels)
 					throws SqrlException {
-		final URI backchannelUri = configOperations.getBackchannelRequestUrl(request);
+		final URI backchannelUri = configOperations.buildBackchannelRequestUrl(request);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
 		urlBuf.append(backchannelUri.toString());
 		// Now we append the nut and our SFN

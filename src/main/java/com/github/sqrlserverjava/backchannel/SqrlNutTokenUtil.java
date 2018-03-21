@@ -62,9 +62,6 @@ public class SqrlNutTokenUtil {
 			} else {
 				throw new SqrlException("Unknown InetAddress type of " + requesterIpAddress.getClass());
 			}
-		} else if (serverUrlScheme.equals(SqrlConstants.SCHEME_HTTP)
-				|| serverUrlScheme.equals(SqrlConstants.SCHEME_QRL)) {
-			return 0;
 		} else {
 			throw new SqrlException("Unsupported scheme " + serverUrlScheme);
 		}
