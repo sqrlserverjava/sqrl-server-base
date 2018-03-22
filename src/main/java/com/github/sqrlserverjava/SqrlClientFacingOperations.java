@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -28,11 +29,11 @@ import com.github.sqrlserverjava.backchannel.SqrlClientReply;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequest;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestProcessor;
-import com.github.sqrlserverjava.backchannel.SqrlNutToken;
-import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
 import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
 import com.github.sqrlserverjava.backchannel.SqrlTifResponse;
 import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
@@ -116,7 +117,7 @@ public class SqrlClientFacingOperations {
 								.append(" ").append(sqrlClientRequest.getClientCommand()).append(":: ").toString());
 
 				validateIpsMatch(sqrlClientRequest.getNut(), servletRequest, tifBuilder, sqrlClientRequest);
-				SqrlNutTokenUtil.validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
+				validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
 				sqrlInternalUserState = processor.processClientCommand();
 				if (sqrlInternalUserState == IDK_EXISTS) {
 					tifBuilder.addFlag(SqrlTifFlag.CURRENT_ID_MATCH);
@@ -126,7 +127,7 @@ public class SqrlClientFacingOperations {
 				servletResponse.setStatus(HttpServletResponse.SC_OK);
 				requestState = "OK";
 				sqrlPersistence.closeCommit();
-			} catch (final SqrlException e) {
+			} catch (final SqrlException | RuntimeException e) {
 				exception = e;
 				sqrlPersistence.closeRollback();
 				tifBuilder.clearAllFlags().addFlag(SqrlTifFlag.COMMAND_FAILED);
@@ -181,7 +182,7 @@ public class SqrlClientFacingOperations {
 				sqrlPersistence.closeCommit();
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
 				logger.info("{}Processed sqrl client request replied with tif 0x{}", logHeader, tif.toHexString());
-			} catch (final SqrlException e) {
+			} catch (final SqrlException | RuntimeException e) {
 				sqrlPersistence.closeRollback();
 				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
 						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString), e);
@@ -190,6 +191,32 @@ public class SqrlClientFacingOperations {
 		} finally {
 			SqrlClientRequestLoggingUtil.clearLogHeader();
 		}
+	}
+
+	/**
+	 * Validates the {@link SqrlNutToken} from the {@link SqrlClientRequest} by:<br/>
+	 * <li>1. check the timestamp embedded in the Nut has expired
+	 * <li>2. call {@link SqrlPersistence} to see if the Nut has been replayed
+	 * 
+	 * @throws SqrlClientRequestProcessingException
+	 *             if any validation fails or if persistence fails
+	 */
+	private void validateNut(String correlator, SqrlNutToken nut, SqrlConfig config, SqrlPersistence sqrlPersistence)
+			throws SqrlClientRequestProcessingException {
+		final long nutExpiryMs = nut.computeExpiresAt(config);
+		final long now = System.currentTimeMillis();
+		final Date nutExpiry = new Date(nutExpiryMs);
+		if (logger.isDebugEnabled()) {
+			logger.debug("{} Now={}, nutExpiry={}", SqrlClientRequestLoggingUtil.getLogHeader(), new Date(now),
+					nutExpiry);
+		}
+		if (now > nutExpiryMs) {
+			throw new SqrlClientRequestProcessingException(SqrlTifFlag.TRANSIENT_ERROR, null, "Nut expired by ",
+					(nutExpiryMs - now), "ms, nut timetamp ms=TODO, expiry is set to ",
+					config.getNutValidityInSeconds(), " seconds");
+		}
+		// Mark the token as used since we will process this request
+		sqrlPersistence.markTokenAsUsed(nut.asEncryptedBase64(), nutExpiry);
 	}
 
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlClientRequest sqrlRequest,
@@ -208,13 +235,13 @@ public class SqrlClientFacingOperations {
 						Collections.emptyMap());
 			} else {
 				// Nut is one time use, so generate a new one for the reply
-				final SqrlNutToken replyNut = SqrlNutTokenUtil.buildNut(config, configOperations, sqrlServerUrl,
-						SqrlUtil.determineClientIpAddress(servletRequest, config));
+				final SqrlNutToken replyNut = SqrlNutTokenFactory.buildNut(config, configOperations,
+						sqrlServerUrl, SqrlUtil.determineClientIpAddress(servletRequest, config));
 
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
 						sqrlCorrelator, sqrlInternalUserState, sqrlPersistence);
 				// Build the final reply object
-				reply = new SqrlClientReply(replyNut.asBase64UrlEncryptedNut(), tif, subsequentRequestPath,
+				reply = new SqrlClientReply(replyNut.asEncryptedBase64(), tif, subsequentRequestPath,
 						sqrlCorrelator.getCorrelatorString(), additionalDataTable);
 			}
 
@@ -224,9 +251,9 @@ public class SqrlClientFacingOperations {
 			return serverReplyString;
 		} catch (final URISyntaxException e) {
 			sqrlPersistence.closeRollback();
-			throw new SqrlException(SqrlClientRequestLoggingUtil.getLogHeader()
-					+ "Error converting servletRequest.getRequestURL() to URI.  " + "servletRequest.getRequestURL()="
-					+ servletRequest.getRequestURL(), e);
+			throw new SqrlException(e, SqrlClientRequestLoggingUtil.getLogHeader(),
+					"Error converting servletRequest.getRequestURL() to URI.  servletRequest.getRequestURL()=",
+					servletRequest.getRequestURL());
 		}
 	}
 
@@ -271,7 +298,7 @@ public class SqrlClientFacingOperations {
 		try {
 			new URL(cpsLoginUrl); // Sanity check
 		} catch (final MalformedURLException e) {
-			throw new SqrlException("Generated invalid CPS login URL of " + cpsLoginUrl, e);
+			throw new SqrlException(e, "Generated invalid CPS login URL of ", cpsLoginUrl);
 		}
 		return cpsLoginUrl;
 	}
@@ -306,8 +333,7 @@ public class SqrlClientFacingOperations {
 	private void validateIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest,
 			SqrlTifResponseBuilder tifBuilder, SqrlClientRequest sqrlClientRequest) throws SqrlException {
 		final InetAddress clientIpAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
-		Optional<String> mismatchDetail = SqrlNutTokenUtil.validateInetAddress(clientIpAddress, nut.getInetInt(),
-				config);
+		Optional<String> mismatchDetail = nut.compareSqrlClientInetAddress(clientIpAddress, config);
 		boolean ipsMatched = !mismatchDetail.isPresent();
 		if (ipsMatched) {
 			tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);

@@ -14,18 +14,28 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	private static final long serialVersionUID = -7986435707384269525L;
 	private final SqrlTifFlag			tifFlagToAdd;
 
-	public SqrlClientRequestProcessingException(final String message) {
+	public SqrlClientRequestProcessingException(Object... messagePartArray) {
 		// The caller does not wish to set an extra tif, so just re-use COMMAND_FAILED which is always added on a
 		// failure
-		this(SqrlTifFlag.COMMAND_FAILED, message);
+		this(SqrlTifFlag.COMMAND_FAILED, null, messagePartArray);
 	}
 
-	public SqrlClientRequestProcessingException(final SqrlTifFlag tifToAdd, final String message) {
-		this(tifToAdd, message, null);
-	}
-
+	/**
+	 * @deprecated TODO
+	 */
+	@Deprecated
 	public SqrlClientRequestProcessingException(final SqrlTifFlag tifToAdd, final String message, final Throwable cause) {
 		super(SqrlUtil.buildString(SqrlClientRequestLoggingUtil.getLogHeader(), message), cause);
+		this.tifFlagToAdd = tifToAdd;
+	}
+
+	/**
+	 * 
+	 * @param tifToAdd
+	 */
+	public SqrlClientRequestProcessingException(final SqrlTifFlag tifToAdd, final Throwable cause,
+			final Object... messagePartArray) {
+		super(cause, buildMessageWithHeader(messagePartArray));
 		this.tifFlagToAdd = tifToAdd;
 	}
 
@@ -33,4 +43,7 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 		return tifFlagToAdd;
 	}
 
+	private static String buildMessageWithHeader(Object[] originalArray) {
+		return SqrlException.buildMessageWithHeader(originalArray, SqrlClientRequestLoggingUtil.getLogHeader());
+	}
 }

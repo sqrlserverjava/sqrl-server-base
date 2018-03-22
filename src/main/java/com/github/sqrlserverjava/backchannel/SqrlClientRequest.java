@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.SqrlConfigOperations;
 import com.github.sqrlserverjava.SqrlPersistence;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlClientParam;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
 import com.github.sqrlserverjava.enums.SqrlRequestOpt;
@@ -44,7 +46,7 @@ public class SqrlClientRequest {
 	private final String logHeader;
 
 	private final Integer				negotiatedSqrlProtocolVersion;
-	private final SqrlNutToken			nut;
+	private final SqrlNutToken						nut;
 	private final SqrlRequestCommand	clientCommand;
 	private final Map<SqrlServerSideKey, byte[]>	requestKeyTableRaw			= new ConcurrentHashMap<>();
 	private final Map<SqrlServerSideKey, String>	requestKeyTableBase64	= new ConcurrentHashMap<>();
@@ -61,7 +63,7 @@ public class SqrlClientRequest {
 		this.servletRequest = servletRequest;
 		this.clientParam = getRequiredParameter(servletRequest, "client");
 		this.serverParam = getRequiredParameter(servletRequest, "server");
-		this.nut = new SqrlNutToken(configOps, extractFromSqrlCsvString(serverParam, NUT_EQUALS));
+		this.nut = SqrlNutTokenFactory.unmarshal(extractFromSqrlCsvString(serverParam, NUT_EQUALS), configOps);
 		final String decoded = SqrlUtil.base64UrlDecodeDataFromSqrlClientToString(clientParam);
 		// parse server - not a name value pair, just the query string we gave
 		this.correlator = extractFromSqrlCsvString(serverParam, SqrlClientParam.cor.toString());
@@ -197,7 +199,7 @@ public class SqrlClientRequest {
 	}
 
 	static String extractFromSqrlCsvString(final String serverParam, final String variableToFind)
-			throws SqrlInvalidRequestException {
+			throws SqrlClientRequestProcessingException {
 		final String toSearch = SqrlUtil.base64UrlDecodeDataFromSqrlClientToString(serverParam);
 		String toFind = variableToFind;
 		if (!variableToFind.endsWith("=")) {

@@ -2,7 +2,7 @@ package com.github.sqrlserverjava;
 
 import java.io.ByteArrayOutputStream;
 
-import com.github.sqrlserverjava.backchannel.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
 
 /**
  * Encapsulates the SQRL related data that needs to be displayed for a SQRL login to occur

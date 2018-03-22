@@ -54,8 +54,7 @@ public class SqrlServerOperationsQrCodeTest {
 		final MockHttpServletRequest loginPageRequest = TestCaseUtil.buildMockRequest(loginRequestUrl);
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
 		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
-				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
-				250);
+				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse, 250);
 		assertNotNull(authPageData);
 		assertNotNull(authPageData.getQrCodeOutputStream());
 	}

@@ -3,7 +3,6 @@ package com.github.sqrlserverjava;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -20,12 +18,11 @@ import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.sqrlserverjava.backchannel.SqrlClientRequest;
-import com.github.sqrlserverjava.backchannel.SqrlNutToken;
-import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.TestCaseSqrlNutHelper;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
 import com.github.sqrlserverjava.enums.SqrlRequestOpt;
 import com.github.sqrlserverjava.enums.SqrlServerSideKey;
-import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.persistence.SqrlAutoCloseablePersistence;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceProvider;
@@ -55,20 +52,14 @@ public class TestCaseUtil {
 
 	@SuppressWarnings("deprecation")
 	public static final SqrlConfig buildTestSqrlConfig(final String nutString) throws Exception {
-		final SqrlNutToken nutToken = new SqrlNutToken(new SqrlConfigOperations(TestCaseUtil.buildTestSqrlConfig()),
-				nutString);
-
-		final SqrlConfig config = new TCSqrlConfig(nutToken.getIssuedTimestampMillis());
+		final SqrlConfig config = new TCSqrlConfig(System.currentTimeMillis());
 		// Set SqrlServerOperations counter to generate the expected value
-		final AtomicInteger sqrlServerOperationscounter = (AtomicInteger) PrivateAccessor
-				.getField(SqrlNutTokenUtil.class, "COUNTER");
-		sqrlServerOperationscounter.set(nutToken.getCounter());
-		// TestSecureRandom isn't random at all which is very fast
-		final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-		buffer.putInt(nutToken.getRandomInt());
-		config.setSecureRandom(new TestSecureRandom(buffer.array()));
+		// final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+		// buffer.putInt(nutToken.getRandomInt());
+		// config.setSecureRandom(new TestSecureRandom(buffer.array())); // TODO: fix or remove?
+		config.setSecureRandom(new TestSecureRandom(null));
 
-		config.setServerFriendlyName("Dave Test");
+		config.setServerFriendlyName("SFN is DEPRECATED");
 		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
 		// set AES key to all zeros for test cases
 		config.setAesKeyBase64(AES_TEST_KEY);
@@ -170,25 +161,23 @@ public class TestCaseUtil {
 		return mockRequest;
 	}
 
-	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config) throws SqrlException {
-		final long timestamp = System.currentTimeMillis();
-		final int inetInt = 4;
-		final int counter = 234;
-		final int random = 6;
-		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(config), counter, timestamp,
-				random);
-		return nut;
+	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config) throws Exception {
+		return buildValidSqrlNut(config, System.currentTimeMillis());
 	}
 
 	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config, final LocalDateTime nutIssuedAt)
-			throws SqrlException {
+			throws Exception {
 		final long timestamp = nutIssuedAt.toEpochSecond(ZoneOffset.UTC);
-		final int inetInt = 4;
-		final int counter = 234;
-		final int random = 6;
-		final SqrlNutToken nut = new SqrlNutToken(inetInt, new SqrlConfigOperations(config), counter, timestamp,
-				random);
-		return nut;
+		return TestCaseSqrlNutHelper.buildValidSqrlNut(timestamp, config);
+	}
+
+	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config, final long timestamp)
+			throws Exception {
+		return TestCaseSqrlNutHelper.buildValidSqrlNut(timestamp, config);
+	}
+
+	public static SqrlConfigOperations buildSqrlConfigOperations(SqrlConfig config) {
+		return new SqrlConfigOperations(config);
 	}
 
 	public static SqrlAutoCloseablePersistence createEmptySqrlPersistence() throws NoSuchFieldException {

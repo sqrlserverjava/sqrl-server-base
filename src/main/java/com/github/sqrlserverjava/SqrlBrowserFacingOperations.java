@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
-import com.github.sqrlserverjava.backchannel.SqrlNutToken;
-import com.github.sqrlserverjava.backchannel.SqrlNutTokenUtil;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlClientParam;
 import com.github.sqrlserverjava.exception.SqrlException;
@@ -85,16 +85,18 @@ public class SqrlBrowserFacingOperations {
 		urlBuf.append(backchannelUri.toString());
 		InetAddress userInetAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
 		// Now we append the nut and our SFN
-		final SqrlNutToken nut = SqrlNutTokenUtil.buildNut(config, configOperations, backchannelUri, userInetAddress);
-		urlBuf.append("?nut=").append(nut.asBase64UrlEncryptedNut());
+		final SqrlNutToken nut = SqrlNutTokenFactory.buildNut(config, configOperations, backchannelUri,
+				userInetAddress);
+		String base64Nut = nut.asEncryptedBase64();
+		urlBuf.append("?nut=").append(base64Nut);
 		try (SqrlAutoCloseablePersistence sqrlPersistence = SqrlServerOperations
 				.createSqrlPersistence(configOperations)) {
 			// Append our correlation id
 			// Need correlation id to be unique to each Nut, so sha-256 the nut
 			final MessageDigest digest = MessageDigest.getInstance("SHA-256"); // TODO: is it ok for the correlator to
-			// be derived from teh nut?
+			// be derived from the nut? probably not
 			final String correlator = SqrlUtil
-					.sqrlBase64UrlEncode(digest.digest(nut.asBase64UrlEncryptedNut().getBytes()));
+					.sqrlBase64UrlEncode(digest.digest(base64Nut.getBytes(SqrlConstants.UTF8_CHARSET)));
 			urlBuf.append("&").append(SqrlClientParam.cor.toString()).append("=").append(correlator);
 
 			final String url = urlBuf.toString();
@@ -113,7 +115,7 @@ public class SqrlBrowserFacingOperations {
 			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain, config.getCorrelatorCookieName(),
 					correlator, correlatorCookieAgeInSeconds, config));
 			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain, config.getFirstNutCookieName(),
-					nut.asBase64UrlEncryptedNut(), config.getNutValidityInSeconds(), config));
+							base64Nut, config.getNutValidityInSeconds(), config));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
 			throw new SqrlException(
@@ -186,13 +188,13 @@ public class SqrlBrowserFacingOperations {
 	 *             if an error occurs
 	 */
 	public long determineNutExpiry(final HttpServletRequest request) throws SqrlException {
-		final String stringValue = SqrlUtil.findCookieValue(request, config.getFirstNutCookieName());
-		if (stringValue == null) {
+		final String nutTokenString = SqrlUtil.findCookieValue(request, config.getFirstNutCookieName());
+		if (nutTokenString == null) {
 			throw new SqrlException(
 					"firstNutCookie with name " + config.getFirstNutCookieName() + " was not found on http request");
 		}
-		final SqrlNutToken token = new SqrlNutToken(configOperations, stringValue);
-		return SqrlNutTokenUtil.computeNutExpiresAt(token, config);
+		SqrlNutToken nut = SqrlNutTokenFactory.unmarshal(nutTokenString, configOperations);
+		return nut.computeExpiresAt(config);
 	}
 
 	public void valdateCpsParamIfNecessary(final SqrlCorrelator sqrlCorrelator, final HttpServletRequest request)

@@ -10,7 +10,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import com.github.sqrlserverjava.backchannel.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenEmbedded;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenLegacyFormat;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenSingleBlockFormat;
 import com.github.sqrlserverjava.enums.SqrlQrCodeImageFormat;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
 
@@ -35,7 +38,7 @@ import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
 //@formatter:on
 @XmlRootElement
 public class SqrlConfig {
-
+	// @formatter:off
 	/* *********************************************************************************************/
 	/* *************************************** REQUIRED ********************************************/
 	/* *********************************************************************************************/
@@ -179,6 +182,17 @@ public class SqrlConfig {
 	 */
 	private String cookiePath = "/";
 	
+	/**
+	 * The format ID to use when generating the SQRL nut token<br/> 
+	 * Default: 2
+	 * 
+	 * @see SqrlNutTokenEmbedded
+	 * @see SqrlNutTokenLegacyFormat
+	 * @see SqrlNutTokenSingleBlockFormat
+	 */
+	private int	sqrlNutTokenFormat = 2;
+	// @formatter:on
+
 	/* *********************************************************************************************/
 	/* *************************************** ACCESSORS *******************************************/
 	/* *********************************************************************************************/
@@ -429,6 +443,7 @@ public class SqrlConfig {
 		return serverFriendlyName;
 	}
 
+	// TODO: delete this since it is no longer part of the spec
 	public void setServerFriendlyName(final String serverFriendlyName) {
 		this.serverFriendlyName = serverFriendlyName;
 	}
@@ -442,6 +457,18 @@ public class SqrlConfig {
 	 */
 	public long getCurrentTimeMs() {
 		return System.currentTimeMillis();
+	}
+
+	@XmlElement(required = false)
+	public int getSqrlNutTokenFormat() {
+		return sqrlNutTokenFormat;
+	}
+
+	/**
+	 * @see #sqrlNutTokenFormat
+	 */
+	public void setSqrlNutTokenFormat(int sqrlNutTokenFormat) {
+		this.sqrlNutTokenFormat = sqrlNutTokenFormat;
 	}
 
 	/* (non-Javadoc)

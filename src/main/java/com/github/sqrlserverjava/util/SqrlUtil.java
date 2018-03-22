@@ -55,7 +55,7 @@ public class SqrlUtil {
 	 *            the data to be encoded
 	 * @return the encoded string
 	 */
-	public static String sqrlBase64UrlEncode(final byte[] bytes) {
+	public static String sqrlBase64UrlEncode(final byte[] bytes) { // TODO: rename to base64UrlEncode
 		String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8_CHARSET);
 		// TODO: is this really necessary?
 		while (encoded.endsWith("=")) {
@@ -71,7 +71,7 @@ public class SqrlUtil {
 	 *            the string to be encoded
 	 * @return the encoded string
 	 */
-	public static String sqrlBase64UrlEncode(final String toEncode) {
+	public static String sqrlBase64UrlEncode(final String toEncode) { // TODO: rename to base64UrlEncode
 		return sqrlBase64UrlEncode(toEncode.getBytes(SqrlConstants.UTF8_CHARSET));
 	}
 
@@ -382,22 +382,29 @@ public class SqrlUtil {
 	}
 
 	/**
-	 * Convenience method which concatenates the given strings in an efficient manner using a {@link StringBuilder} or
-	 * similar object
+	 * Convenience method which concatenates the given objects into a String in an efficient manner using a
+	 * {@link StringBuilder} or similar object
 	 * 
 	 */
-	public static String buildString(final String... stringArray) {
+	public static String buildString(final Object... objectArray) {
+		if (objectArray.length == 0) {
+			return "";
+		}
 		int length = 0;
-		for(final String aString : stringArray) {
-			if (aString == null) {
-				length += 4;
+		for (final Object aObject : objectArray) {
+			if (objectArray != null) {
+				length += aObject.toString().length();
 			} else {
-				length += aString.length();
+				length += 4;
 			}
 		}
 		final StringBuilder buf = new StringBuilder(length + 1);
-		for(final String aString : stringArray) {
-			buf.append(aString);
+		for (final Object aObject : objectArray) {
+			if (aObject != null) {
+				buf.append(aObject.toString());
+			} else {
+				buf.append("null");
+			}
 		}
 		return buf.toString();
 	}

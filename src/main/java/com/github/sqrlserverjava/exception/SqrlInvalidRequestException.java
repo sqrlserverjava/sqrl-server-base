@@ -1,7 +1,7 @@
 package com.github.sqrlserverjava.exception;
 
-import com.github.sqrlserverjava.backchannel.SqrlTifResponse;
 import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
+import com.github.sqrlserverjava.backchannel.SqrlTifResponse;
 
 /**
  * Indicates that a SQRL client send us an invalid request and will trigger the setting of
@@ -13,12 +13,12 @@ import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
 public class SqrlInvalidRequestException extends SqrlClientRequestProcessingException {
 	private static final long serialVersionUID = -1136919442400493773L;
 
-	public SqrlInvalidRequestException(final String message) {
-		this(message, null);
+	public SqrlInvalidRequestException(final Object... messagePartArray) {
+		this(null, messagePartArray);
 	}
 
-	public SqrlInvalidRequestException(final String message, final Throwable cause) {
-		super(SqrlTifFlag.CLIENT_FAILURE, message, cause);
+	public SqrlInvalidRequestException(final Throwable cause, Object... messagePartArray) {
+		super(SqrlTifFlag.CLIENT_FAILURE, cause, messagePartArray);
 	}
 
 }

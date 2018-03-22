@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
 import com.github.sqrlserverjava.TestCaseUtil;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
@@ -28,7 +29,7 @@ public class SqrlCommandProcessorTest {
 	private SqrlConfig				config;
 	private SqrlPersistence			sqrlPersistence;
 	private SqrlClientRequestProcessor	processor;
-	private SqrlNutToken			nutToken;
+	private SqrlNutToken				nutToken;
 
 	@Before
 	public void setUp() throws Exception {

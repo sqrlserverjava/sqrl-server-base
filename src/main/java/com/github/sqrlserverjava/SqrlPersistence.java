@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import com.github.sqrlserverjava.backchannel.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.exception.SqrlPersistenceException;

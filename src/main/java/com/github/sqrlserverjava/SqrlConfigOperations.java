@@ -269,6 +269,10 @@ public class SqrlConfigOperations {
 		return type;
 	}
 
+	public SqrlConfig getSqrlConfig() {
+		return config;
+	}
+
 	public SqrlPersistenceFactory getSqrlPersistenceFactory() {
 		return sqrlPersistenceFactory;
 	}
