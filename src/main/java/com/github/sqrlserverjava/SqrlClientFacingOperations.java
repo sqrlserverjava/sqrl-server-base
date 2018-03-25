@@ -4,6 +4,7 @@ import static com.github.sqrlserverjava.enums.SqrlAuthenticationStatus.AUTHENTIC
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.DISABLED;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.IDK_EXISTS;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.PIDK_EXISTS;
+import static com.github.sqrlserverjava.util.SqrlConstants.FORWARD_SLASH;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -281,16 +282,17 @@ public class SqrlClientFacingOperations {
 			// Generate and store our CPS nonce
 			final String cpsNonce = UUID.randomUUID().toString();
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_CPS_NONCE, cpsNonce);
-			additionalDataTable.put("url", buildCpsLoginUrl(sqrlCorrelator, cpsNonce)); // NOT base64url encoded
+			String browserFacingEntryUrl = sqrlCorrelator.getTransientAuthDataTable()
+					.get(SqrlConstants.TRANSIENT_ENTRY_URL);
+			additionalDataTable.put("url", buildCpsLoginUrl(browserFacingEntryUrl, sqrlCorrelator, cpsNonce));
+			additionalDataTable.put("can", buildCpsCancelUrl(browserFacingEntryUrl));
 		}
-
 		return additionalDataTable;
 	}
 
-	private String buildCpsLoginUrl(final SqrlCorrelator sqrlCorrelator, final String cpsNonce) throws SqrlException {
+	private String buildCpsLoginUrl(String browserFacingEntryUrl, final SqrlCorrelator sqrlCorrelator,
+			final String cpsNonce) throws SqrlException {
 		// The full sqrlAuth browser URL with the cps nonce as a param
-		String browserFacingEntryUrl = sqrlCorrelator.getTransientAuthDataTable()
-				.get(SqrlConstants.TRANSIENT_ENTRY_URL);
 		SqrlUtil.exceptionIfNull(browserFacingEntryUrl,
 				SqrlConstants.TRANSIENT_ENTRY_URL + " not found in transientAuthDataTable");
 		final String cpsLoginUrl = SqrlUtil.buildString(browserFacingEntryUrl,
@@ -300,9 +302,24 @@ public class SqrlClientFacingOperations {
 		} catch (final MalformedURLException e) {
 			throw new SqrlException(e, "Generated invalid CPS login URL of ", cpsLoginUrl);
 		}
+		// NOT base64url encoded
 		return cpsLoginUrl;
 	}
 
+	private String buildCpsCancelUrl(String browserFacingEntryUrl) throws SqrlException {
+		String cpsCancelUri = config.getCpsCancelUri();
+		if (!cpsCancelUri.startsWith(FORWARD_SLASH)) {
+			cpsCancelUri = FORWARD_SLASH + cpsCancelUri;
+		}
+		final String fullCpsCancelUrl = SqrlUtil.buildString(browserFacingEntryUrl, cpsCancelUri);
+		try {
+			new URL(fullCpsCancelUrl); // Sanity check
+		} catch (final MalformedURLException e) {
+			throw new SqrlException(e, "Generated invalid CPS cancel URL of ", fullCpsCancelUrl);
+		}
+		// NOT base64url encoded
+		return fullCpsCancelUrl;
+	}
 	private boolean shouldIncludeSukInReply(final SqrlClientRequest sqrlRequest,
 			final SqrlInternalUserState sqrlInternalUserState) {
 		if (sqrlRequest.getClientCommand() != SqrlRequestCommand.QUERY) {

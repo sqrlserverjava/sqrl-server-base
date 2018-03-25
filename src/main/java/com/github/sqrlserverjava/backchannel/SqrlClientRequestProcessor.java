@@ -195,7 +195,7 @@ public class SqrlClientRequestProcessor {
 				sqrlCorrelator.setAuthenticationStatus(SqrlAuthenticationStatus.AUTHENTICATED_CPS);
 			} else {
 				// Per the SQRL spec, servers are not required to support cps, but the client can always request it
-				logger.info("cps was requested but is disabled in sqrlconfig.  Continuing with browser sign on");
+				logger.debug("cps was requested but is disabled in sqrlconfig.  Continuing with browser sign on");
 			}
 		}
 		sqrlPersistence.userAuthenticatedViaSqrl(sqrlIdk, correlator);

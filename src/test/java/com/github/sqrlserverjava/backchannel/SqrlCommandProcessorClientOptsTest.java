@@ -29,7 +29,9 @@ public class SqrlCommandProcessorClientOptsTest {
 
 	@After
 	public void tearDown() throws Exception {
-		sqrlPersistence.closeCommit();
+		if (sqrlPersistence != null) {
+			sqrlPersistence.closeCommit();
+		}
 	}
 
 	@Test

@@ -97,6 +97,13 @@
 			</xsd:annotation>
          </xsd:element>
                   
+        <xsd:element name="cpsCancelUri" type="xsd:string" minOccurs="0">
+           	<xsd:annotation>
+				<xsd:documentation> When enableCps=true, this is the URI where the user will be redirected to if the CPS authentication is cancelled or fails.  Ignored when enableCps=false.  Default: n/a</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+        
+                  
          <xsd:element name="correlatorCookieName" type="xsd:string" minOccurs="0">
            	<xsd:annotation>
 				<xsd:documentation> The cookie name to use for the SQRL correlator during authentication.  Default: sqrlcorrelator</xsd:documentation>

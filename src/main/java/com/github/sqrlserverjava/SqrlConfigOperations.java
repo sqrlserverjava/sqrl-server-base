@@ -80,8 +80,11 @@ public class SqrlConfigOperations {
 			secureRandom.setSeed(aRootDir.getFreeSpace()); // Don't use total space since it is predictable
 		}
 
-		// Server Friendly Name - not required, we can compute from server name if necessary
-
+		// if CPS is enabled, then <cpsCancelUri> must be set as well
+		if (config.isEnableCps() && SqrlUtil.isBlank(config.getCpsCancelUri())) {
+			throw new SqrlConfigSettingException("config cpsCancelUri must be set since CPS is enabled");
+		}
+		
 		// AES key init
 		byte[] aesKeyBytes = SqrlConfigHelper.getAESKeyBytes(config);
 		aesKey = new SecretKeySpec(aesKeyBytes, 0, aesKeyBytes.length, "AES");

@@ -153,10 +153,17 @@ public class SqrlConfig {
 
 	/**
 	 * Whether or not CPS is enabled for this server
-	 * Default: true
+	 * Default: false
 	 */
-	private boolean enableCps = true;
+	private boolean enableCps = false;
 
+	/**
+	 * When enableCps=true, this is the URI where the user will be redirected to if the CPS authentication
+	 * is cancelled or fails.  Ignored when enableCps=false
+	 * Default: n/a
+	 */
+	private String cpsCancelUri;
+	
 	/**
 	 * The cookie name to use for the SQRL correlator during authentication
 	 * Default: sqrlcorrelator
@@ -471,7 +478,24 @@ public class SqrlConfig {
 		this.sqrlNutTokenFormat = sqrlNutTokenFormat;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * @return the cpsCancelUri
+	 */
+	public String getCpsCancelUri() {
+		return cpsCancelUri;
+	}
+
+	/**
+	 * @param cpsCancelUri
+	 *            the cpsCancelUri to set
+	 */
+	public void setCpsCancelUri(String cpsCancelUri) {
+		this.cpsCancelUri = cpsCancelUri;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -486,6 +510,7 @@ public class SqrlConfig {
 		result = prime * result + ((cookieDomain == null) ? 0 : cookieDomain.hashCode());
 		result = prime * result + ((cookiePath == null) ? 0 : cookiePath.hashCode());
 		result = prime * result + ((correlatorCookieName == null) ? 0 : correlatorCookieName.hashCode());
+		result = prime * result + ((cpsCancelUri == null) ? 0 : cpsCancelUri.hashCode());
 		result = prime * result + (enableCps ? 1231 : 1237);
 		result = prime * result + ((firstNutCookieName == null) ? 0 : firstNutCookieName.hashCode());
 		result = prime * result + Arrays.hashCode(ipForwardedForHeader);
@@ -495,11 +520,14 @@ public class SqrlConfig {
 		result = prime * result + ((secureRandom == null) ? 0 : secureRandom.hashCode());
 		result = prime * result + ((serverFriendlyName == null) ? 0 : serverFriendlyName.hashCode());
 		result = prime * result + ((sqrlLoginServletPath == null) ? 0 : sqrlLoginServletPath.hashCode());
+		result = prime * result + sqrlNutTokenFormat;
 		result = prime * result + ((sqrlPersistenceFactoryClass == null) ? 0 : sqrlPersistenceFactoryClass.hashCode());
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -562,6 +590,13 @@ public class SqrlConfig {
 		} else if (!correlatorCookieName.equals(other.correlatorCookieName)) {
 			return false;
 		}
+		if (cpsCancelUri == null) {
+			if (other.cpsCancelUri != null) {
+				return false;
+			}
+		} else if (!cpsCancelUri.equals(other.cpsCancelUri)) {
+			return false;
+		}
 		if (enableCps != other.enableCps) {
 			return false;
 		}
@@ -603,6 +638,9 @@ public class SqrlConfig {
 				return false;
 			}
 		} else if (!sqrlLoginServletPath.equals(other.sqrlLoginServletPath)) {
+			return false;
+		}
+		if (sqrlNutTokenFormat != other.sqrlNutTokenFormat) {
 			return false;
 		}
 		if (sqrlPersistenceFactoryClass == null) {

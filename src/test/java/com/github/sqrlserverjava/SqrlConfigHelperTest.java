@@ -44,7 +44,7 @@ public class SqrlConfigHelperTest {
 		assertEquals(15, sqrlConfig.getCleanupTaskExecInMinutes());
 		assertEquals(500, sqrlConfig.getAuthSyncCheckInMillis());
 		assertEquals("/sqrllogin", sqrlConfig.getSqrlLoginServletPath());
-		assertEquals(true, sqrlConfig.isEnableCps());
+		assertEquals(false, sqrlConfig.isEnableCps());
 		assertEquals("sqrlcorrelator", sqrlConfig.getCorrelatorCookieName());
 		assertEquals("sqrlfirstnut", sqrlConfig.getFirstNutCookieName());
 		assertNull(sqrlConfig.getCookieDomain()); // Will be null at first, set later
