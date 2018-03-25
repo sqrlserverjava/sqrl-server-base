@@ -15,7 +15,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.Key;
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -123,7 +122,6 @@ public class SqrlConfigOperations {
 	private static Object createInstanceFromNoArgConstructor(@SuppressWarnings("rawtypes") final Class clazz,
 			final String description) {
 		try {
-			System.out.println("Constructors: " + Arrays.toString(clazz.getConstructors()));
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			final Constructor constructor = clazz.getConstructor();
 			return constructor.newInstance();
