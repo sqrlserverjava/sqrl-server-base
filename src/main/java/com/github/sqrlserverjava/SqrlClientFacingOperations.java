@@ -338,7 +338,7 @@ public class SqrlClientFacingOperations {
 	private void transmitReplyToSqrlClient(final HttpServletResponse response, final String serverReplyString)
 			throws IOException {
 		// Send the reply to the SQRL client
-		response.setContentType("text/html;charset=utf-8");
+		response.setContentType("text/plain;charset=utf-8");
 		response.setContentLength(serverReplyString.length());
 		try (PrintWriter writer = response.getWriter()) {
 			writer.write(serverReplyString);
