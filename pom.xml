@@ -11,7 +11,7 @@
 	<description>Library that implements the server side portions of the SQRL protocol.</description>
 	<url>https://github.com/sqrlserverjava/sqrl-server-base</url>
 
-	<version>0.9.4-SNAPSHOT</version>
+	<version>0.9.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -75,4 +75,26 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<!-- Include build info in development builds -->
+				<groupId>net.mgorski.quicktag</groupId>
+				<artifactId>quicktag</artifactId>
+				<version>2.1.5</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>quicktag</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputPackage>com.github.sqrlserverjava.util</outputPackage>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

@@ -44,7 +44,7 @@ public class SqrlConfig {
 	/* *********************************************************************************************/
 	/**
 	 * REQUIRED: The path (full URL or partial URI) of the backchannel servlet which the SQRL clients will call.  
-	 * For example:  https://sqrljava.com:20000/sqrlexample/backchannel or /sqrlexample/backchannel
+	 * For example:  https://sqrljava.com:20000/sqrlexample/sqrlbc or /sqrlexample/sqrlbc or /sqrlbc
 	 */
 	private String backchannelServletPath;
 
@@ -74,7 +74,8 @@ public class SqrlConfig {
 	 * browser. If this value is not defined and the sqrl-sever-atomosphere library is on the classpath, this
 	 * will automatically be set to com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater
 	 * 
-	 * Example: com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater
+	 * Default: com.github.sqrlserverjava.atmosphere.AtmosphereClientAuthStateUpdater (if the sqrl-sever-atomosphere 
+	 * library is present)  
 	 * 
 	 * @see {@link SqrlClientAuthStateUpdater}
 	 * @see <a href="https://github.com/sqrlserverjava/sqrl-server-atmosphere">sqrl-server-atmosphere</a>

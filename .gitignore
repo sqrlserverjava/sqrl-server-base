@@ -14,3 +14,4 @@ build.gradle
 settings.gradle
 .classpath
 .project
+src/main/java/com/github/sqrlserverjava/util/Version.java

@@ -25,6 +25,8 @@ import com.github.sqrlserverjava.persistence.SqrlIdentity;
 import com.github.sqrlserverjava.persistence.SqrlPersistenceCleanupTask;
 import com.github.sqrlserverjava.util.SqrlServiceExecutor;
 import com.github.sqrlserverjava.util.SqrlUtil;
+import com.github.sqrlserverjava.util.VersionExtractor;
+import com.github.sqrlserverjava.util.VersionExtractor.Module;
 
 /**
  * The core SQRL class which processes all SQRL requests and generates the appropriates responses.
@@ -59,6 +61,7 @@ public class SqrlServerOperations {
 		if (config == null) {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
+		logger.info(VersionExtractor.extractDetailedBuildInfo(Module.BASE));
 		this.config = config;
 		this.configOperations = SqrlConfigOperationsFactory.get(config);
 		this.persistenceFactory = configOperations.getSqrlPersistenceFactory();
