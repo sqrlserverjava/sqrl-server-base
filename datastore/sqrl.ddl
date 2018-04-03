@@ -1,9 +1,9 @@
-CREATE TABLE sqrl_identity (id BIGINT NOT NULL, idk VARCHAR(255) NOT NULL, native_user_xref VARCHAR(255), PRIMARY KEY (id));
-CREATE TABLE sqrl_correlator (id BIGINT NOT NULL, authenticationStatus VARCHAR(255) NOT NULL, expiryTime DATETIME NOT NULL, value VARCHAR(255) NOT NULL, authenticated_identity BIGINT, PRIMARY KEY (id));
-CREATE TABLE sqrl_identity_flag (id BIGINT NOT NULL, name VARCHAR(255) NOT NULL);
-CREATE TABLE sqrl_identity_data (id BIGINT NOT NULL, value VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL);
+CREATE TABLE sqrl_identity (id BIGINT NOT NULL, idk VARCHAR(750) NOT NULL, native_user_xref VARCHAR(255), PRIMARY KEY (id));
+CREATE TABLE sqrl_correlator (id BIGINT NOT NULL, authenticationStatus VARCHAR(1000) NOT NULL, expiryTime DATETIME NOT NULL, value VARCHAR(255) NOT NULL, authenticated_identity BIGINT, PRIMARY KEY (id));
+CREATE TABLE sqrl_identity_flag (id BIGINT NOT NULL, name VARCHAR(1000) NOT NULL);
+CREATE TABLE sqrl_identity_data (id BIGINT NOT NULL, value VARCHAR(1000) NOT NULL, name VARCHAR(255) NOT NULL);
 CREATE TABLE sqrl_transient_auth_data (id BIGINT NOT NULL, value VARCHAR(5000) NOT NULL, name VARCHAR(255) NOT NULL);
-CREATE TABLE sqrl_used_nut_token (value VARCHAR(255) NOT NULL, expiryTime DATETIME NOT NULL, PRIMARY KEY (value));
+CREATE TABLE sqrl_used_nut_token (value VARCHAR(750) NOT NULL, expiryTime DATETIME NOT NULL, PRIMARY KEY (value));
 -- INDEXES
 ALTER TABLE `sqrl_identity` ADD INDEX(`native_user_xref`);
 ALTER TABLE `sqrl_identity` ADD UNIQUE INDEX(`idk`);
