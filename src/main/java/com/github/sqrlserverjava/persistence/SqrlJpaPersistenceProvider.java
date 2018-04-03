@@ -45,23 +45,31 @@ public class SqrlJpaPersistenceProvider implements SqrlPersistence {
 	public static final String	PERSISTENCE_UNIT_NAME	= "javasqrl-persistence";
 	private static final String	PARAM_CORRELATOR		= "correlator";
 
-	private static EntityManagerFactory				entityManagerFactory	= Persistence
-			.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
 	private static final Map<EntityManager, Long>	LAST_USED_TIME_TABLE	= new WeakHashMap<>();
 	// Need strong references so we can check that it was closed, will be removed below
 	private static final Map<EntityManager, Exception> CREATED_BY_STACK_TABLE = new ConcurrentHashMap<>();
 
-	private final EntityManager entityManager;
+	private static EntityManagerFactory					entityManagerFactory;
+	private final EntityManager							entityManager;
 
 	/**
-	 * @deprecated do not invoke this constructor directly
+	 * @deprecated do not invoke this constructor directly, use <code>SqrlJpaPersistenceFactory</code> instead
 	 */
 	@Deprecated
 	public SqrlJpaPersistenceProvider() {
+		entityManagerFactory = Persistence
+				.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
 		entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
 		LAST_USED_TIME_TABLE.put(entityManager, System.currentTimeMillis());
 		CREATED_BY_STACK_TABLE.put(entityManager, new Exception("create SqrlJpaPersistenceProvider trace"));
+	}
+	
+	private static void checkInit() {
+		if (entityManagerFactory == null) {
+			entityManagerFactory = Persistence
+					.createEntityManagerFactory(SqrlJpaPersistenceProvider.PERSISTENCE_UNIT_NAME);
+		}
 	}
 
 	private void updateLastUsed(final EntityManager entityManger) {
