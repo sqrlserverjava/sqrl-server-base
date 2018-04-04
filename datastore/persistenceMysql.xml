@@ -16,7 +16,7 @@
 			<property name="eclipselink.logging.parameters" value="true"/>
             <property name="eclipselink.target-database" value="MYSQL" />
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://yourmysqlserver/sqrl?serverTimezone=America/New_York&amp;character_set_server=utf8mb4" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://yourmysqlserver/sqrl?serverTimezone=America/New_York" />
             <property name="javax.persistence.jdbc.user" value="sqrluser" />
             <property name="javax.persistence.jdbc.password" value="badpassword" />
         </properties>
