@@ -318,6 +318,7 @@ public class SqrlClientFacingOperations {
 			throw new SqrlException(e, "Generated invalid CPS cancel URL of ", fullCpsCancelUrl);
 		}
 		// NOT base64url encoded
+		logger.info("fullCpsCancelUrl={}", fullCpsCancelUrl); // TODO: debug
 		return fullCpsCancelUrl;
 	}
 	private boolean shouldIncludeSukInReply(final SqrlClientRequest sqrlRequest,
