@@ -118,8 +118,8 @@ public class SqrlBrowserFacingOperations {
 							base64Nut, config.getNutValidityInSeconds(), config));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		} catch (final NoSuchAlgorithmException e) {
-			throw new SqrlException(
-					SqrlClientRequestLoggingUtil.getLogHeader() + "Caught exception during correlator create", e);
+			throw new SqrlException(e,
+					SqrlClientRequestLoggingUtil.getLogHeader() + "Caught exception during correlator create");
 		}
 	}
 
@@ -137,7 +137,7 @@ public class SqrlBrowserFacingOperations {
 					entryPointString, originalEntryPointString);
 			return entryPointString;
 		} catch (final URISyntaxException | MalformedURLException e) {
-			throw new SqrlException("Error computing currentRequestBrowserFacingUri", e);
+			throw new SqrlException(e, "Error computing currentRequestBrowserFacingUri");
 		}
 	}
 
@@ -174,7 +174,7 @@ public class SqrlBrowserFacingOperations {
 			ImageIO.write(image, config.getQrCodeImageFormat().toString().toLowerCase(), os);
 			return os;
 		} catch (final IOException | WriterException e) {
-			throw new SqrlException("Caught exception during QR code generation", e);
+			throw new SqrlException(e, "Caught exception during QR code generation");
 		}
 	}
 

@@ -37,18 +37,18 @@ import com.github.sqrlserverjava.util.VersionExtractor.Module;
 public class SqrlServerOperations {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 
-	private static final AtomicBoolean authStateMonitorInitialized = new AtomicBoolean(false);
-	private static final AtomicBoolean dbCleanupInitialized = new AtomicBoolean(false);
+	private static final AtomicBoolean			authStateMonitorInitialized	= new AtomicBoolean(false);
+	private static final AtomicBoolean			dbCleanupInitialized		= new AtomicBoolean(false);
 
-	private static SqrlServiceExecutor sqrlServiceExecutor;
-	static URL browserFacingUrlAndContextPath;
+	private static SqrlServiceExecutor			sqrlServiceExecutor;
+	static volatile URL							browserFacingUrlAndContextPath;
 
-	private final SqrlConfig config;
-	private final SqrlConfigOperations configOperations;
-	private final SqrlPersistenceFactory persistenceFactory;
+	private final SqrlConfig					config;
+	private final SqrlConfigOperations			configOperations;
+	private final SqrlPersistenceFactory		persistenceFactory;
 
-	private final SqrlBrowserFacingOperations sqrlBrowserFacingOperations;
-	private final SqrlClientFacingOperations sqrlClientFacingOperations;
+	private final SqrlBrowserFacingOperations	sqrlBrowserFacingOperations;
+	private final SqrlClientFacingOperations	sqrlClientFacingOperations;
 
 	/**
 	 * Initializes the operations class with the given config, defaulting to the built in JPA persistence provider.
@@ -161,7 +161,7 @@ public class SqrlServerOperations {
 			currentRequestBrowserFacingUri = new URI(request.getRequestURL().toString())
 					.resolve(request.getContextPath()).toURL();
 		} catch (final URISyntaxException | MalformedURLException e) {
-			throw new SqrlException("Error computing currentRequestBrowserFacingUri", e);
+			throw new SqrlException(e, "Error computing currentRequestBrowserFacingUri");
 		}
 		if (browserFacingUrlAndContextPath == null) {
 			logger.debug("Setting browserFacingUrlAndContextPath to {}", currentRequestBrowserFacingUri.toString());

@@ -144,7 +144,7 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 			// but there is no way we can know this when we issue the first nut and there are better
 			// ways to track this, so we ignored it
 		} catch (final IOException e) {
-			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, "IO exception during read", e);
+			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, e, "IO exception during read");
 		}
 	}
 
@@ -170,7 +170,7 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 					return Optional.of(SqrlUtil.buildString("IPv4 address mismatch, browser=", fromNut.getHostAddress(), " sqrlClient=",requesterIpAddress.getHostAddress()));
 				}
 			} catch (final UnknownHostException e) {
-				throw new SqrlException(e, "Got UnknownHostException for inetInt ", inetInt, " of ", e.getMessage());
+				throw new SqrlException(e, "Got UnknownHostException for inetInt ", Integer.toString(inetInt));
 			}
 		} else if (requesterIpAddress instanceof Inet6Address) {
 			final int currentIpPacked = packInet6Address((Inet6Address) requesterIpAddress, config);
@@ -240,7 +240,7 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 			logger.debug("IPV6 {} compressed and packed to {}", requesterIpAddress, packed);
 			return packed;
 		} catch (final NoSuchAlgorithmException e) {
-			throw new SqrlException("Error occured while hashing IPV6 address", e);
+			throw new SqrlException(e, "Error occured while hashing IPV6 address");
 		}
 	}
 

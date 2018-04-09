@@ -67,7 +67,6 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 		this.correlator = correlator;
 		this.browserLoginUrl = browserLoginUrl;
 		String jsonPayload = buildJsonPayload(issuedTimestamp, browserIPAddress, correlator, browserLoginUrl);
-		// compress(jsonPayload.getBytes(SqrlConstants.UTF8_CHARSET)); TODO
 		// Build IV and AAD
 		final byte[] iv = new byte[GCM_IV_SIZE_BYTES];
 		config.getSecureRandom().nextBytes(iv);
@@ -83,7 +82,6 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 		byte[] finalBytes = new byte[AAD_SIZE_BYTES + cipherText.length];
 		System.arraycopy(additionalAuthenticatedData, 0, finalBytes, 0, AAD_SIZE_BYTES);
 		System.arraycopy(cipherText, 0, finalBytes, AAD_SIZE_BYTES, cipherText.length);
-		// compress(finalBytes); TODO
 		this.base64UrlEncryptedNut = SqrlUtil.sqrlBase64UrlEncode(finalBytes);
 	}
 

@@ -88,7 +88,7 @@ public class SqrlUtil {
 		try {
 			return Base64.getUrlDecoder().decode(toDecodeParam.getBytes());
 		} catch (final IllegalArgumentException e) {
-			throw new SqrlException("Error base64 decoding: " + toDecodeParam, e);
+			throw new SqrlException(e, "Error base64 decoding: " + toDecodeParam);
 		}
 	}
 
@@ -181,7 +181,7 @@ public class SqrlUtil {
 			signature.update(messageBytes);
 			return signature.verify(signatureFromMessage);
 		} catch (final GeneralSecurityException e) {
-			throw new SqrlException("Got exception during EC signature verification", e);
+			throw new SqrlException(e, "Got exception during EC signature verification");
 		}
 	}
 
@@ -223,7 +223,7 @@ public class SqrlUtil {
 		try {
 			return InetAddress.getByName(ipAddressString);
 		} catch (final UnknownHostException e) {
-			throw new SqrlException("Got UnknownHostException for <" + ipAddressString + ">", e);
+			throw new SqrlException(e, "Got UnknownHostException for <", ipAddressString, ">");
 		}
 	}
 
@@ -456,7 +456,7 @@ public class SqrlUtil {
 			logger.debug("clientIp={}", inetAddress.toString());
 			return inetAddress;
 		} catch (final UnknownHostException e) {
-			throw new SqrlException("Caught exception trying to determine clients IP address", e);
+			throw new SqrlException(e, "Caught exception trying to determine clients IP address");
 		}
 	}
 

@@ -187,8 +187,7 @@ public class SqrlConfigOperations {
 			// TODO:
 		}
 		final URI backchannelRequestUrl = changeToSqrlScheme(backchannelRequestString);
-		// TODO: debug?
-		logger.info("requestUrl={}, backchannelRequestString={},  backchannelRequestUrl={} ", requestUrl,
+		logger.debug("requestUrl={}, backchannelRequestString={},  backchannelRequestUrl={} ", requestUrl,
 				backchannelRequestString, backchannelRequestUrl);
 		return backchannelRequestUrl;
 	}
@@ -215,7 +214,7 @@ public class SqrlConfigOperations {
 		try {
 			return new URI(urlBuf.toString());
 		} catch (final URISyntaxException e) {
-			throw new SqrlException("Caught URISyntaxException with backchannel baseURL: " + urlBuf.toString(), e);
+			throw new SqrlException(e, "Caught URISyntaxException with backchannel baseURL: ", urlBuf.toString());
 		}
 	}
 
@@ -235,8 +234,8 @@ public class SqrlConfigOperations {
 			try {
 				this.subsequentRequestPath = new URI(sqrlBackchannelRequest.getRequestURL().toString()).getPath();
 			} catch (final URISyntaxException e) {
-				throw new SqrlException("Caught URISyntaxException with backchannel sqrlBackchannelRequest: "
-						+ sqrlBackchannelRequest.getRequestURL().toString(), e);
+				throw new SqrlException(e, "Caught URISyntaxException with backchannel sqrlBackchannelRequest: ",
+						sqrlBackchannelRequest.getRequestURL().toString());
 			}
 		}
 		return this.subsequentRequestPath;

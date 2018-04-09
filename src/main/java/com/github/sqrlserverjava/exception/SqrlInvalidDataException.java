@@ -13,7 +13,7 @@ public class SqrlInvalidDataException extends SqrlException {
 	 * {@inheritDoc}
 	 */
 	public SqrlInvalidDataException(final String message, final Throwable e) {
-		super(message, e);
+		super(e, message);
 	}
 
 	/**

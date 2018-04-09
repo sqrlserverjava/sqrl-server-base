@@ -163,7 +163,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 							.of("original IP=" + fromNut.toString() + ", current IP=" + requesterIpAddress.toString());
 				}
 			} catch (final UnknownHostException e) {
-				throw new SqrlException("Got UnknownHostException for inet " + inetInt, e);
+				throw new SqrlException(e, "Got UnknownHostException for inet ", Integer.toString(inetInt));
 			}
 		} else if (requesterIpAddress instanceof Inet6Address) {
 			final int currentIpPacked = packInet6Address((Inet6Address) requesterIpAddress, config);

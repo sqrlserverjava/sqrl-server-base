@@ -88,7 +88,7 @@ public class SqrlNutTokenFactory {
 			return new SqrlNutTokenEmbedded(browserIPAddress, configOperations, System.currentTimeMillis(),
 					dummyCorrelator, dummyLoginUrl);
 		} else {
-			throw new SqrlException("Unknown SqrlNutToken format ID of ", formatToUse);
+			throw new SqrlException("Unknown SqrlNutToken format ID of ", Integer.toString(formatToUse));
 		}
 	}
 }
