@@ -14,11 +14,10 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -93,10 +92,7 @@ public class SqrlBrowserFacingOperations {
 				.createSqrlPersistence(configOperations)) {
 			// Append our correlation id
 			// Need correlation id to be unique to each Nut, so sha-256 the nut
-			final MessageDigest digest = MessageDigest.getInstance("SHA-256"); // TODO: is it ok for the correlator to
-			// be derived from the nut? probably not
-			final String correlator = SqrlUtil
-					.sqrlBase64UrlEncode(digest.digest(base64Nut.getBytes(SqrlConstants.UTF8_CHARSET)));
+			final String correlator = UUID.randomUUID().toString();
 			urlBuf.append("&").append(SqrlClientParam.cor.toString()).append("=").append(correlator);
 
 			final String url = urlBuf.toString();
@@ -117,9 +113,6 @@ public class SqrlBrowserFacingOperations {
 			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain, config.getFirstNutCookieName(),
 							base64Nut, config.getNutValidityInSeconds(), config));
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
-		} catch (final NoSuchAlgorithmException e) {
-			throw new SqrlException(e,
-					SqrlClientRequestLoggingUtil.getLogHeader() + "Caught exception during correlator create");
 		}
 	}
 
