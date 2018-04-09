@@ -49,15 +49,14 @@ public class SqrlUtil {
 	}
 
 	/**
-	 * Performs the SQRL required base64URL encoding
+	 * Performs the SQRL required base64URL encoding (base64url without padding)
 	 *
 	 * @param bytes
 	 *            the data to be encoded
 	 * @return the encoded string
 	 */
-	public static String sqrlBase64UrlEncode(final byte[] bytes) { // TODO: rename to base64UrlEncode
+	public static String sqrlBase64UrlEncode(final byte[] bytes) {
 		String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8_CHARSET);
-		// TODO: is this really necessary?
 		while (encoded.endsWith("=")) {
 			encoded = encoded.substring(0, encoded.length() - 1);
 		}
@@ -65,7 +64,7 @@ public class SqrlUtil {
 	}
 
 	/**
-	 * Performs the SQRL required base64URL encoding
+	 * Performs the SQRL required base64URL encoding (base64url without padding)
 	 *
 	 * @param toEncode
 	 *            the string to be encoded
@@ -76,7 +75,7 @@ public class SqrlUtil {
 	}
 
 	/**
-	 * Performs the SQRL required base64URL decoding
+	 * Performs the SQRL required base64URL decoding (base64url without padding)
 	 *
 	 * @param toDecodeParam
 	 *            the data to be decoded
