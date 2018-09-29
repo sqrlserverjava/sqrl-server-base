@@ -5,7 +5,7 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/204/badge)](https://bestpractices.coreinfrastructure.org/projects/204)
 # sqrl-server-base
 
-Java SQRL authentication library that implements the server side portions of the [SQRL](https://www.grc.com/sqrl/sqrl.htm) protocol.  It can be integrated into existing JEE apps in order to add SQRL as an authentication option to existing methods (username/password, etc).
+Java SQRL authentication library that implements server side portions of the [SQRL](https://www.grc.com/sqrl/sqrl.htm) protocol.  It can be integrated with existing JEE apps in order to add SQRL as an authentication option to existing methods (username/password, etc).
 
 The intent is that additional libraries will be built on top of this for popular authentication frameworks such as Spring, Apache Shiro, etc.  It can also be used directly by an application as is.
 
@@ -15,8 +15,17 @@ The intent is that additional libraries will be built on top of this for popular
 #### Interoperability
  * This library is fully functional for SQRL authentication, including SQRL QR code generation
  * As of June 2016, the SQRL protocol has been declared ["done with caveats"](https://www.grc.com/sn/sn-562.txt) by it's creator.  SQRL clients built prior to this may still be using an older version of the protocol and may not be compatible
-* There is a example application using this library at the url below.  You <b>must</b> install a SQRL client (such as sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl.exe) before running the demo:
- https://sqrljava.com:20000/sqrlexample
+* There is a example application using this library [here](https://sqrljava.com:20000/sqrlexample).  You **must** install a SQRL client before running the demo, such as:
+  * Windows sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl.exe)
+  * Android client from [Monkey Business Games](https://play.google.com/store/apps/details?id=org.ea.sqrl) 
+ *Note: there are other SQRL clients on the Google Play Store which are out of date with the SQRL spec and will not work*
+ 
+#### Limitations
+ * As stated above, this library is fully functional for the server side functions of SQRL authentication and identity management.  This includes linking of the SQRL id to an existing username as well as the client controlled identity management functions of re-keying, disable/enable and removal of a SQRL ID
+ * The following SQRL spec features are **not** implemented at thsi time: 
+   * CPS (Client provided secret) - May be implemented in the future.  PRs welcome 
+   * ASK protocol - It is the original authors beleive that interaction with the user should take place after authentication on the website itself.  This allows for normal customer intraction with the organization.  However, are PRs welcome to add this as optional feature
+   * Server protocol API: It is the original authors beleive that this feature is unnecessary as the original design of this library already includes the ability to run the SQRL authentication library on a seperate server.  Co-ordination and communication takes place with the SQL/No SQL database.  PRs will be rejected for this feature as it introduces additional complexity, server to server authentication issues, and a possible attack vector.
 
 #### Dependencies
  * Java 1.8
