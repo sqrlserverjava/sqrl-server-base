@@ -33,7 +33,7 @@ The intent is that additional libraries will be built on top of this for popular
  * [slf4j](http://www.slf4j.org//) for logging
  * [ed25519-java](https://github.com/str4d/ed25519-java) for fast   Ed25519 EC crypto
  * [JPA 2.1 provider](http://www.oracle.com/technetwork/java/javaee/tech/persistence-jsp-140049.html) for integration with SQL and NOSQL databases.  Example providers are [eclipselink](https://www.eclipse.org/eclipselink/) and [hibernate](https://docs.jboss.org/hibernate/orm/3.6/quickstart/en-US/html/hibernate-gsg-tutorial-jpa.html).  JPA is used in a manner in which the JEE container does __not__ need to have JPA support.  This library can be used in lightweight servlet containers such as Jetty and Tomcat.
- * Servlet container supporting [JEE6](https://en.wikipedia.org/wiki/Java_EE_version_history#Java_EE_6_.28December_10.2C_2009.29) or higher
+ * Servlet container (tomcat, etc) supporting 3.0 or higher
 
 #### Integration Requirements
 The SQRL protocol requires 2 interaction points with the user: 1) the web browser and 2) the SQRL client.  Even if both of these are running on the same device, they are distinct processes which communicate to different server endpoints.
