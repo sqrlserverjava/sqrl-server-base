@@ -25,7 +25,7 @@ The intent is that additional libraries will be built on top of this for popular
  * The following SQRL spec features are **not** implemented at thsi time: 
    * CPS (Client provided secret) - May be implemented in the future.  PRs welcome 
    * ASK protocol - It is the original authors beleive that interaction with the user should take place after authentication on the website itself.  This allows for normal customer intraction with the organization.  However, are PRs welcome to add this as optional feature
-   * Server protocol API: It is the original authors beleive that this feature is unnecessary as the original design of this library already includes the ability to run the SQRL authentication library on a seperate server.  Co-ordination and communication takes place with the SQL/No SQL database.  PRs will be rejected for this feature as it introduces additional complexity, server to server authentication issues, and a possible attack vector.
+   * Server protocol API: It is the original authors beleive that this feature is unnecessary as the original design of this library already includes the ability to run the SQRL authentication library on a seperate server.  Co-ordination and communication takes place with the SQL/No SQL database.  Concerns for this feature are that it introduces additional complexity, server to server authentication issues, and a possible attack vector.  If someone has a strong desire to implement this, please open an issue so we can setup a seperate subproject.
 
 #### Dependencies
  * Java 1.8
