@@ -185,7 +185,7 @@ public class SqrlClientFacingOperations {
 				logger.info("{}Processed sqrl client request replied with tif 0x{}", logHeader, tif.toHexString());
 			} catch (final SqrlException | RuntimeException e) {
 				sqrlPersistence.closeRollback();
-				logger.error("{}Error sending SQRL reply with param: {}", logHeader, requestState,
+				logger.error("{}Error sending SQRL reply with param: {} {}", logHeader, requestState,
 						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString), e);
 				logger.debug("{}Request {}, responded with   B64: {}", logHeader, requestState, serverReplyString);
 			}
@@ -202,7 +202,7 @@ public class SqrlClientFacingOperations {
 	 * @throws SqrlClientRequestProcessingException
 	 *             if any validation fails or if persistence fails
 	 */
-	private void validateNut(String correlator, SqrlNutToken nut, SqrlConfig config, SqrlPersistence sqrlPersistence)
+	private void validateNut(final String correlator, final SqrlNutToken nut, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
 			throws SqrlClientRequestProcessingException {
 		final long nutExpiryMs = nut.computeExpiresAt(config);
 		final long now = System.currentTimeMillis();
@@ -282,7 +282,7 @@ public class SqrlClientFacingOperations {
 			// Generate and store our CPS nonce
 			final String cpsNonce = UUID.randomUUID().toString();
 			sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_CPS_NONCE, cpsNonce);
-			String browserFacingEntryUrl = sqrlCorrelator.getTransientAuthDataTable()
+			final String browserFacingEntryUrl = sqrlCorrelator.getTransientAuthDataTable()
 					.get(SqrlConstants.TRANSIENT_ENTRY_URL);
 			additionalDataTable.put("url", buildCpsLoginUrl(browserFacingEntryUrl, sqrlCorrelator, cpsNonce));
 			additionalDataTable.put("can", buildCpsCancelUrl(browserFacingEntryUrl));
@@ -290,7 +290,7 @@ public class SqrlClientFacingOperations {
 		return additionalDataTable;
 	}
 
-	private String buildCpsLoginUrl(String browserFacingEntryUrl, final SqrlCorrelator sqrlCorrelator,
+	private String buildCpsLoginUrl(final String browserFacingEntryUrl, final SqrlCorrelator sqrlCorrelator,
 			final String cpsNonce) throws SqrlException {
 		// The full sqrlAuth browser URL with the cps nonce as a param
 		SqrlUtil.exceptionIfNull(browserFacingEntryUrl,
@@ -306,7 +306,7 @@ public class SqrlClientFacingOperations {
 		return cpsLoginUrl;
 	}
 
-	private String buildCpsCancelUrl(String browserFacingEntryUrl) throws SqrlException {
+	private String buildCpsCancelUrl(final String browserFacingEntryUrl) throws SqrlException {
 		String cpsCancelUri = config.getCpsCancelUri();
 		if (!cpsCancelUri.startsWith(FORWARD_SLASH)) {
 			cpsCancelUri = FORWARD_SLASH + cpsCancelUri;
@@ -349,10 +349,10 @@ public class SqrlClientFacingOperations {
 	}
 
 	private void validateIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest,
-			SqrlTifResponseBuilder tifBuilder, SqrlClientRequest sqrlClientRequest) throws SqrlException {
+			final SqrlTifResponseBuilder tifBuilder, final SqrlClientRequest sqrlClientRequest) throws SqrlException {
 		final InetAddress clientIpAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
-		Optional<String> mismatchDetail = nut.compareSqrlClientInetAddress(clientIpAddress, config);
-		boolean ipsMatched = !mismatchDetail.isPresent();
+		final Optional<String> mismatchDetail = nut.compareSqrlClientInetAddress(clientIpAddress, config);
+		final boolean ipsMatched = !mismatchDetail.isPresent();
 		if (ipsMatched) {
 			tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);
 		} else if (!sqrlClientRequest.getOptList().contains(SqrlRequestOpt.noiptest)) {
