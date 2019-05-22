@@ -16,7 +16,7 @@ The intent is that additional libraries will be built on top of this for popular
  * This library is fully functional for SQRL authentication, including SQRL QR code generation
  * As of June 2016, the SQRL protocol has been declared ["done with caveats"](https://www.grc.com/sn/sn-562.txt) by it's creator.  SQRL clients built prior to this may still be using an older version of the protocol and may not be compatible
 * There is a example application using this library [here](https://sqrljava.com:20000/sqrlexample).  You **must** install a SQRL client before running the demo, such as:
-  * Windows sqrl*.exe from [grc.com](https://www.grc.com/dev/sqrl.exe)
+  * Windows client from [grc.com](https://www.grc.com/dev/sqrl.exe)
   * Android client from [Monkey Business Games](https://play.google.com/store/apps/details?id=org.ea.sqrl) 
  *Note: there are other SQRL clients on the Google Play Store which are out of date with the SQRL spec and will not work*
  
@@ -64,7 +64,7 @@ A persistence layer (typically a database) is required for the 2 endpoints to co
 1. Authentication Page Impact
 	* Decide on one of the two approaches explained in [Browser to SQRL Client Correlation](#browser-to-sqrl-client-correlation) 
 	* When you are ready to display the SQRL QR code, invoke `SqrlServerOperations.buildQrCodeForAuthPage()`.  Use the result to display an anchor tag with the SQRL url that wraps the QR code image.  The expected result in a QR code that can be scanned, clicked, or tapped, as seen in  https://sqrljava.com:20000/sqrlexample
-	* Once the SQRL QR code is displayed, the authentication page must periodically poll the server (using ajay long polling, etc) to see if SQRL authentication is in progress or has completed.  Completion can be detected by checking `SqrlJpaPersistenceProvider
+	* Once the SQRL QR code is displayed, the authentication page must periodically poll the server (using long polling, etc) to see if SQRL authentication is in progress or has completed.  Completion can be detected by checking `SqrlJpaPersistenceProvider
 .fetchAuthenticationStatusRequired(correlator) == SqrlAuthenticationStatus.AUTH_COMPLETE`  which means that `SqrlCorrelator.getAuthenticatedIdentity` can be used to fetch the `SqrlIdentity` object
    * If `SqrlIdentity.getNativeUserXref == null` then this is the first time this user has authenticated with SQRL, but the user may have previously authenticated to the site via some other mechanism.  The application should present a one-time account mapping page asking if the user already has an existing account (username/password, google auth, etc) and authenticate them.  The application should then call `SqrlJpaPersistenceProvider.updateNativeUserXref(String)` to store the mapping between the SQRL identity and the username (or whatever means the application uniquely identifies users).
    * If `SqrlIdentity.getNativeUserXref != null`, the server should load the users data using the xref value and redirect the user to whatever page is typically displayed after authetication takes place
@@ -77,7 +77,7 @@ http://www.apache.org/licenses/LICENSE-2.0.html
 ###### Authentication page impact
 Traditionally, displaying an authentication page is an inexpensive operation.  Display some static html, username/password fields and some images from a CDN.  
 
-However to display the SQRL QR code, the authentication page must poll the server to understand when a SQRL authentication is in progress and complete.  This polling is required once the SQRL QR code is displayed, even it the user is ends up invoking a non-SQRL authentication method.  The polling is required to have the page auto-refresh when the SQRL authentication is complete.
+However, to display the SQRL QR code, the authentication page must poll the server to understand when a SQRL authentication is in progress and complete.  This polling is required once the SQRL QR code is displayed, even it the user is ends up invoking a non-SQRL authentication method.  The polling is required to have the page auto-refresh when the SQRL authentication is complete.
 
 Both of these requirements result in a more process/resource intensive authentication page.  Here are 2 approaches that will  minimize such impact:
 * Do not display the SQRL QR code on the login page; instead, display the [SQRL logo](https://www.grc.com/sqrl/logo.htm)  or some other indicator of SQRL support.  When/if the user clicks/taps the logo, generate the SQRL QR code and display

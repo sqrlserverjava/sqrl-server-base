@@ -1,9 +1,11 @@
 ## How to contribute
 
 #### **IDE Setup**
+* It's best to clone and load all 3 java sqrl projects into your IDE.  You can then run/debug the example app from the IDE as described in [sqrl-server-example](https://github.com/sqrlserverjava/sqrl-server-example)
 * **Eclipse:** It is helpful to enable the JPA facet when working in eclipse.  This performs extra validation o the JPA components.  After enabling it, you typically see the error "No persistence.xml file found in project".  To fix this:
    * Add datastore/derby as a **source directory** in the project settings.  Be sure to add the derby directory **not** *derby/META-INF*
    * Project menu ->  clean.
+
 
 #### **Did you find a bug?**
 
