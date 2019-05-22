@@ -20,6 +20,25 @@ The intent is that additional libraries will be built on top of this for popular
   * Android client from [Monkey Business Games](https://play.google.com/store/apps/details?id=org.ea.sqrl) 
  *Note: there are other SQRL clients on the Google Play Store which are out of date with the SQRL spec and will not work*
  
+### SQRL Client Testing Matrix
+Interoperability testing is ONLY to be performed against clients that are under active development, that is, those that are listed in the [GRC forum site](https://sqrl.grc.com/).  Please feel free to contribute by testing clients and submitted a PR to keep this table up to date! (see Contributing.md)
+
+| SQRL Client  | Tested Version |Site                |Chrome        |Firefox|IE |Edge|Opera
+| ------------- | ------------- | ------------------- |------ |------ |------ |------ |------ |
+| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)     | build 71  |[CPS](https://sqrljava.com:20000/sqrlexample/login)         |&#9989;|&#9989;|&#9989;|&#9989;|&#9989;
+| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)       | build 71  |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989;|&#10060; github/sqrlserverjava#3|&#9989;|&#9989;|&#9989;
+| [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 0.15.0 |[CPS](https://sqrljava.com:20000/sqrlexample/login) &#185;     |&#9989; |&#9989;  |? |&#9989;  |&#9989;  |
+| [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 0.15.0 |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989; |&#9989; |?|&#9989; |&#9989; |
+| [iOS](https://sqrl.grc.com/forums/jeff-arthurs-ios-app.10/)           | ? |[CPS](https://sqrljava.com:20000/sqrlexample/login) &#185;      |&#9989; |&#9989; |?|&#9989; |&#9989; |
+| [iOS](https://sqrl.grc.com/forums/jeff-arthurs-ios-app.10/)           | ? |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989; |&#9989; |?|&#9989; |&#9989; |
+| [Linux](https://sqrl.grc.com/forums/bert-puts-native-app-for-linux.18)           | ? |[CPS](https://sqrljava.com:20000/sqrlexample/login)     |? |? |? |? |? |
+| [Linux](https://sqrl.grc.com/forums/bert-puts-native-app-for-linux.18)           | ? |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |?|?|?|?|?
+| [WebExtension ](https://sqrl.grc.com/forums/jaaps-chrome-firefox-webextension.23/)           | ? |[CPS](https://sqrljava.com:20000/sqrlexample/login)     |? |? |n/a |n/a |n/a |
+| [WebExtension ](https://sqrl.grc.com/forums/jaaps-chrome-firefox-webextension.23/)          | ? |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |?|?|n/a |n/a |n/a |
+
+
+&#185; CPS is not used for mobile clients, but it is imperitive that we test the CPS enabled server with them
+ 
 #### Limitations
  * As stated above, this library is fully functional for the server side functions of SQRL authentication and identity management.  This includes linking of the SQRL id to an existing username as well as the client controlled identity management functions of re-keying, disable/enable and removal of a SQRL ID
  * The following SQRL spec features are **not** implemented at thsi time: 
