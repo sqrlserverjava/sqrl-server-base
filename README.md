@@ -26,7 +26,7 @@ Interoperability testing is ONLY to be performed against clients that are under 
 | SQRL Client  | Tested Version |Site                |Chrome        |Firefox|IE |Edge|Opera
 | ------------- | ------------- | ------------------- |------ |------ |------ |------ |------ |
 | [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)     | build 71  |[CPS](https://sqrljava.com:20000/sqrlexample/login)         |&#9989;|&#9989;|&#9989;|&#9989;|&#9989;
-| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)       | build 71  |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989;|&#10060; github/sqrlserverjava#3|&#9989;|&#9989;|&#9989;
+| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)       | build 71  |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989;|&#10060; [#3](https://github.com/sqrlserverjava/sqrl-server-base/issues/3)|&#9989;|&#9989;|&#9989;
 | [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 0.15.0 |[CPS](https://sqrljava.com:20000/sqrlexample/login) &#185;     |&#9989; |&#9989;  |? |&#9989;  |&#9989;  |
 | [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 0.15.0 |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989; |&#9989; |?|&#9989; |&#9989; |
 | [iOS](https://sqrl.grc.com/forums/jeff-arthurs-ios-app.10/)           | ? |[CPS](https://sqrljava.com:20000/sqrlexample/login) &#185;      |&#9989; |&#9989; |?|&#9989; |&#9989; |
