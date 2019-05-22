@@ -119,7 +119,7 @@ public class SqrlUtil {
 	 *             if UTF8 is not supported
 	 */
 	public static String base64UrlDecodeToString(final String toDecode) throws SqrlException {
-			return new String(base64UrlDecode(toDecode), SqrlConstants.UTF8_CHARSET);
+		return new String(base64UrlDecode(toDecode), SqrlConstants.UTF8_CHARSET);
 	}
 
 	/**
@@ -251,6 +251,7 @@ public class SqrlUtil {
 		}
 		cookie.setValue(value);
 		cookie.setMaxAge(maxAgeInSeconds);
+		// secure and httponly are set in applySettingsToCookie
 		applySettingsToCookie(cookie, cookieDomain, request, config);
 		return cookie;
 	}
@@ -408,26 +409,26 @@ public class SqrlUtil {
 		return buf.toString();
 	}
 
-	public static boolean isClassOnClasspath(String classToFind) {
+	public static boolean isClassOnClasspath(final String classToFind) {
 		try {
 			Class.forName(classToFind);
 			return true;
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			return false;
 		}
 	}
 
-	public static void debugHeaders(HttpServletRequest servletRequest) {
+	public static void debugHeaders(final HttpServletRequest servletRequest) {
 		if (!logger.isDebugEnabled()) {
 			return;
 		}
-		StringBuilder buf = new StringBuilder(200);
+		final StringBuilder buf = new StringBuilder(200);
 		buf.append("request headers: ");
-		Enumeration<String> iter = servletRequest.getHeaderNames();
+		final Enumeration<String> iter = servletRequest.getHeaderNames();
 		while (iter.hasMoreElements()) {
-			String headerName = iter.nextElement();
+			final String headerName = iter.nextElement();
 			buf.append(headerName).append("=");
-			Enumeration<String> valueIter = servletRequest.getHeaders(headerName);
+			final Enumeration<String> valueIter = servletRequest.getHeaders(headerName);
 			while (valueIter.hasMoreElements()) {
 				buf.append(valueIter.nextElement()).append(" ");
 			}
@@ -451,7 +452,7 @@ public class SqrlUtil {
 			ipToParse = servletRequest.getRemoteAddr();
 		}
 		try {
-			InetAddress inetAddress = InetAddress.getByName(ipToParse);
+			final InetAddress inetAddress = InetAddress.getByName(ipToParse);
 			logger.debug("clientIp={}", inetAddress.toString());
 			return inetAddress;
 		} catch (final UnknownHostException e) {
@@ -459,13 +460,13 @@ public class SqrlUtil {
 		}
 	}
 
-	public static void exceptionIfNull(String stringData, String errorDescription) throws SqrlException {
+	public static void exceptionIfNull(final String stringData, final String errorDescription) throws SqrlException {
 		if (SqrlUtil.isBlank(stringData)) {
 			throw new SqrlException(errorDescription);
 		}
 	}
 
-	public static void exceptionIfNull(Object data, String errorDescription) throws SqrlException {
+	public static void exceptionIfNull(final Object data, final String errorDescription) throws SqrlException {
 		if (data == null) {
 			throw new SqrlException(errorDescription);
 		}

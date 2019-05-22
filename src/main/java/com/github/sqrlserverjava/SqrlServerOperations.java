@@ -29,7 +29,8 @@ import com.github.sqrlserverjava.util.VersionExtractor;
 import com.github.sqrlserverjava.util.VersionExtractor.Module;
 
 /**
- * The core SQRL class which processes all SQRL requests and generates the appropriates responses.
+ * The core SQRL class which processes all SQRL requests and generates the appropriates responses. This is the class
+ * which the webapp will interact with
  * 
  * @author Dave Badia
  *

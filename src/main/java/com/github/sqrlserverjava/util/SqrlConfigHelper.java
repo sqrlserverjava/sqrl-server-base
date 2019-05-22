@@ -1,6 +1,7 @@
 package com.github.sqrlserverjava.util;
 
 import static com.github.sqrlserverjava.util.SqrlConstants.SQRL_ATOMOSPHERE_LIB_UPDATER_CLASS;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -108,7 +109,7 @@ public class SqrlConfigHelper {
 		String aesKeyBase64 = sqrlConfig.getAesKeyBase64();
 		byte[] aesKeyBytes = null;
 		if(SqrlUtil.isBlank(aesKeyBase64)) {
-			logger.warn("No AES key set, generating new one");
+			logger.warn("No AES key set, generating new one");// TODO: not sure this is a good idea...
 			aesKeyBytes = new byte[SqrlConstants.AES_KEY_LENGTH];
 			sqrlConfig.getSecureRandom().nextBytes(aesKeyBytes);
 			sqrlConfig.setAesKeyBase64(Base64.getEncoder().encodeToString(aesKeyBytes));

@@ -133,9 +133,9 @@ public class SqrlClientRequestProcessor {
 			processIdentCommand();
 			return;
 		case ENABLE:
-			final Boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
+			final boolean sqrlEnabledForIdentity = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk,
 					SqrlIdentityFlag.SQRL_AUTH_ENABLED);
-			if (sqrlEnabledForIdentity == null || !sqrlEnabledForIdentity.booleanValue()) {
+			if (!sqrlEnabledForIdentity) {
 				if (sqrlClientRequest.containsUrs()) {
 					sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, true);
 				} else {
@@ -143,7 +143,7 @@ public class SqrlClientRequestProcessor {
 							logHeader + "Request was to enable SQRL but didn't contain urs signature");
 				}
 			} else {
-				logger.warn("{}Received request to ENABLE but it already is");
+				logger.warn("{}Received request to ENABLE but it already is", logHeader);
 			}
 			return;
 		case DISABLE:

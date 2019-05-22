@@ -133,6 +133,13 @@
 				<xsd:documentation> The format ID to use when generating the SQRL nut token.   Default: 2</xsd:documentation>
 			</xsd:annotation>
          </xsd:element>
+         
+         <xsd:element name="sqrlDomainExtensionSpecifierUriCount" type="xsd:int" minOccurs="0">
+              <xsd:annotation>
+				<xsd:documentation> By default, the SQRL client generates the identity based on the domain of the website.  This setting can be used to tell the client to include one or more URIs after the domain in the computation.  Default: 0 (domain only)</xsd:documentation>
+			</xsd:annotation>
+         </xsd:element>
+         
       </xsd:sequence>
    </xsd:complexType>
    

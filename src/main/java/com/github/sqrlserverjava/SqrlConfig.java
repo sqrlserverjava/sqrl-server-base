@@ -199,6 +199,15 @@ public class SqrlConfig {
 	 * @see SqrlNutTokenSingleBlockFormat
 	 */
 	private int	sqrlNutTokenFormat = 2;
+	
+	/**
+	 * By default, the SQRL client generates the identity based on the domain of the website.  
+	 * This setting can be used to tell the client to include one or more URIs after the domain in the computation.  
+	 * Default: 0 (domain only)
+	 * 
+	 */
+	private int	sqrlDomainExtensionSpecifierUriCount = 0;
+	
 	// @formatter:on
 
 	/* *********************************************************************************************/
@@ -494,6 +503,21 @@ public class SqrlConfig {
 		this.cpsCancelUri = cpsCancelUri;
 	}
 
+	/**
+	 * @return the sqrlDomainExtensionSpecifierUriCount
+	 */
+	public int getSqrlDomainExtensionSpecifierUriCount() {
+		return sqrlDomainExtensionSpecifierUriCount;
+	}
+
+	/**
+	 * @param sqrlDomainExtensionSpecifierUriCount
+	 *            the sqrlDomainExtensionSpecifierUriCount to set
+	 */
+	public void setSqrlDomainExtensionSpecifierUriCount(int sqrlDomainExtensionSpecifierUriCount) {
+		this.sqrlDomainExtensionSpecifierUriCount = sqrlDomainExtensionSpecifierUriCount;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -520,6 +544,7 @@ public class SqrlConfig {
 		result = prime * result + ((qrCodeImageFormat == null) ? 0 : qrCodeImageFormat.hashCode());
 		result = prime * result + ((secureRandom == null) ? 0 : secureRandom.hashCode());
 		result = prime * result + ((serverFriendlyName == null) ? 0 : serverFriendlyName.hashCode());
+		result = prime * result + sqrlDomainExtensionSpecifierUriCount;
 		result = prime * result + ((sqrlLoginServletPath == null) ? 0 : sqrlLoginServletPath.hashCode());
 		result = prime * result + sqrlNutTokenFormat;
 		result = prime * result + ((sqrlPersistenceFactoryClass == null) ? 0 : sqrlPersistenceFactoryClass.hashCode());
@@ -632,6 +657,9 @@ public class SqrlConfig {
 				return false;
 			}
 		} else if (!serverFriendlyName.equals(other.serverFriendlyName)) {
+			return false;
+		}
+		if (sqrlDomainExtensionSpecifierUriCount != other.sqrlDomainExtensionSpecifierUriCount) {
 			return false;
 		}
 		if (sqrlLoginServletPath == null) {
