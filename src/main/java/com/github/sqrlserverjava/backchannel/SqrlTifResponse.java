@@ -17,7 +17,7 @@ public class SqrlTifResponse {
 	private final Set<SqrlTifFlag> tifFlagList;
 	private final int tifInt;
 
-	private SqrlTifResponse(Set<SqrlTifFlag> tifFlagList, final int tifInt) {
+	private SqrlTifResponse(final Set<SqrlTifFlag> tifFlagList, final int tifInt) {
 		this.tifFlagList = tifFlagList;
 		this.tifInt = tifInt;
 	}
@@ -26,13 +26,17 @@ public class SqrlTifResponse {
 		return Integer.toHexString(tifInt).toUpperCase();
 	}
 
+	public String toHexStringWith0x() {
+		return new StringBuilder("0x").append(Integer.toHexString(tifInt).toUpperCase()).toString();
+	}
+
 	@Override
 	public String toString() {
 		return new StringBuilder(100).append(toHexString()).append(tifFlagList).toString();
 	}
 
 	public static class SqrlTifResponseBuilder {
-		private Set<SqrlTifFlag> tifFlagList = new HashSet<>();
+		private final Set<SqrlTifFlag> tifFlagList = new HashSet<>();
 		private int builderTifInt;
 
 		public SqrlTifResponseBuilder(final boolean ipsMatched) {
@@ -44,7 +48,7 @@ public class SqrlTifResponse {
 		public SqrlTifResponseBuilder() {
 		}
 
-		public SqrlTifResponseBuilder addFlag(SqrlTifFlag tifFlag) {
+		public SqrlTifResponseBuilder addFlag(final SqrlTifFlag tifFlag) {
 			builderTifInt |= tifFlag.getMask();
 			tifFlagList.add(tifFlag);
 			return this;

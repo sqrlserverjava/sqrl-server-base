@@ -82,11 +82,11 @@ public class SqrlBrowserFacingOperations {
 		final URI backchannelUri = configOperations.buildBackchannelRequestUrl(servletRequest);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
 		urlBuf.append(backchannelUri.toString());
-		InetAddress userInetAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
+		final InetAddress userInetAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
 		// Now we append the nut and our SFN
 		final SqrlNutToken nut = SqrlNutTokenFactory.buildNut(config, configOperations, backchannelUri,
 				userInetAddress);
-		String base64Nut = nut.asEncryptedBase64();
+		final String base64Nut = nut.asEncryptedBase64();
 		urlBuf.append("?nut=").append(base64Nut);
 		try (SqrlAutoCloseablePersistence sqrlPersistence = SqrlServerOperations
 				.createSqrlPersistence(configOperations)) {
@@ -100,7 +100,7 @@ public class SqrlBrowserFacingOperations {
 			// Store the url in the server parrot value so it will be there when the SQRL client makes the request
 			final Date expiryTime = new Date(System.currentTimeMillis() + (1000 * config.getNutValidityInSeconds()));
 			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlator, expiryTime);
-			Map<String, String> transientAuthDataTable = sqrlCorrelator.getTransientAuthDataTable();
+			final Map<String, String> transientAuthDataTable = sqrlCorrelator.getTransientAuthDataTable();
 			transientAuthDataTable.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, SqrlUtil.sqrlBase64UrlEncode(url));
 			transientAuthDataTable.put(SqrlConstants.TRANSIENT_ENTRY_URL, buildEntryPointUrl(servletRequest));
 			sqrlPersistence.closeCommit();
@@ -108,24 +108,26 @@ public class SqrlBrowserFacingOperations {
 
 			// Correlator outlives the nut so extend the cookie expiry
 			final int correlatorCookieAgeInSeconds = config.getNutValidityInSeconds() + 120;
-			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain, config.getCorrelatorCookieName(),
-					correlator, correlatorCookieAgeInSeconds, config));
-			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain, config.getFirstNutCookieName(),
-							base64Nut, config.getNutValidityInSeconds(), config));
+			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain,
+					config.getCorrelatorCookieName(), correlator, correlatorCookieAgeInSeconds, config));
+			response.addCookie(SqrlUtil.createOrUpdateCookie(servletRequest, cookieDomain,
+					config.getFirstNutCookieName(), base64Nut, config.getNutValidityInSeconds(), config)); // TODO: do
+			// we need
+			// this?
 			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
 		}
 	}
 
-	private String buildEntryPointUrl(HttpServletRequest request) throws SqrlException {
+	private String buildEntryPointUrl(final HttpServletRequest request) throws SqrlException {
 		try {
-			String originalEntryPointString = new URI(request.getRequestURL().toString())
+			final String originalEntryPointString = new URI(request.getRequestURL().toString())
 					.resolve(request.getContextPath()).toURL().toString();
 			// If we are being a reverse proxy, and the connection is clear between the proxy and the JEE server, it
 			// will come through as http. Correct that to https here
 			String entryPointString = originalEntryPointString.replace(SCHEME_HTTP_COLON, SCHEME_HTTPS_COLON);
 			// the reverse proxy may introduce port 443 for SSL, remove it since it is redudant
 			entryPointString = entryPointString.replace(":443", "");
-			
+
 			logger.debug("{}buildEntryPointUrl resulted in {} from {} ", SqrlClientRequestLoggingUtil.getLogHeader(),
 					entryPointString, originalEntryPointString);
 			return entryPointString;
@@ -186,7 +188,7 @@ public class SqrlBrowserFacingOperations {
 			throw new SqrlException(
 					"firstNutCookie with name " + config.getFirstNutCookieName() + " was not found on http request");
 		}
-		SqrlNutToken nut = SqrlNutTokenFactory.unmarshal(nutTokenString, configOperations);
+		final SqrlNutToken nut = SqrlNutTokenFactory.unmarshal(nutTokenString, configOperations);
 		return nut.computeExpiresAt(config);
 	}
 

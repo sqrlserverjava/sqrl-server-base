@@ -101,12 +101,12 @@ public class SqrlConfigHelper {
 		if (url == null) {
 			throw new SqrlIllegalStateException("Resource '" + name + "' not found on classpath");
 		}
-		logger.info("Found resource {} at {}", name, url.getPath());
+		logger.info("process=init detail=\"Found resource {} at {}\"", name, url.getPath());
 		return url;
 	}
-	
-	public static byte[] getAESKeyBytes(SqrlConfig sqrlConfig) {
-		String aesKeyBase64 = sqrlConfig.getAesKeyBase64();
+
+	public static byte[] getAESKeyBytes(final SqrlConfig sqrlConfig) {
+		final String aesKeyBase64 = sqrlConfig.getAesKeyBase64();
 		byte[] aesKeyBytes = null;
 		if(SqrlUtil.isBlank(aesKeyBase64)) {
 			logger.warn("No AES key set, generating new one");// TODO: not sure this is a good idea...
@@ -116,7 +116,7 @@ public class SqrlConfigHelper {
 		} else {
 			try {
 				aesKeyBytes = Base64.getDecoder().decode(aesKeyBase64);
-			} catch (IllegalArgumentException e) {
+			} catch (final IllegalArgumentException e) {
 				throw new SqrlConfigSettingException("Error base64 decoding SqrlConfig AES key", e);
 			}
 			if (aesKeyBytes.length != SqrlConstants.AES_KEY_LENGTH) {

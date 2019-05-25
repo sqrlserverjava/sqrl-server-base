@@ -118,7 +118,7 @@ public class SqrlClientRequestProcessor {
 
 		// What's left is unknown or unsupported to us
 		if (!unsupportedOpList.isEmpty()) {
-			logger.warn("{}The SQRL client option(s) are not yet supported by the library: {}",
+			logger.info("process=back detail=\"The SQRL client option(s) are not yet supported by the library: {}\"",
 					logHeader, unsupportedOpList);
 		}
 

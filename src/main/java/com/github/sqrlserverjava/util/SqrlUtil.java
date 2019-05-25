@@ -243,6 +243,7 @@ public class SqrlUtil {
 		return buf.toString();
 	}
 
+	// TODO: delete
 	public static Cookie createOrUpdateCookie(final HttpServletRequest request, final String cookieDomain,
 			final String name, final String value, final int maxAgeInSeconds, final SqrlConfig config) {
 		Cookie cookie = findCookie(request, name);
@@ -262,7 +263,7 @@ public class SqrlUtil {
 			cookie.setDomain(cookieDomain);
 		}
 		cookie.setPath(config.getCookiePath());
-		cookie.setHttpOnly(true);
+		cookie.setHttpOnly(false);
 		if (request.getScheme().equals(SqrlConstants.SCHEME_HTTPS)) {
 			cookie.setSecure(true);
 		}
@@ -304,7 +305,7 @@ public class SqrlUtil {
 		}
 	}
 
-	public static final String cookiesToString(final Cookie[] cookieArray) {
+	private static final String cookiesToString(final Cookie[] cookieArray) {
 		final StringBuilder buf = new StringBuilder(300);
 		buf.append("[ ");
 		if (cookieArray != null) {
@@ -371,6 +372,10 @@ public class SqrlUtil {
 		return buf.toString();
 	}
 
+	/**
+	 * @deprecated
+	 */
+	@Deprecated // TODO: delete
 	public static String buildLogMessageForSqrlClientRequest(final HttpServletRequest request) {
 		final StringBuilder buf = new StringBuilder(500);
 		buf.append("sqrlClientOnRequest ");

@@ -61,6 +61,7 @@ public class SqrlAuthStateMonitor implements Runnable {
 			// Map<String=correlator,...
 			final Map<String, SqrlAuthenticationStatus> statusChangedTable = sqrlServerOperations
 					.fetchSqrlCorrelatorStatusUpdates(Collections.unmodifiableMap(monitorTable));
+			logger.debug("SQRL statusChangedTable={}", statusChangedTable);
 			for (final Map.Entry<String, SqrlAuthenticationStatus> entry : statusChangedTable.entrySet()) {
 				final String correlator = entry.getKey();
 				final SqrlAuthenticationStatus newState = entry.getValue();

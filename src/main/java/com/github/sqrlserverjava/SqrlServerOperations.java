@@ -87,11 +87,13 @@ public class SqrlServerOperations {
 		// DB Cleanup task
 		final int cleanupIntervalInMinutes = config.getCleanupTaskExecInMinutes();
 		if (cleanupIntervalInMinutes == -1) {
-			logger.warn("Auto cleanup is disabled since config.getCleanupTaskExecInMinutes() == -1");
+			logger.warn(
+					"process=init detail=\"Auto cleanup is disabled since config.getCleanupTaskExecInMinutes() == -1\"");
 		} else if (cleanupIntervalInMinutes <= 0) {
 			throw new IllegalArgumentException("config.getCleanupTaskExecInMinutes() must be -1 or > 0");
 		} else {
-			logger.info("Persistence cleanup task registered to run every {} minutes", cleanupIntervalInMinutes);
+			logger.info("process=init detail=\"Persistence cleanup task registered to run every {} minutes\"",
+					cleanupIntervalInMinutes);
 			final SqrlPersistenceCleanupTask cleanupRunnable = new SqrlPersistenceCleanupTask(persistenceFactory);
 			// TODO: put executor somewhere else, state?
 			sqrlServiceExecutor.scheduleAtFixedRate(cleanupRunnable, 0, cleanupIntervalInMinutes, TimeUnit.MINUTES);
@@ -106,35 +108,37 @@ public class SqrlServerOperations {
 		}
 		final String classname = config.getClientAuthStateUpdaterClass();
 		if (classname == null) {
-			logger.warn("No ClientAuthStateUpdaterClass is set, auto client status refresh is disabled");
+			logger.warn(
+					"process=init detail=\"No ClientAuthStateUpdaterClass is set, auto client status refresh is disabled\"");
 		} else {
-			try {
-				logger.info("Instantiating ClientAuthStateUpdater class of {}", classname);
-				@SuppressWarnings("rawtypes")
-				final Class clazz = Class.forName(classname);
-				final Constructor<SqrlClientAuthStateUpdater> constructor = clazz.getConstructor();
-				if (constructor == null) {
-					throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
-							+ " must have a no-arg constructor, but does not");
-				}
-				final Object object = constructor.newInstance();
-				if (!(object instanceof SqrlClientAuthStateUpdater)) {
-					throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
-							+ " was not an instance of ClientAuthStateUpdater");
-				}
-				final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
-				final SqrlAuthStateMonitor authStateMonitor = new SqrlAuthStateMonitor(config, serverOperations, clientAuthStateUpdater);
+				try {
+					logger.info("process=init detail=\"Instantiating ClientAuthStateUpdater class of {}\"", classname);
+					@SuppressWarnings("rawtypes")
+					final Class clazz = Class.forName(classname);
+					final Constructor<SqrlClientAuthStateUpdater> constructor = clazz.getConstructor();
+					if (constructor == null) {
+						throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+								+ " must have a no-arg constructor, but does not");
+					}
+					final Object object = constructor.newInstance();
+					if (!(object instanceof SqrlClientAuthStateUpdater)) {
+						throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+								+ " was not an instance of ClientAuthStateUpdater");
+					}
+					final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
+					final SqrlAuthStateMonitor authStateMonitor = new SqrlAuthStateMonitor(config, serverOperations, clientAuthStateUpdater);
 
-				clientAuthStateUpdater.initSqrl(serverOperations, config, authStateMonitor);
-				final long intervalInMilis = config.getAuthSyncCheckInMillis();
-				logger.info("Client auth state task scheduled to run every {} ms", intervalInMilis);
-				sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
-						TimeUnit.MILLISECONDS);
-			} catch (final Exception e) {
-				throw new SqrlIllegalStateException(
-						"SQRL: Error instantiating or initializing ClientAuthStateUpdaterClass of " + classname, e);
+					clientAuthStateUpdater.initSqrl(serverOperations, config, authStateMonitor);
+					final long intervalInMilis = config.getAuthSyncCheckInMillis();
+					logger.info("process=init detail=\"Client auth state task scheduled to run every {} ms\"",
+						intervalInMilis);
+					sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
+							TimeUnit.MILLISECONDS);
+				} catch (final Exception e) {
+					throw new SqrlIllegalStateException(
+							"SQRL: Error instantiating or initializing ClientAuthStateUpdaterClass of " + classname, e);
+				}
 			}
-		}
 		authStateMonitorInitialized.set(true);
 	}
 
@@ -278,7 +282,7 @@ public class SqrlServerOperations {
 			sqrlPersistence.closeCommit();
 		}
 	}
-	
+
 	public void shutdwon() {
 		sqrlServiceExecutor.shutdown();
 	}
