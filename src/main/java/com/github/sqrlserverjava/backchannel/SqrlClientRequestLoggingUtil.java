@@ -159,7 +159,11 @@ public class SqrlClientRequestLoggingUtil {
 		rebuildFooter();
 	}
 
-	private static void putData(final LogField field, final String value) {
+	private static void putData(final LogField field, final String valueParam) {
+		String value = valueParam;
+		if (SqrlUtil.isBlank(value)) {
+			value = "-";
+		}
 		tlDataTable.get().put(field, value);
 	}
 
