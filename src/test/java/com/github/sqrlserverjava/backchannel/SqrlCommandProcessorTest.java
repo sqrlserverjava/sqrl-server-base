@@ -97,6 +97,7 @@ public class SqrlCommandProcessorTest {
 			sqrlPersistence.closeCommit();
 			fail("Exception expected");
 		} catch (final Exception e) {
+			e.printStackTrace();
 			sqrlPersistence.closeRollback();
 			ObjectAssert.assertInstanceOf(SqrlInvalidRequestException.class, e);
 			StringAssert.assertContains("urs", e.getMessage());

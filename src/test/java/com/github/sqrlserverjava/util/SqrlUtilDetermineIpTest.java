@@ -35,7 +35,7 @@ public class SqrlUtilDetermineIpTest {
 
 	@Test
 	public void testIt() throws Throwable {
-		final InetAddress inetAddress = SqrlUtil.determineClientIpAddress(request, config);
+		final InetAddress inetAddress = SqrlUtil.findClientIpAddress(request, config);
 		assertEquals(expectedIp, inetAddress);
 	}
 

@@ -1,6 +1,5 @@
 package com.github.sqrlserverjava.exception;
 
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
 
 /**
@@ -13,7 +12,7 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	private static final long serialVersionUID = -7986435707384269525L;
 	private final SqrlTifFlag			tifFlagToAdd;
 
-	public SqrlClientRequestProcessingException(Object... messagePartArray) {
+	public SqrlClientRequestProcessingException(final Object... messagePartArray) {
 		// The caller does not wish to set an extra tif, so just re-use COMMAND_FAILED which is always added on a
 		// failure
 		this(SqrlTifFlag.COMMAND_FAILED, null, messagePartArray);
@@ -25,7 +24,7 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	 */
 	public SqrlClientRequestProcessingException(final SqrlTifFlag tifToAdd, final Throwable cause,
 			final Object... messagePartArray) {
-		super(cause, buildMessageWithHeader(messagePartArray));
+		super(cause, messagePartArray);
 		this.tifFlagToAdd = tifToAdd;
 	}
 
@@ -33,7 +32,4 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 		return tifFlagToAdd;
 	}
 
-	private static String buildMessageWithHeader(Object[] originalArray) {
-		return SqrlException.buildMessageWithHeader(originalArray, SqrlClientRequestLoggingUtil.getLogHeader());
-	}
 }

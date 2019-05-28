@@ -82,7 +82,7 @@ public class SqrlBrowserFacingOperations {
 		final URI backchannelUri = configOperations.buildBackchannelRequestUrl(servletRequest);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
 		urlBuf.append(backchannelUri.toString());
-		final InetAddress userInetAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
+		final InetAddress userInetAddress = SqrlUtil.findClientIpAddress(servletRequest, config);
 		// Now we append the nut and our SFN
 		final SqrlNutToken nut = SqrlNutTokenFactory.buildNut(config, configOperations, backchannelUri,
 				userInetAddress);

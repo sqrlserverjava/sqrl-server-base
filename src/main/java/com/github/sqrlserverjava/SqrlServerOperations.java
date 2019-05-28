@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
@@ -64,6 +65,7 @@ public class SqrlServerOperations {
 		}
 		logger.info(VersionExtractor.extractDetailedBuildInfo(Module.BASE));
 		this.config = config;
+		SqrlClientRequestLoggingUtil.setSqrlConfig(config);
 		this.configOperations = SqrlConfigOperationsFactory.get(config);
 		this.persistenceFactory = configOperations.getSqrlPersistenceFactory();
 		this.sqrlBrowserFacingOperations = new SqrlBrowserFacingOperations(config, configOperations);
@@ -111,34 +113,34 @@ public class SqrlServerOperations {
 			logger.warn(
 					"process=init detail=\"No ClientAuthStateUpdaterClass is set, auto client status refresh is disabled\"");
 		} else {
-				try {
-					logger.info("process=init detail=\"Instantiating ClientAuthStateUpdater class of {}\"", classname);
-					@SuppressWarnings("rawtypes")
-					final Class clazz = Class.forName(classname);
-					final Constructor<SqrlClientAuthStateUpdater> constructor = clazz.getConstructor();
-					if (constructor == null) {
-						throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
-								+ " must have a no-arg constructor, but does not");
-					}
-					final Object object = constructor.newInstance();
-					if (!(object instanceof SqrlClientAuthStateUpdater)) {
-						throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
-								+ " was not an instance of ClientAuthStateUpdater");
-					}
-					final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
-					final SqrlAuthStateMonitor authStateMonitor = new SqrlAuthStateMonitor(config, serverOperations, clientAuthStateUpdater);
-
-					clientAuthStateUpdater.initSqrl(serverOperations, config, authStateMonitor);
-					final long intervalInMilis = config.getAuthSyncCheckInMillis();
-					logger.info("process=init detail=\"Client auth state task scheduled to run every {} ms\"",
-						intervalInMilis);
-					sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
-							TimeUnit.MILLISECONDS);
-				} catch (final Exception e) {
-					throw new SqrlIllegalStateException(
-							"SQRL: Error instantiating or initializing ClientAuthStateUpdaterClass of " + classname, e);
+			try {
+				logger.info("process=init detail=\"Instantiating ClientAuthStateUpdater class of {}\"", classname);
+				@SuppressWarnings("rawtypes")
+				final Class clazz = Class.forName(classname);
+				final Constructor<SqrlClientAuthStateUpdater> constructor = clazz.getConstructor();
+				if (constructor == null) {
+					throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+							+ " must have a no-arg constructor, but does not");
 				}
+				final Object object = constructor.newInstance();
+				if (!(object instanceof SqrlClientAuthStateUpdater)) {
+					throw new SqrlIllegalStateException("SQRL AuthStateUpdaterClass of " + classname
+							+ " was not an instance of ClientAuthStateUpdater");
+				}
+				final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
+				final SqrlAuthStateMonitor authStateMonitor = new SqrlAuthStateMonitor(config, serverOperations, clientAuthStateUpdater);
+
+				clientAuthStateUpdater.initSqrl(serverOperations, config, authStateMonitor);
+				final long intervalInMilis = config.getAuthSyncCheckInMillis();
+				logger.info("process=init detail=\"Client auth state task scheduled to run every {} ms\"",
+						intervalInMilis);
+				sqrlServiceExecutor.scheduleAtFixedRate(authStateMonitor, intervalInMilis, intervalInMilis,
+						TimeUnit.MILLISECONDS);
+			} catch (final Exception e) {
+				throw new SqrlIllegalStateException(
+						"SQRL: Error instantiating or initializing ClientAuthStateUpdaterClass of " + classname, e);
 			}
+		}
 		authStateMonitorInitialized.set(true);
 	}
 

@@ -1,11 +1,13 @@
 package com.github.sqrlserverjava;
 
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.buildParamArrayForLogging;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.initLogging;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.setLoggingField;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.Channel.SQRLBC;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_COMMAND;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.COR;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.PROTOCOL;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.PROTOCOL_VERSION;
 import static com.github.sqrlserverjava.enums.SqrlAuthenticationStatus.AUTHENTICATED_CPS;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.DISABLED;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.IDK_EXISTS;
@@ -19,11 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -98,115 +97,105 @@ public class SqrlClientFacingOperations {
 	 */
 	public void handleSqrlClientRequest(final HttpServletRequest servletRequest,
 			final HttpServletResponse servletResponse) throws IOException {
-		SqrlClientRequestLoggingUtil.initLogging(SQRLBC, "handleSqrl", servletRequest);
-		logger.info(formatForLogging("Processing SQRL request with params:", buildParamArrayForLogging(servletRequest)));
-		SqrlUtil.debugHeaders(servletRequest);
-		String correlator = "unknown";
-		final SqrlTifResponseBuilder tifBuilder = new SqrlTifResponseBuilder();
-		SqrlInternalUserState sqrlInternalUserState = SqrlInternalUserState.NONE_EXIST;
-		String requestState = "invalid";
-		SqrlClientRequest sqrlClientRequest = null;
-		// Per the spec, SQRL transactions are atomic; so we create our persistence here and only commit after all
-		// processing is completed successfully
-		SqrlPersistence sqrlPersistence = createSqrlPersistence();
-		Exception exception = null;
+		initLogging(SQRLBC, "handleSqrl", servletRequest);
 		try {
-			// Get the correlator first. Then, if the request is invalid, we can update the auth page saying so
-			correlator = SqrlClientRequest.parseCorrelatorOnly(servletRequest);
-			setLoggingField(COR, correlator);
-			sqrlClientRequest = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
-			final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest,
-					sqrlPersistence, config);
+			logger.info(
+					formatForLogging("Processing SQRL request with params", buildParamArrayForLogging(servletRequest)));
+			SqrlUtil.debugHeaders(servletRequest);
+			String correlator = "unknown";
+			final SqrlTifResponseBuilder tifBuilder = new SqrlTifResponseBuilder();
+			SqrlInternalUserState sqrlInternalUserState = SqrlInternalUserState.NONE_EXIST;
+			String requestState = "invalid";
+			SqrlClientRequest sqrlClientRequest = null;
+			// Per the spec, SQRL transactions are atomic; so we create our persistence here and only commit after all
+			// processing is completed successfully
+			SqrlPersistence sqrlPersistence = createSqrlPersistence();
+			Exception exception = null;
+			try {
+				// Get the correlator first. Then, if the request is invalid, we can update the auth page saying so
+				correlator = SqrlClientRequest.parseCorrelatorOnly(servletRequest);
+				setLoggingField(COR, correlator);
+				sqrlClientRequest = new SqrlClientRequest(servletRequest, sqrlPersistence, configOperations);
+				final SqrlClientRequestProcessor processor = new SqrlClientRequestProcessor(sqrlClientRequest,
+						sqrlPersistence, config);
 
-			setLoggingField(CLIENT_COMMAND, sqrlClientRequest.getClientCommand().toString());
-			setLoggingField(PROTOCOL, sqrlClientRequest.getNegotiatedSqrlProtocolVersion());
+				setLoggingField(CLIENT_COMMAND, sqrlClientRequest.getClientCommand().toString());
+				setLoggingField(PROTOCOL_VERSION, sqrlClientRequest.getNegotiatedSqrlProtocolVersion());
 
-			validateIpsMatch(sqrlClientRequest.getNut(), servletRequest, tifBuilder, sqrlClientRequest);
-			validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
-			sqrlInternalUserState = processor.processClientCommand();
-			if (sqrlInternalUserState == IDK_EXISTS) {
-				tifBuilder.addFlag(SqrlTifFlag.CURRENT_ID_MATCH);
-			} else if (sqrlInternalUserState == PIDK_EXISTS) {
-				tifBuilder.addFlag(SqrlTifFlag.PREVIOUS_ID_MATCH);
-			}
-			servletResponse.setStatus(HttpServletResponse.SC_OK);
-			requestState = "OK";
-			sqrlPersistence.closeCommit();
-		} catch (final SqrlException | RuntimeException e) {
-			exception = e;
-			sqrlPersistence.closeRollback();
-			tifBuilder.clearAllFlags().addFlag(SqrlTifFlag.COMMAND_FAILED);
-			if (e instanceof SqrlClientRequestProcessingException) {
-				tifBuilder.addFlag(((SqrlClientRequestProcessingException) e).getTifToAdd());
-				logger.error("{}Received invalid SQRL request: {} of {}", SqrlClientRequestLoggingUtil.getLogHeader(),
-						e.getMessage(), SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest), e);
-			} else {
-				logger.error("{}Generate exception processing SQRL request: {} of {}",
-						SqrlClientRequestLoggingUtil.getLogHeader(), e.getMessage(),
-						SqrlUtil.buildLogMessageForSqrlClientRequest(servletRequest), e);
-			}
-			// The SQRL spec is unclear about HTTP return codes. It mentions returning a 404 for an invalid request
-			// but 404 is for page not found. We leave the use of 404 for an actual page not found condition and use
-			// 500 here
-			servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		}
-
-		// We have processed the request, success or failure. Now prep and transmit the reply
-		String serverReplyString = ""; // for logging
-		sqrlPersistence = persistenceFactory.createSqrlPersistence();
-		try {
-			final SqrlTifResponse tif = tifBuilder.createTif();
-			final boolean isInErrorState = exception != null;
-			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
-			serverReplyString = buildReply(servletRequest, sqrlClientRequest, tif, sqrlCorrelator,
-					sqrlInternalUserState, isInErrorState);
-			// Don't use AutoClosable here, we will handle it ourselves
-			if (isInErrorState || sqrlInternalUserState == DISABLED) {
-				tifBuilder.addFlag(SqrlTifFlag.COMMAND_FAILED);
-				// update the correlator with the proper error state
-				SqrlAuthenticationStatus authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL;
-				if (exception instanceof SqrlInvalidRequestException) {
-					authErrorState = SqrlAuthenticationStatus.ERROR_BAD_REQUEST;
-				} else if (sqrlInternalUserState == DISABLED) {
-					authErrorState = SqrlAuthenticationStatus.SQRL_USER_DISABLED;
+				validateIpsMatch(sqrlClientRequest.getNut(), servletRequest, tifBuilder, sqrlClientRequest);
+				validateNut(correlator, sqrlClientRequest.getNut(), config, sqrlPersistence);
+				sqrlInternalUserState = processor.processClientCommand();
+				if (sqrlInternalUserState == IDK_EXISTS) {
+					tifBuilder.addFlag(SqrlTifFlag.CURRENT_ID_MATCH);
+				} else if (sqrlInternalUserState == PIDK_EXISTS) {
+					tifBuilder.addFlag(SqrlTifFlag.PREVIOUS_ID_MATCH);
 				}
-				sqrlCorrelator.setAuthenticationStatus(authErrorState);
-				// There should be no further requests so remove the parrot value
-				if (sqrlCorrelator.getTransientAuthDataTable()
-						.remove(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT) == null) {
-					logger.warn(formatForLogging(
-							"Tried to remove server parrot since we are in error state but it doesn't exist"));
+				servletResponse.setStatus(HttpServletResponse.SC_OK);
+				requestState = "OK";
+				sqrlPersistence.closeCommit();
+			} catch (final SqrlException | RuntimeException e) {
+				exception = e;
+				sqrlPersistence.closeRollback();
+				tifBuilder.clearAllFlags().addFlag(SqrlTifFlag.COMMAND_FAILED);
+				if (e instanceof SqrlClientRequestProcessingException) {
+					tifBuilder.addFlag(((SqrlClientRequestProcessingException) e).getTifToAdd());
+					logger.error(formatForLogging("Received invalid request from SQRL client: {}"), e.getMessage(), e);
+				} else {
+					logger.error(formatForLogging("General exception processing SQRL request: {}"), e.getMessage(), e);
 				}
-			} else {
-				// Store the serverReplyString in the server parrot value so we can validate it on the clients next
-				// request
-				sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
-						serverReplyString);
+				// The SQRL spec is unclear about HTTP return codes. It mentions returning a 404 for an invalid request
+				// but 404 is for page not found. We leave the use of 404 for an actual page not found condition and use
+				// 500 here
+				servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
-			sqrlPersistence.closeCommit();
-			transmitReplyToSqrlClient(servletResponse, serverReplyString);
-			logger.info("SQRL request processing complete", "requestState", requestState, "tif",
-					tif.toHexStringWith0x(), "serverReplyString",
-					SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString));
-		} catch (final SqrlException | RuntimeException e) {
-			sqrlPersistence.closeRollback();
-			logger.error(formatForLogging("Error sending SQRL reply, response not sent", "requestState", requestState,
-					"responseNotSent", SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString)), e);
-		}
-	}
 
-	private String[] buildParamArrayForLogging(final HttpServletRequest servletRequest) {
-		final List<String> nameValueParamList = new ArrayList<>();
-
-		for (final Map.Entry<String, String[]> entry : servletRequest.getParameterMap().entrySet()) {
-			nameValueParamList.add(entry.getKey());
-			if (entry.getValue().length == 1) {
-				nameValueParamList.add(entry.getValue()[0]);
-			} else {
-				nameValueParamList.add(Arrays.toString(entry.getValue()));
+			// We have processed the request, success or failure. Now prep and transmit the reply
+			String serverReplyString = ""; // for logging
+			sqrlPersistence = persistenceFactory.createSqrlPersistence();
+			try {
+				final SqrlTifResponse tif = tifBuilder.createTif();
+				final boolean isInErrorState = exception != null;
+				final SqrlCorrelator sqrlCorrelator = sqrlPersistence.fetchSqrlCorrelatorRequired(correlator);
+				serverReplyString = buildReply(servletRequest, sqrlClientRequest, tif, sqrlCorrelator,
+						sqrlInternalUserState, isInErrorState);
+				// Don't use AutoClosable here, we will handle it ourselves
+				if (isInErrorState || sqrlInternalUserState == DISABLED) {
+					tifBuilder.addFlag(SqrlTifFlag.COMMAND_FAILED);
+					// update the correlator with the proper error state
+					SqrlAuthenticationStatus authErrorState = SqrlAuthenticationStatus.ERROR_SQRL_INTERNAL;
+					if (exception instanceof SqrlInvalidRequestException) {
+						authErrorState = SqrlAuthenticationStatus.ERROR_BAD_REQUEST;
+					} else if (sqrlInternalUserState == DISABLED) {
+						authErrorState = SqrlAuthenticationStatus.SQRL_USER_DISABLED;
+					}
+					sqrlCorrelator.setAuthenticationStatus(authErrorState);
+					// There should be no further requests so remove the parrot value
+					if (sqrlCorrelator.getTransientAuthDataTable()
+							.remove(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT) == null) {
+						logger.warn(formatForLogging(
+								"Tried to remove server parrot since we are in error state but it doesn't exist"));
+					}
+				} else {
+					// Store the serverReplyString in the server parrot value so we can validate it on the clients next
+					// request
+					sqrlCorrelator.getTransientAuthDataTable().put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT,
+							serverReplyString);
+				}
+				sqrlPersistence.closeCommit();
+				transmitReplyToSqrlClient(servletResponse, serverReplyString);
+				logger.info(formatForLogging("SQRL request processing complete"), "requestState", requestState, "tif",
+						tif.toHexStringWith0x(), "serverReplyString",
+						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString));
+			} catch (final SqrlException | RuntimeException e) {
+				sqrlPersistence.closeRollback();
+				logger.error(
+						formatForLogging("Error sending SQRL reply, response not sent", "requestState", requestState,
+								"responseNotSent", SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString)),
+						e);
 			}
+		} finally {
+			SqrlClientRequestLoggingUtil.cleanup();
 		}
-		return nameValueParamList.toArray(new String[nameValueParamList.size()]);
 	}
 
 	/**
@@ -223,12 +212,11 @@ public class SqrlClientFacingOperations {
 		final long now = System.currentTimeMillis();
 		final Date nutExpiry = new Date(nutExpiryMs);
 		if (logger.isDebugEnabled()) {
-			logger.debug("{} Now={}, nutExpiry={}", SqrlClientRequestLoggingUtil.getLogHeader(), new Date(now),
-					nutExpiry);
+			logger.debug(formatForLogging("Now={}, nutExpiry={}"), new Date(now), nutExpiry);
 		}
 		if (now > nutExpiryMs) {
-			throw new SqrlClientRequestProcessingException(SqrlTifFlag.TRANSIENT_ERROR, null, "Nut expired by ",
-					(nutExpiryMs - now), "ms, nut timetamp ms=TODO, expiry is set to ",
+			throw new SqrlClientRequestProcessingException(SqrlTifFlag.TRANSIENT_ERROR, null,
+					"Nut expired by ", (nutExpiryMs - now), "ms, nut timetamp ms=TODO, expiry is set to ",
 					config.getNutValidityInSeconds(), " seconds");
 		}
 		// Mark the token as used since we will process this request
@@ -252,7 +240,7 @@ public class SqrlClientFacingOperations {
 			} else {
 				// Nut is one time use, so generate a new one for the reply
 				final SqrlNutToken replyNut = SqrlNutTokenFactory.buildNut(config, configOperations,
-						sqrlServerUrl, SqrlUtil.determineClientIpAddress(servletRequest, config));
+						sqrlServerUrl, SqrlUtil.findClientIpAddress(servletRequest, config));
 
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
 						sqrlCorrelator, sqrlInternalUserState, sqrlPersistence);
@@ -262,12 +250,12 @@ public class SqrlClientFacingOperations {
 			}
 
 			final String serverReplyString = reply.toBase64();
-			logger.debug("{}Build serverReplyString: {}", logHeader, serverReplyString);
+			logger.debug(formatForLogging("Build serverReplyString: {}"), serverReplyString);
 			sqrlPersistence.closeCommit();
 			return serverReplyString;
 		} catch (final URISyntaxException e) {
 			sqrlPersistence.closeRollback();
-			throw new SqrlException(e, SqrlClientRequestLoggingUtil.getLogHeader(),
+			throw new SqrlException(e,
 					"Error converting servletRequest.getRequestURL() to URI.  servletRequest.getRequestURL()=",
 					servletRequest.getRequestURL());
 		}
@@ -333,7 +321,7 @@ public class SqrlClientFacingOperations {
 			throw new SqrlException(e, "Generated invalid CPS cancel URL of ", fullCpsCancelUrl);
 		}
 		// NOT base64url encoded
-		logger.info("fullCpsCancelUrl={}", fullCpsCancelUrl); // TODO: debug
+		logger.debug(formatForLogging("fullCpsCancelUrl={}"), fullCpsCancelUrl);
 		return fullCpsCancelUrl;
 	}
 	private boolean shouldIncludeSukInReply(final SqrlClientRequest sqrlRequest,
@@ -365,7 +353,7 @@ public class SqrlClientFacingOperations {
 
 	private void validateIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest,
 			final SqrlTifResponseBuilder tifBuilder, final SqrlClientRequest sqrlClientRequest) throws SqrlException {
-		final InetAddress clientIpAddress = SqrlUtil.determineClientIpAddress(servletRequest, config);
+		final InetAddress clientIpAddress = SqrlUtil.findClientIpAddress(servletRequest, config);
 		final Optional<String> mismatchDetail = nut.compareSqrlClientInetAddress(clientIpAddress, config);
 		final boolean ipsMatched = !mismatchDetail.isPresent();
 		if (ipsMatched) {

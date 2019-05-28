@@ -428,41 +428,49 @@ public class SqrlUtil {
 			return;
 		}
 		final StringBuilder buf = new StringBuilder(200);
-		buf.append("request headers: ");
 		final Enumeration<String> iter = servletRequest.getHeaderNames();
 		while (iter.hasMoreElements()) {
 			final String headerName = iter.nextElement();
 			buf.append(headerName).append("=");
 			final Enumeration<String> valueIter = servletRequest.getHeaders(headerName);
+			boolean another = false;
 			while (valueIter.hasMoreElements()) {
-				buf.append(valueIter.nextElement()).append(" ");
+				if (another) {
+					buf.append(",");
+				}
+				buf.append(valueIter.nextElement());
+				another = true;
 			}
-			buf.append("|");
+			buf.append(" ");
 		}
-		logger.debug(buf.toString());
+		logger.debug(SqrlClientRequestLoggingUtil.formatForLogging("requestHeaders=[{}]"), buf.toString().trim());
 	}
 
-	public static InetAddress determineClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)
+	public static InetAddress findClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)
 			throws SqrlException {
-		final List<String> headersToCheckList = config.getIpForwardedForHeaderList();
-		String ipToParse = null;
-		SqrlUtil.debugHeaders(servletRequest);
-		for (final String headerToFind : headersToCheckList) {
-			ipToParse = servletRequest.getHeader(headerToFind);
-			if (SqrlUtil.isNotBlank(ipToParse)) {
-				break;
-			}
-		}
-		if (SqrlUtil.isBlank(ipToParse)) {
-			ipToParse = servletRequest.getRemoteAddr();
-		}
+		final String ipToParse = findClientIpAddressString(servletRequest, config);
 		try {
 			final InetAddress inetAddress = InetAddress.getByName(ipToParse);
-			logger.debug("clientIp={}", inetAddress.toString());
 			return inetAddress;
 		} catch (final UnknownHostException e) {
 			throw new SqrlException(e, "Caught exception trying to determine clients IP address");
 		}
+	}
+
+	public static String findClientIpAddressString(final HttpServletRequest servletRequest, final SqrlConfig config) {
+		final List<String> headersToCheckList = config.getIpForwardedForHeaderList();
+		String ipString = null;
+		SqrlUtil.debugHeaders(servletRequest);
+		for (final String headerToFind : headersToCheckList) {
+			ipString = servletRequest.getHeader(headerToFind);
+			if (SqrlUtil.isNotBlank(ipString)) {
+				break;
+			}
+		}
+		if (SqrlUtil.isBlank(ipString)) {
+			ipString = servletRequest.getRemoteAddr();
+		}
+		return ipString;
 	}
 
 	public static void exceptionIfNull(final String stringData, final String errorDescription) throws SqrlException {
