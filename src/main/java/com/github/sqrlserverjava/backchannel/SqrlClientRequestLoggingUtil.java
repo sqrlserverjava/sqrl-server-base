@@ -150,7 +150,7 @@ public class SqrlClientRequestLoggingUtil {
 				buf.append(name);
 				if (logger.isDebugEnabled()) {
 					// To cut down on noise, we only log this warning if debug is enabled as it's not a critical error
-					logger.warn("Programmatic loggging error, additionalFieldPairs has odd number",
+					logger.warn("Programmatic loggging error, additionalFieldPairs has odd number name='" + name + "'",
 							new SqrlException("log debug stack"));
 				}
 			}
