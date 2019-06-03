@@ -64,11 +64,11 @@ public class SqrlConfig {
 	 * Default: X-Forwarded-For
 	 */
 	private String[] ipForwardedForHeader;
-	
+
 	/* *********************************************************************************************/
 	/* *************************************** OPTIONAL ********************************************/
 	/* *********************************************************************************************/
-	
+
 	/**
 	 * The full classname of the SqrlClientAuthStateUpdater that will push status updates to the client
 	 * browser. If this value is not defined and the sqrl-sever-atomosphere library is on the classpath, this
@@ -81,7 +81,7 @@ public class SqrlConfig {
 	 * @see <a href="https://github.com/sqrlserverjava/sqrl-server-atmosphere">sqrl-server-atmosphere</a>
 	 */
 	private String clientAuthStateUpdaterClass = null;
-	
+
 	/**
 	 * The amount of time the SQRL "Nut" will be valid for; default is 15 minutes. That is the maximum amount of time
 	 * that can pass between us (server) generating the QR code and us receiving the clients response
@@ -93,7 +93,7 @@ public class SqrlConfig {
 	 * Default: 900
 	 */
 	private int nutValidityInSeconds = (int) TimeUnit.MINUTES.toSeconds(15);
-	
+
 	/**
 	 * Computed from {@link #nutValidityInSeconds}, cannot be set directly.
 	 * Updated by {@link #setNutValidityInSeconds(int)} when invoked
@@ -154,9 +154,9 @@ public class SqrlConfig {
 
 	/**
 	 * Whether or not CPS is enabled for this server
-	 * Default: false
+	 * Default: true
 	 */
-	private boolean enableCps = false;
+	private boolean enableCps = true;
 
 	/**
 	 * When enableCps=true, this is the URI where the user will be redirected to if the CPS authentication
@@ -164,7 +164,7 @@ public class SqrlConfig {
 	 * Default: n/a
 	 */
 	private String cpsCancelUri;
-	
+
 	/**
 	 * The cookie name to use for the SQRL correlator during authentication
 	 * Default: sqrlcorrelator
@@ -189,7 +189,7 @@ public class SqrlConfig {
 	 * Default: /
 	 */
 	private String cookiePath = "/";
-	
+
 	/**
 	 * The format ID to use when generating the SQRL nut token<br/> 
 	 * Default: 2
@@ -199,7 +199,7 @@ public class SqrlConfig {
 	 * @see SqrlNutTokenSingleBlockFormat
 	 */
 	private int	sqrlNutTokenFormat = 2;
-	
+
 	/**
 	 * By default, the SQRL client generates the identity based on the domain of the website.  
 	 * This setting can be used to tell the client to include one or more URIs after the domain in the computation.  
@@ -207,13 +207,13 @@ public class SqrlConfig {
 	 * 
 	 */
 	private int	sqrlDomainExtensionSpecifierUriCount = 0;
-	
+
 	// @formatter:on
 
 	/* *********************************************************************************************/
 	/* *************************************** ACCESSORS *******************************************/
 	/* *********************************************************************************************/
-	
+
 	@XmlElement(required = true)
 	public String getBackchannelServletPath() {
 		return backchannelServletPath;
@@ -260,12 +260,12 @@ public class SqrlConfig {
 	public void setAesKeyBase64(final String aesKeyBase64) {
 		this.aesKeyBase64 = aesKeyBase64;
 	}
-	
+
 	/* *********************************************************************************************/
 	/* *************************************** OPTIONAL ********************************************/
 	/* *********************************************************************************************/
 
-	
+
 	@XmlElement(required = false)
 	public String getClientAuthStateUpdaterClass() {
 		return clientAuthStateUpdaterClass;
@@ -277,7 +277,7 @@ public class SqrlConfig {
 	public void setClientAuthStateUpdaterClass(final String clientAuthStateUpdaterClass) {
 		this.clientAuthStateUpdaterClass = clientAuthStateUpdaterClass;
 	}
-	
+
 	@XmlElement(required = false)
 	public int getNutValidityInSeconds() {
 		return nutValidityInSeconds;
@@ -296,7 +296,7 @@ public class SqrlConfig {
 		this.nutValidityInSeconds = nutValidityInSeconds;
 		this.nutValidityInMillis = nutValidityInSeconds * 1000;
 	}
-	
+
 	/**
 	 * Helper method which converts to millis
 	 */
@@ -315,12 +315,12 @@ public class SqrlConfig {
 	public void setQrCodeImageFormat(final SqrlQrCodeImageFormat qrCodeFileType) {
 		this.qrCodeImageFormat = qrCodeFileType;
 	}	
-	
+
 	@XmlElement(required = false)
 	public String[] getIpForwardedForHeader() {
 		return ipForwardedForHeader;
 	}
-	
+
 	/**
 	 * @see #ipForwardedForHeaders
 	 */
@@ -334,7 +334,7 @@ public class SqrlConfig {
 		}
 		return Arrays.asList(ipForwardedForHeader);
 	}
-	
+
 	public String getSqrlPersistenceFactoryClass() {
 		return sqrlPersistenceFactoryClass;
 	}
@@ -357,7 +357,7 @@ public class SqrlConfig {
 	public void setCleanupTaskExecInMinutes(final int cleanupTaskExecInMinutes) {
 		this.cleanupTaskExecInMinutes = cleanupTaskExecInMinutes;
 	}
-	
+
 	@XmlElement(required = false)
 	public long getAuthSyncCheckInMillis() {
 		return authSyncCheckInMillis;
@@ -369,7 +369,7 @@ public class SqrlConfig {
 	public void setAuthSyncCheckInMillis(final long authSyncCheckInMillis) {
 		this.authSyncCheckInMillis = authSyncCheckInMillis;
 	}
-	
+
 	@XmlElement(required = false)
 	public String getSqrlLoginServletPath() {
 		return sqrlLoginServletPath;
@@ -381,12 +381,12 @@ public class SqrlConfig {
 	public void setSqrlLoginServletPath(final String sqrlLoginServletPath) {
 		this.sqrlLoginServletPath = sqrlLoginServletPath;
 	}
-	
+
 	@XmlElement(required = false)
 	public boolean isEnableCps() {
 		return enableCps;
 	}
-	
+
 	/**
 	 * @see #enableCps
 	 */
@@ -398,7 +398,7 @@ public class SqrlConfig {
 	public String getCorrelatorCookieName() {
 		return correlatorCookieName;
 	}
-	
+
 	/**
 	 * @see #correlatorCookieName
 	 */
@@ -417,7 +417,7 @@ public class SqrlConfig {
 	public void setFirstNutCookieName(final String firstNutCookieName) {
 		this.firstNutCookieName = firstNutCookieName;
 	}
-	
+
 	@XmlElement(required = false)
 	public String getCookieDomain() {
 		return cookieDomain;
@@ -429,12 +429,12 @@ public class SqrlConfig {
 	public void setCookieDomain(final String cookieDomain) {
 		this.cookieDomain = cookieDomain;
 	}
-	
+
 	@XmlElement(required = false)
 	public String getCookiePath() {
 		return cookiePath;
 	}
-	
+
 	/**
 	 * @see #cookiePath
 	 */
@@ -464,7 +464,7 @@ public class SqrlConfig {
 	public void setServerFriendlyName(final String serverFriendlyName) {
 		this.serverFriendlyName = serverFriendlyName;
 	}
-	
+
 	/**
 	 * The system time is certainly not part of our config, but this
 	 * provides an easy way for test cases to hardcode a time to 
@@ -484,7 +484,7 @@ public class SqrlConfig {
 	/**
 	 * @see #sqrlNutTokenFormat
 	 */
-	public void setSqrlNutTokenFormat(int sqrlNutTokenFormat) {
+	public void setSqrlNutTokenFormat(final int sqrlNutTokenFormat) {
 		this.sqrlNutTokenFormat = sqrlNutTokenFormat;
 	}
 
@@ -499,7 +499,7 @@ public class SqrlConfig {
 	 * @param cpsCancelUri
 	 *            the cpsCancelUri to set
 	 */
-	public void setCpsCancelUri(String cpsCancelUri) {
+	public void setCpsCancelUri(final String cpsCancelUri) {
 		this.cpsCancelUri = cpsCancelUri;
 	}
 
@@ -514,7 +514,7 @@ public class SqrlConfig {
 	 * @param sqrlDomainExtensionSpecifierUriCount
 	 *            the sqrlDomainExtensionSpecifierUriCount to set
 	 */
-	public void setSqrlDomainExtensionSpecifierUriCount(int sqrlDomainExtensionSpecifierUriCount) {
+	public void setSqrlDomainExtensionSpecifierUriCount(final int sqrlDomainExtensionSpecifierUriCount) {
 		this.sqrlDomainExtensionSpecifierUriCount = sqrlDomainExtensionSpecifierUriCount;
 	}
 
@@ -557,7 +557,7 @@ public class SqrlConfig {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -567,7 +567,7 @@ public class SqrlConfig {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		SqrlConfig other = (SqrlConfig) obj;
+		final SqrlConfig other = (SqrlConfig) obj;
 		if (aesKeyBase64 == null) {
 			if (other.aesKeyBase64 != null) {
 				return false;
