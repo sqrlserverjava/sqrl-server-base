@@ -59,27 +59,27 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 	private final String		base64UrlEncryptedNut;
 
 	// marshal to string
-	public SqrlNutTokenEmbedded(InetAddress browserIPAddress, SqrlConfigOperations configOperations,
-			long timestamp, String correlator, String browserLoginUrl) throws SqrlException {
-		SqrlConfig config = configOperations.getSqrlConfig();
+	public SqrlNutTokenEmbedded(final InetAddress browserIPAddress, final SqrlConfigOperations configOperations,
+			final long timestamp, final String correlator, final String browserLoginUrl) throws SqrlException {
+		final SqrlConfig config = configOperations.getSqrlConfig();
 		this.issuedTimestamp = timestamp;
 		this.browserIPAddress = browserIPAddress;
 		this.correlator = correlator;
 		this.browserLoginUrl = browserLoginUrl;
-		String jsonPayload = buildJsonPayload(issuedTimestamp, browserIPAddress, correlator, browserLoginUrl);
+		final String jsonPayload = buildJsonPayload(issuedTimestamp, browserIPAddress, correlator, browserLoginUrl);
 		// Build IV and AAD
 		final byte[] iv = new byte[GCM_IV_SIZE_BYTES];
 		config.getSecureRandom().nextBytes(iv);
 		// additional authenticated data (AAD) is authenticated, but not encrypted. Use it to store our format ID and IV
-		byte[] additionalAuthenticatedData = new byte[AAD_SIZE_BYTES];
+		final byte[] additionalAuthenticatedData = new byte[AAD_SIZE_BYTES];
 		additionalAuthenticatedData[0] = FORMAT_ID_BYTE;
 		System.arraycopy(iv, 0, additionalAuthenticatedData, 1, GCM_IV_SIZE_BYTES);
 
 		// Encrypt
-		byte[] cipherText = encryptWithAesGcm(additionalAuthenticatedData, iv, jsonPayload, configOperations);
-			
+		final byte[] cipherText = encryptWithAesGcm(additionalAuthenticatedData, iv, jsonPayload, configOperations);
+
 		// build the final data to be encoded
-		byte[] finalBytes = new byte[AAD_SIZE_BYTES + cipherText.length];
+		final byte[] finalBytes = new byte[AAD_SIZE_BYTES + cipherText.length];
 		System.arraycopy(additionalAuthenticatedData, 0, finalBytes, 0, AAD_SIZE_BYTES);
 		System.arraycopy(cipherText, 0, finalBytes, AAD_SIZE_BYTES, cipherText.length);
 		this.base64UrlEncryptedNut = SqrlUtil.sqrlBase64UrlEncode(finalBytes);
@@ -89,30 +89,30 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 	public SqrlNutTokenEmbedded(final SqrlConfigOperations configOps, final String base64UrlEncryptedNut)
 			throws SqrlClientRequestProcessingException {
 		this.base64UrlEncryptedNut = base64UrlEncryptedNut;
-		byte[] decoded = SqrlUtil.base64UrlDecodeDataFromSqrlClient(base64UrlEncryptedNut);
-		byte[] aadBytes = new byte[AAD_SIZE_BYTES];
+		final byte[] decoded = SqrlUtil.base64UrlDecodeDataFromSqrlClient(base64UrlEncryptedNut);
+		final byte[] aadBytes = new byte[AAD_SIZE_BYTES];
 		System.arraycopy(decoded, 0, aadBytes, 0, AAD_SIZE_BYTES);
-		int formatId = buildFormatId(decoded[0]);
-		byte[] ivBytes = new byte[GCM_IV_SIZE_BYTES];
+		final int formatId = buildFormatId(decoded[0]);
+		final byte[] ivBytes = new byte[GCM_IV_SIZE_BYTES];
 		System.arraycopy(decoded, 1, ivBytes, 0, GCM_IV_SIZE_BYTES);
-		int cipherTextLength = decoded.length - AAD_SIZE_BYTES;
-		byte[] cipherTextBytes = new byte[cipherTextLength];
+		final int cipherTextLength = decoded.length - AAD_SIZE_BYTES;
+		final byte[] cipherTextBytes = new byte[cipherTextLength];
 		System.arraycopy(decoded, AAD_SIZE_BYTES, cipherTextBytes, 0, cipherTextLength);
-		
-		byte[] plainText = verifyAndDecryptWithAesGcm(aadBytes, ivBytes, cipherTextBytes, configOps,
+
+		final byte[] plainText = verifyAndDecryptWithAesGcm(aadBytes, ivBytes, cipherTextBytes, configOps,
 				base64UrlEncryptedNut);
 		// Now we know the aad data was not modified
 		if(formatId != FORMAT_ID) {
 			throw new SqrlClientRequestProcessingException(null, "Nut token contained incorrect formatId=", formatId, " expected ", FORMAT_ID);
 		}
-		String jsonString = new String(plainText, SqrlConstants.UTF8_CHARSET);
+		final String jsonString = new String(plainText, SqrlConstants.UTF8_CHARSET);
 		logger.debug("after decryption jsonString={}", jsonString);
-		JsonObject object = Json.parse(jsonString).asObject();
+		final JsonObject object = Json.parse(jsonString).asObject();
 		this.issuedTimestamp = object.get(JSON_TAG_TIMESTAMP).asLong();
-		String ipAddressString = object.get(JSON_TAG_IP_ADDRESS).asString();
+		final String ipAddressString = object.get(JSON_TAG_IP_ADDRESS).asString();
 		try {
 			this.browserIPAddress = InetAddress.getByName(ipAddressString);
-		} catch (UnknownHostException e) {
+		} catch (final UnknownHostException e) {
 			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, e, "Error parsing ipaddress=",
 					ipAddressString);
 		}
@@ -120,41 +120,41 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 		this.browserLoginUrl = object.get(JSON_TAG_BROWSER_LOGIN_URL).asString();
 	}
 
-	private byte[] encryptWithAesGcm(byte[] additionalAuthenticatedData, byte[] iv, String jsonPayload,
-			SqrlConfigOperations configOperations) throws SqrlException {
+	private byte[] encryptWithAesGcm(final byte[] additionalAuthenticatedData, final byte[] iv, final String jsonPayload,
+			final SqrlConfigOperations configOperations) throws SqrlException {
 		// A good overview of AES GCM is here: https://crypto.stackexchange.com/a/18092
 		// Encrypt and encode the nut
 		try {
 			final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-			GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH_BYTES * 8, iv);
+			final GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH_BYTES * 8, iv);
 			cipher.init(Cipher.ENCRYPT_MODE, configOperations.getAESKey(), spec);
 			cipher.updateAAD(additionalAuthenticatedData);
-			byte[] plainTextBytes = jsonPayload.getBytes(SqrlConstants.UTF8_CHARSET);
+			final byte[] plainTextBytes = jsonPayload.getBytes(SqrlConstants.UTF8_CHARSET);
 			return cipher.doFinal(plainTextBytes);
-		} catch (GeneralSecurityException e) {
+		} catch (final GeneralSecurityException e) {
 			throw new SqrlException(e, "Error during encryption of SQRL nut token");
 		}
 	}
 
-	private byte[] verifyAndDecryptWithAesGcm(byte[] additionalAuthenticatedData, byte[] iv, byte[] cipherTextBytes,
-			SqrlConfigOperations configOperations, String base64UrlEncryptedNut) throws SqrlInvalidRequestException {
+	private byte[] verifyAndDecryptWithAesGcm(final byte[] additionalAuthenticatedData, final byte[] iv, final byte[] cipherTextBytes,
+			final SqrlConfigOperations configOperations, final String base64UrlEncryptedNut) throws SqrlInvalidRequestException {
 		// A good overview of AES GCM is here: https://crypto.stackexchange.com/a/18092
 		// Encrypt and encode the nut
 		try {
 			final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-			GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH_BYTES * 8, iv);
+			final GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH_BYTES * 8, iv);
 			cipher.init(Cipher.DECRYPT_MODE, configOperations.getAESKey(), spec);
 			cipher.updateAAD(additionalAuthenticatedData);
 			return cipher.doFinal(cipherTextBytes);
-		} catch (GeneralSecurityException e) {
+		} catch (final GeneralSecurityException e) {
 			throw new SqrlInvalidRequestException(e, "Error during verification and decryption of SQRL nut token=",
 					base64UrlEncryptedNut);
 		}
 	}
 
-	private static String buildJsonPayload(long issuedTimestamp, InetAddress browserIPAddress, String correlator,
-			String browserLoginUrl) {
-		JsonObject jsonObject = Json.object();
+	private static String buildJsonPayload(final long issuedTimestamp, final InetAddress browserIPAddress, final String correlator,
+			final String browserLoginUrl) {
+		final JsonObject jsonObject = Json.object();
 		jsonObject.add(JSON_TAG_TIMESTAMP, issuedTimestamp);
 		jsonObject.add(JSON_TAG_IP_ADDRESS, browserIPAddress.getHostAddress());
 		jsonObject.add(JSON_TAG_CORRELATOR, correlator);
@@ -162,33 +162,29 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 		return jsonObject.toString();
 	}
 
-	public static byte[] compress(byte[] data) throws SqrlException {
-		Deflater deflater = new Deflater();
+	public static byte[] compress(final byte[] data) throws SqrlException {
+		final Deflater deflater = new Deflater();
 		deflater.setInput(data);
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
+		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(data.length);
 
 		deflater.finish();
-		byte[] buffer = new byte[1024];
+		final byte[] buffer = new byte[1024];
 		while (!deflater.finished()) {
-			int count = deflater.deflate(buffer);
+			final int count = deflater.deflate(buffer);
 			outputStream.write(buffer, 0, count);
 		}
 		try {
 			outputStream.close();
+			final byte[] output = outputStream.toByteArray();
+			logger.debug("Nut compression: compressed zlib={} original={}", output.length, data.length);
 
-			byte[] output = outputStream.toByteArray();
-
-			System.out.println("Original: " + data.length);
-			System.out.println("Compressed zlib: " + output.length);
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			GZIPOutputStream gzipOs = new GZIPOutputStream(baos);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final GZIPOutputStream gzipOs = new GZIPOutputStream(baos);
 			// ZipOutputStream zos = new ZipOutputStream(baos);
 			gzipOs.write(data);
 			gzipOs.close();
-			System.out.println("gzip: " + baos.toByteArray().length);
 			return output;
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new SqrlException(e, "Caught error during compression");
 		}
 	}

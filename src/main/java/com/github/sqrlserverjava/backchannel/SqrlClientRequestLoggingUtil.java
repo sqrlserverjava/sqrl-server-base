@@ -140,7 +140,7 @@ public class SqrlClientRequestLoggingUtil {
 		final StringBuilder buf = new StringBuilder(300 + message.length());
 		buf.append(tlHeader.get());
 		buf.append(" message=\"").append(message).append("\"");
-		for (int i = 0; i < additionalFieldPairs.length; i++) {
+		for (int i = 0; i < additionalFieldPairs.length; i += 2) {
 			final String name = additionalFieldPairs[i];
 			final boolean hasValue = i + 1 < additionalFieldPairs.length;
 			if (hasValue) {
@@ -159,13 +159,17 @@ public class SqrlClientRequestLoggingUtil {
 		return buf.toString();
 	}
 
+	public static boolean isLogging() {
+		return tlDataTable.get().containsKey(CHANNEL);
+	}
+
 	public static void initLogging(final Channel channel, final String process,
 			final HttpServletRequest request) {
 		tlDataTable.get().clear();
 		putData(CHANNEL, channel.toString().toLowerCase());
 		putData(PROCESS, process);
 		// Common
-		putData(CLIENT_IP, SqrlUtil.findClientIpAddressString(request, sqrlConfig));
+		putData(CLIENT_IP, SqrlUtil.findBrowserIpAddressString(request, sqrlConfig));
 		if (channel == Channel.SQRLBC) {
 			putData(SQRL_AGENT, request.getHeader("User-Agent"));
 		} else if (channel == Channel.POLL) {

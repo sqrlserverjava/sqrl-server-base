@@ -8,6 +8,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,8 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 public class SqrlUtil {
 	private static final Logger					logger				= LoggerFactory.getLogger(SqrlUtil.class);
 	private static final Map<String, String>	cookieDomainCache	= new ConcurrentHashMap<>();
+	private static final List<String> LOCALHOST_IP_STRING_LIST = Collections
+			.unmodifiableList(Arrays.asList("127.0.0.1", "0:0:0:0:0:0:0:1"));
 	static final Pattern				REGEX_PATTERN_REGEX_BASE64_URL	= Pattern
 			.compile(SqrlConstants.REGEX_BASE64_URL);
 
@@ -448,7 +451,7 @@ public class SqrlUtil {
 
 	public static InetAddress findClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)
 			throws SqrlException {
-		final String ipToParse = findClientIpAddressString(servletRequest, config);
+		final String ipToParse = findBrowserIpAddressString(servletRequest, config);
 		try {
 			final InetAddress inetAddress = InetAddress.getByName(ipToParse);
 			return inetAddress;
@@ -457,7 +460,11 @@ public class SqrlUtil {
 		}
 	}
 
-	public static String findClientIpAddressString(final HttpServletRequest servletRequest, final SqrlConfig config) {
+	/**
+	 * Determines the web browsers IP address by looking at headers (as set in config) or pulling from the
+	 * HttpServletRequest
+	 */
+	public static String findBrowserIpAddressString(final HttpServletRequest servletRequest, final SqrlConfig config) {
 		final List<String> headersToCheckList = config.getIpForwardedForHeaderList();
 		String ipString = null;
 		SqrlUtil.debugHeaders(servletRequest);
@@ -483,5 +490,9 @@ public class SqrlUtil {
 		if (data == null) {
 			throw new SqrlException(errorDescription);
 		}
+	}
+
+	public static boolean isLocalhost(final InetAddress inetAddress) {
+		return LOCALHOST_IP_STRING_LIST.contains(inetAddress.toString());
 	}
 }

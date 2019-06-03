@@ -1,5 +1,7 @@
 package com.github.sqrlserverjava.backchannel.nut;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -9,7 +11,6 @@ import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.util.SqrlUtil;
 
 public abstract class SqrlNutToken {
-
 	/**
 	 * @return the encrypted, base64 representation of this token
 	 */
@@ -30,34 +31,42 @@ public abstract class SqrlNutToken {
 	 *            the SQRL config
 	 * @return the time, in millis, when the token will expire
 	 */
-	public long computeExpiresAt(SqrlConfig config) {
+	public long computeExpiresAt(final SqrlConfig config) {
 		final long nutValidityMillis = TimeUnit.SECONDS.toMillis(config.getNutValidityInSeconds());
 		return getIssuedTimestampMillis() + nutValidityMillis;
 	}
 
 	/**
-	 * Default implementation to perform a comparision of the IP address between the browser and the SQRL client
+	 * Default implementation to perform a comparison of the IP address between the browser and the SQRL client
 	 * 
 	 * @param sqrlClientIpAddress
 	 *            the IP address SQRL client which sent the backchannel request
 	 * @return Optional.empty if the IP addresses matched, Optional.string if they did not including detail of the
 	 *         mismatch for debugging
 	 */
-	public Optional<String> compareSqrlClientInetAddress(InetAddress sqrlClientIpAddress, SqrlConfig config)
+	public Optional<String> compareSqrlClientInetAddress(final InetAddress sqrlClientIpAddress, final SqrlConfig config)
 			throws SqrlException {
-		InetAddress browserIpAddress = getBrowserIPAddress();
+		final InetAddress browserIpAddress = getBrowserIPAddress();
 		if (sqrlClientIpAddress.equals(browserIpAddress)) {
 			return Optional.empty();
+		} else if ((sqrlClientIpAddress instanceof Inet4Address && browserIpAddress instanceof Inet6Address)
+				|| (sqrlClientIpAddress instanceof Inet6Address && browserIpAddress instanceof Inet4Address)) {
+			// One side saw an IPv4 while the other side saw IPv6, these will never match
+			if (sqrlClientIpAddress.isLoopbackAddress() && browserIpAddress.isLoopbackAddress()) {
+				return Optional.empty();
+			}
+			return Optional.of(SqrlUtil.buildString("IP address format mismatch, browserIP=",
+					browserIpAddress.getHostAddress(), " sqrlClientIP=", sqrlClientIpAddress.getHostAddress()));
 		} else {
-			return Optional.of(SqrlUtil.buildString("IP address mismatch, browserIP=", browserIpAddress.getHostAddress(),
-					" sqrlClientIP=", sqrlClientIpAddress.getHostAddress()));
+			return Optional.of(SqrlUtil.buildString("IP address mismatch, browserIP=",
+					browserIpAddress.getHostAddress(), " sqrlClientIP=", sqrlClientIpAddress.getHostAddress()));
 		}
 	}
 
 	/**
 	 * Helper method to convert translate from a byte to an unsigned byte represented by an int
 	 */
-	static int buildFormatId(byte unsignedByte) {
+	static int buildFormatId(final byte unsignedByte) {
 		return Byte.toUnsignedInt(unsignedByte);
 	}
 }

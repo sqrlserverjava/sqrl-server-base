@@ -39,8 +39,9 @@ import com.github.sqrlserverjava.util.SqrlUtil;
  * <li/>3. Can only store part of an IPv6 address, which makes IP mismatch debugging difficult
  *
  * @author Dave Badia
- *
+ * @deprecated SqrlNutTokenEmbedded is preferred
  */
+@Deprecated
 public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	private static final Logger	logger				= LoggerFactory.getLogger(SqrlNutTokenSingleBlockFormat.class);
 
@@ -62,7 +63,10 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	 *            data in the Nut is only stored with second granularity
 	 * @param randomInt
 	 * @throws SqrlException
+	 * 
+	 * @deprecated SqrlNutTokenEmbedded is preferred
 	 */
+	@Deprecated
 	SqrlNutTokenSingleBlockFormat(final InetAddress browserIp, final SqrlConfigOperations configOps, 
 			final long timestamp) throws SqrlException {
 		this.inetInt = pack(browserIp.getAddress());
@@ -87,7 +91,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 			cipher.init(Cipher.ENCRYPT_MODE, configOps.getAESKey());
 			final byte[] encrypted = cipher.doFinal(nutBytes);
 			// First byte of data must be our format ID
-			byte[] finalBytes = new byte[encrypted.length + 1];
+			final byte[] finalBytes = new byte[encrypted.length + 1];
 			finalBytes[0] = (byte) FORMAT_ID;
 			System.arraycopy(encrypted, 0, finalBytes, 1, encrypted.length);
 			this.base64UrlEncryptedNut = SqrlUtil.sqrlBase64UrlEncode(finalBytes);
@@ -102,7 +106,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 			throws SqrlClientRequestProcessingException {
 		this.base64UrlEncryptedNut = sqBase64EncryptedNut;
 		// Verify the format ID which is the first byte of decoded data
-		byte[] nutBytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(sqBase64EncryptedNut);
+		final byte[] nutBytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(sqBase64EncryptedNut);
 		verifyFormatId(SqrlNutToken.buildFormatId(nutBytes[0]));
 		// Decrypt the nut
 		byte[] cleartextBytes = null;
@@ -133,7 +137,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 		}
 	}
 
-	private void verifyFormatId(int formatIdFromEncoded) throws SqrlClientRequestProcessingException {
+	private void verifyFormatId(final int formatIdFromEncoded) throws SqrlClientRequestProcessingException {
 		if (formatIdFromEncoded != FORMAT_ID) {
 			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, null,
 					"Nut format ID mismatch, expected ", FORMAT_ID, " but found ", formatIdFromEncoded);
@@ -141,7 +145,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	}
 
 	@Override
-	public Optional<String> compareSqrlClientInetAddress(InetAddress requesterIpAddress, SqrlConfig config)
+	public Optional<String> compareSqrlClientInetAddress(final InetAddress requesterIpAddress, final SqrlConfig config)
 			throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
@@ -178,7 +182,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	}
 
 	@Override
-	public long computeExpiresAt(SqrlConfig config) {
+	public long computeExpiresAt(final SqrlConfig config) {
 		final long nutValidityMillis = config.getNutValidityInSeconds() * 1000L;
 		return getIssuedTimestampMillis() + nutValidityMillis;
 	}
@@ -266,10 +270,10 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder();
 		builder.append("SqrlNutTokenLegacyFormat [inetInt=").append(inetInt).append(", issuedTimestamp=")
-				.append(issuedTimestamp).append(", randomInt=").append(randomInt).append(", base64UrlEncryptedNut=")
-				.append(base64UrlEncryptedNut).append("]");
+		.append(issuedTimestamp).append(", randomInt=").append(randomInt).append(", base64UrlEncryptedNut=")
+		.append(base64UrlEncryptedNut).append("]");
 		return builder.toString();
 	}
 
@@ -294,7 +298,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -304,7 +308,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		SqrlNutTokenSingleBlockFormat other = (SqrlNutTokenSingleBlockFormat) obj;
+		final SqrlNutTokenSingleBlockFormat other = (SqrlNutTokenSingleBlockFormat) obj;
 		if (inetInt != other.inetInt) {
 			return false;
 		}

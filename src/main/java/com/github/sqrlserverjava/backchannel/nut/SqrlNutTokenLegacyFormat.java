@@ -41,7 +41,7 @@ import com.github.sqrlserverjava.util.SqrlUtil;
  * <li/>Can only store part of an IPv6 address, which makes IP mismatch debugging difficult
  *
  * @author Dave Badia
- * @deprecated
+ * @deprecated SqrlNutTokenEmbedded is preferred
  */
 @Deprecated
 public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
@@ -75,9 +75,9 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 	 * @param randomInt
 	 * @throws SqrlException
 	 */
-	public SqrlNutTokenLegacyFormat(InetAddress browserIPAddress, SqrlConfigOperations configOperations,
-			long timestamp) throws SqrlException {
-		SqrlConfig config = configOperations.getSqrlConfig();
+	public SqrlNutTokenLegacyFormat(final InetAddress browserIPAddress, final SqrlConfigOperations configOperations,
+			final long timestamp) throws SqrlException {
+		final SqrlConfig config = configOperations.getSqrlConfig();
 		this.inetInt = inetAddressToInt(browserIPAddress, config);
 		this.counter = COUNTER.incrementAndGet();
 		// Convert the timestamp param from millis precision to second precision
@@ -149,7 +149,7 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 	}
 
 	@Override
-	public Optional<String> compareSqrlClientInetAddress(InetAddress requesterIpAddress, SqrlConfig config)
+	public Optional<String> compareSqrlClientInetAddress(final InetAddress requesterIpAddress, final SqrlConfig config)
 			throws SqrlException {
 		// From https://www.grc.com/sqrl/server.htm
 		// Although this 128-bit total nut size only provides 32 bits for an IPv4 IP address, our purpose is only to
@@ -185,7 +185,7 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 	}
 
 	@Override
-	public long computeExpiresAt(SqrlConfig config) {
+	public long computeExpiresAt(final SqrlConfig config) {
 		final long nutValidityMillis = config.getNutValidityInSeconds() * 1000L;
 		return getIssuedTimestampMillis() + nutValidityMillis;
 	}

@@ -1,5 +1,7 @@
 package com.github.sqrlserverjava;
-
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.initLogging;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.isLogging;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.setLoggingField;
 import static com.github.sqrlserverjava.enums.SqrlAuthenticationStatus.AUTHENTICATED_CPS;
 import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTPS_COLON;
 import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTP_COLON;
@@ -27,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
+import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.Channel;
+import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
@@ -79,6 +83,9 @@ public class SqrlBrowserFacingOperations {
 	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest servletRequest,
 			final HttpServletResponse response, final int qrCodeSizeInPixels)
 					throws SqrlException {
+		if (!isLogging()) {
+			initLogging(Channel.FRONT, "prepLogin", servletRequest);
+		}
 		final URI backchannelUri = configOperations.buildBackchannelRequestUrl(servletRequest);
 		final StringBuilder urlBuf = new StringBuilder(backchannelUri.toString().length() + 100);
 		urlBuf.append(backchannelUri.toString());
@@ -100,6 +107,7 @@ public class SqrlBrowserFacingOperations {
 			// Store the url in the server parrot value so it will be there when the SQRL client makes the request
 			final Date expiryTime = new Date(System.currentTimeMillis() + (1000 * config.getNutValidityInSeconds()));
 			final SqrlCorrelator sqrlCorrelator = sqrlPersistence.createCorrelator(correlator, expiryTime);
+			setLoggingField(LogField.COR, sqrlCorrelator.getCorrelatorString());
 			final Map<String, String> transientAuthDataTable = sqrlCorrelator.getTransientAuthDataTable();
 			transientAuthDataTable.put(SqrlConstants.TRANSIENT_NAME_SERVER_PARROT, SqrlUtil.sqrlBase64UrlEncode(url));
 			transientAuthDataTable.put(SqrlConstants.TRANSIENT_ENTRY_URL, buildEntryPointUrl(servletRequest));

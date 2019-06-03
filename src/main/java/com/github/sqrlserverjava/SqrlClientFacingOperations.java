@@ -99,8 +99,9 @@ public class SqrlClientFacingOperations {
 			final HttpServletResponse servletResponse) throws IOException {
 		initLogging(SQRLBC, "handleSqrl", servletRequest);
 		try {
+			final String[] paramsForLogging = buildParamArrayForLogging(servletRequest);
 			logger.info(
-					formatForLogging("Processing SQRL request with params", buildParamArrayForLogging(servletRequest)));
+					formatForLogging("Processing SQRL request with params", paramsForLogging));
 			SqrlUtil.debugHeaders(servletRequest);
 			String correlator = "unknown";
 			final SqrlTifResponseBuilder tifBuilder = new SqrlTifResponseBuilder();
@@ -183,9 +184,10 @@ public class SqrlClientFacingOperations {
 				}
 				sqrlPersistence.closeCommit();
 				transmitReplyToSqrlClient(servletResponse, serverReplyString);
-				logger.info(formatForLogging("SQRL request processing complete"), "requestState", requestState, "tif",
+				logger.info(formatForLogging("SQRL client request processing complete"), "requestState", requestState,
+						"tif",
 						tif.toHexStringWith0x(), "serverReplyString",
-						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString));
+						SqrlUtil.base64UrlDecodeToStringOrErrorMessage(serverReplyString), paramsForLogging);
 			} catch (final SqrlException | RuntimeException e) {
 				sqrlPersistence.closeRollback();
 				logger.error(
@@ -359,7 +361,9 @@ public class SqrlClientFacingOperations {
 		if (ipsMatched) {
 			tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);
 		} else if (!sqrlClientRequest.getOptList().contains(SqrlRequestOpt.noiptest)) {
-			throw new SqrlException("Client did not sent noiptest opt and IPs did not match: " + mismatchDetail.get());
+			// TODO: delete this logic? shouldn't the SQRL client allow the user to decide if mismatched IPs is OK?
+			// throw new SqrlException("Client did not sent noiptest opt and IPs did not match: " +
+			// mismatchDetail.get());
 		}
 	}
 }
