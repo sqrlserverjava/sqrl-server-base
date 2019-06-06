@@ -111,21 +111,9 @@ public class SqrlClientRequestLoggingUtil { // TODO: rename
 			return "";
 		}
 	};
-	@Deprecated // TODO: delete
-	private static final ThreadLocal<String> threadLocalLogHeader = new ThreadLocal<String>() {
-		@Override
-		protected String initialValue() {
-			return "";
-		}
-	};
-
 
 	/**
 	 * Internal use only.
-	 *
-	 * @param logDataToAdd
-	 *            the data to be appended to the current log header
-	 * @return the updated logHeader for convience
 	 */
 	public static String formatForException(final Object... messageStringPartArray) {
 		final String message = SqrlUtil.buildString(messageStringPartArray);
@@ -304,34 +292,6 @@ public class SqrlClientRequestLoggingUtil { // TODO: rename
 			}
 		}
 		return nameValueParamList.toArray(new String[nameValueParamList.size()]);
-	}
-
-	/**
-	 * @deprecated
-	 */
-	@Deprecated // TODO: delete
-	public static String updateLogHeader(final CharSequence logDataToAdd) {
-		final String currentLogHeader = threadLocalLogHeader.get();
-		final String updatedLogHeader = new StringBuilder(currentLogHeader.length() + logDataToAdd.length() + 1)
-				.append(currentLogHeader).append(" ").append(logDataToAdd).toString();
-		threadLocalLogHeader.set(updatedLogHeader);
-		return updatedLogHeader;
-	}
-
-	/**
-	 * @deprecated
-	 */
-	@Deprecated // TODO: delete
-	public static void clearLogHeader() {
-		threadLocalLogHeader.remove();
-	}
-
-	/**
-	 * @deprecated
-	 */
-	@Deprecated // TODO: delete
-	public static String getLogHeader() {
-		return threadLocalLogHeader.get();
 	}
 
 	public static void setSqrlConfig(final SqrlConfig sqrlConfig) {

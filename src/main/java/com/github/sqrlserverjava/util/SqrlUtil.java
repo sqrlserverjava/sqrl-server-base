@@ -376,20 +376,6 @@ public class SqrlUtil {
 	}
 
 	/**
-	 * @deprecated
-	 */
-	@Deprecated // TODO: delete
-	public static String buildLogMessageForSqrlClientRequest(final HttpServletRequest request) {
-		final StringBuilder buf = new StringBuilder(500);
-		buf.append("sqrlClientOnRequest ");
-		buf.append(SqrlClientRequestLoggingUtil.getLogHeader()).append("params: ");
-		for (final Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
-			buf.append(entry.getKey()).append("=").append(Arrays.toString(entry.getValue())).append("   ");
-		}
-		return buf.toString();
-	}
-
-	/**
 	 * Convenience method which concatenates the given objects into a String in an efficient manner using a
 	 * {@link StringBuilder} or similar object
 	 * 

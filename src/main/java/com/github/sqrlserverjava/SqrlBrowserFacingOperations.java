@@ -1,4 +1,6 @@
 package com.github.sqrlserverjava;
+
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.initLogging;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.isLogging;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.setLoggingField;
@@ -28,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.Channel;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
@@ -136,8 +137,8 @@ public class SqrlBrowserFacingOperations {
 			// the reverse proxy may introduce port 443 for SSL, remove it since it is redudant
 			entryPointString = entryPointString.replace(":443", "");
 
-			logger.debug("{}buildEntryPointUrl resulted in {} from {} ", SqrlClientRequestLoggingUtil.getLogHeader(),
-					entryPointString, originalEntryPointString);
+			logger.debug(formatForLogging("buildEntryPointUrl resulted in {} from {} ", entryPointString,
+					originalEntryPointString));
 			return entryPointString;
 		} catch (final URISyntaxException | MalformedURLException e) {
 			throw new SqrlException(e, "Error computing currentRequestBrowserFacingUri");

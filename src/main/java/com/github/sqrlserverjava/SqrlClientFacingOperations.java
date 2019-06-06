@@ -101,7 +101,7 @@ public class SqrlClientFacingOperations {
 		try {
 			final String[] paramsForLogging = buildParamArrayForLogging(servletRequest);
 			logger.info(
-					formatForLogging("Processing SQRL request with params", paramsForLogging));
+					formatForLogging("Processing SQRL request with params", (Object[]) paramsForLogging));
 			SqrlUtil.debugHeaders(servletRequest);
 			String correlator = "unknown";
 			final SqrlTifResponseBuilder tifBuilder = new SqrlTifResponseBuilder();
@@ -229,7 +229,6 @@ public class SqrlClientFacingOperations {
 	private String buildReply(final HttpServletRequest servletRequest, final SqrlClientRequest sqrlRequest,
 			final SqrlTifResponse tif, final SqrlCorrelator sqrlCorrelator, final SqrlInternalUserState sqrlInternalUserState,
 			final boolean isInErrorState) throws SqrlException {
-		final String logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		final SqrlPersistence sqrlPersistence = createSqrlPersistence();
 		try {
 			final URI sqrlServerUrl = new URI(servletRequest.getRequestURL().toString());

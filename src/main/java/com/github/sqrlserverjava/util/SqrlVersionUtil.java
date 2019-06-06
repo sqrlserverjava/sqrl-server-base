@@ -1,5 +1,7 @@
 package com.github.sqrlserverjava.util;
 
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -8,8 +10,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
 
 public class SqrlVersionUtil {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlVersionUtil.class);
@@ -38,7 +38,7 @@ public class SqrlVersionUtil {
 		try {
 			return Optional.of(Integer.parseInt(intString));
 		} catch (final NumberFormatException  e) {
-			logger.error("{}Version parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(), intString);
+			logger.error(formatForLogging("Version parsing failed for '", intString, "'"));
 			return Optional.empty();
 		}
 	}
@@ -54,21 +54,19 @@ public class SqrlVersionUtil {
 		final List<Integer> dataList = new ArrayList<>();
 		final String[] partArray = versionRangeString.split("-");
 		if (partArray.length != 2) {
-			logger.error("{}Version range parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(), versionRangeString);
+			logger.error(formatForLogging("Version range parsing failed for '{}'", versionRangeString));
 		} else {
 			final Optional<Integer> min = parseToInteger(partArray[0]);
 			final Optional<Integer> max = parseToInteger(partArray[1]);
 			if (!min.isPresent() || !max.isPresent()) {
-				logger.error("{}Version range parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(),
-						versionRangeString);
+				logger.error(formatForLogging("Version range parsing failed for '", versionRangeString, "'"));
 				return dataList; // dataList is empty
 			}
 			final int compared = min.get().compareTo(max.get());
 			if (compared == 0) {
 				dataList.add(min.get());
 			} else if (compared > 0) {
-				logger.error("{}Version range parsing failed for '{}'", SqrlClientRequestLoggingUtil.getLogHeader(),
-						versionRangeString);
+				logger.error(formatForLogging("Version range parsing failed for '", versionRangeString, "'"));
 			} else {
 				for (int i = min.get(); i < max.get() + 1; i++) {
 					dataList.add(i);
