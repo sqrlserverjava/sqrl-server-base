@@ -218,8 +218,9 @@ public class SqrlClientFacingOperations {
 		}
 		if (now > nutExpiryMs) {
 			throw new SqrlClientRequestProcessingException(SqrlTifFlag.TRANSIENT_ERROR, null,
-					"Nut expired by ", (nutExpiryMs - now), "ms, nut timetamp ms=TODO, expiry is set to ",
-					config.getNutValidityInSeconds(), " seconds");
+					"Nut expired by ", Long.toString((nutExpiryMs - now)),
+					"ms, nut timetamp ms=TODO, expiry is set to ",
+					Long.toString(config.getNutValidityInSeconds()), " seconds");
 		}
 		// Mark the token as used since we will process this request
 		sqrlPersistence.markTokenAsUsed(nut.asEncryptedBase64(), nutExpiry);
@@ -362,8 +363,7 @@ public class SqrlClientFacingOperations {
 			tifBuilder.addFlag(SqrlTifFlag.IPS_MATCHED);
 		} else if (!sqrlClientRequest.getOptList().contains(SqrlRequestOpt.noiptest)) {
 			// TODO: delete this logic? shouldn't the SQRL client allow the user to decide if mismatched IPs is OK?
-			// throw new SqrlException("Client did not sent noiptest opt and IPs did not match: " +
-			// mismatchDetail.get());
+			throw new SqrlException("Client did not sent noiptest opt and IPs did not match: " + mismatchDetail.get());
 		}
 	}
 }

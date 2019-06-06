@@ -36,9 +36,9 @@ public class SqrlNutTokenFactory {
 		// Factory
 	}
 
-	public static SqrlNutToken unmarshal(String nutTokenString, SqrlConfigOperations configOperations)
+	public static SqrlNutToken unmarshal(final String nutTokenString, final SqrlConfigOperations configOperations)
 			throws SqrlClientRequestProcessingException {
-		byte[] tokenBytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(nutTokenString);
+		final byte[] tokenBytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(nutTokenString);
 
 		int formatIdOfNutToken = -1;
 		if (tokenBytes.length == 16) {
@@ -65,16 +65,16 @@ public class SqrlNutTokenFactory {
 			return new SqrlNutTokenEmbedded(configOperations, nutTokenString);
 		} else {
 			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, null,
-					"Cant create SqrlNutToken with formatid=", formatIdOfNutToken);
+					"Cant create SqrlNutToken with formatid=", Integer.toString(formatIdOfNutToken));
 		}
 	}
 
-	public static SqrlNutToken buildNut(SqrlConfig config, SqrlConfigOperations configOperations, URI backchannelUri,
-			InetAddress browserIPAddress) throws SqrlException {
+	public static SqrlNutToken buildNut(final SqrlConfig config, final SqrlConfigOperations configOperations, final URI backchannelUri,
+			final InetAddress browserIPAddress) throws SqrlException {
 		if(formatToUse < 0) {
 			formatToUse = config.getSqrlNutTokenFormat();
 		}
-		
+
 		if(formatToUse == SqrlNutTokenLegacyFormat.FORMAT_ID) {
 			return new SqrlNutTokenLegacyFormat(browserIPAddress, configOperations, System.currentTimeMillis());
 		} else if (formatToUse == SqrlNutTokenSingleBlockFormat.FORMAT_ID) {
@@ -83,8 +83,8 @@ public class SqrlNutTokenFactory {
 			// TODO: will have to perform additional refactoring to make use of these fields
 			// for now use dummy values so we represent the possible size of the real data (even though we will likely
 			// reduce it)
-			String dummyCorrelator = "";
-			String dummyLoginUrl = "1";
+			final String dummyCorrelator = "";
+			final String dummyLoginUrl = "1";
 			return new SqrlNutTokenEmbedded(browserIPAddress, configOperations, System.currentTimeMillis(),
 					dummyCorrelator, dummyLoginUrl);
 		} else {

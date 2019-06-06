@@ -13,11 +13,11 @@ import com.github.sqrlserverjava.backchannel.SqrlTifResponse;
 public class SqrlInvalidRequestException extends SqrlClientRequestProcessingException {
 	private static final long serialVersionUID = -1136919442400493773L;
 
-	public SqrlInvalidRequestException(final Object... messagePartArray) {
+	public SqrlInvalidRequestException(final CharSequence... messagePartArray) {
 		this(null, messagePartArray);
 	}
 
-	public SqrlInvalidRequestException(final Throwable cause, Object... messagePartArray) {
+	public SqrlInvalidRequestException(final Throwable cause, final CharSequence... messagePartArray) {
 		super(SqrlTifFlag.CLIENT_FAILURE, cause, messagePartArray);
 	}
 

@@ -116,7 +116,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 			final byte[] cipherbytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(sqBase64EncryptedNut);
 			cleartextBytes = cipher.doFinal(cipherbytes);
 		} catch (final GeneralSecurityException e) {
-			throw new SqrlInvalidRequestException("Error during nut decryption for " + sqBase64EncryptedNut, e);
+			throw new SqrlInvalidRequestException(e, "Error during nut decryption for ", sqBase64EncryptedNut);
 		}
 
 		try (final ByteArrayInputStream bais = new ByteArrayInputStream(cleartextBytes);
@@ -139,8 +139,9 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 
 	private void verifyFormatId(final int formatIdFromEncoded) throws SqrlClientRequestProcessingException {
 		if (formatIdFromEncoded != FORMAT_ID) {
-			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, null,
-					"Nut format ID mismatch, expected ", FORMAT_ID, " but found ", formatIdFromEncoded);
+			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED.toString(),
+					"Nut format ID mismatch, expected ", Integer.toString(FORMAT_ID), " but found ",
+					Integer.toString(formatIdFromEncoded));
 		}
 	}
 

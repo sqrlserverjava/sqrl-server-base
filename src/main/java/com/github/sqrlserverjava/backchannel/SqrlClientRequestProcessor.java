@@ -1,5 +1,6 @@
 package com.github.sqrlserverjava.backchannel;
 
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.IDK_EXISTS;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.NONE_EXIST;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.PIDK_EXISTS;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
 import com.github.sqrlserverjava.SqrlServerOperations;
+import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
@@ -24,14 +26,12 @@ import com.github.sqrlserverjava.exception.SqrlClientRequestProcessingException;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.exception.SqrlInvalidRequestException;
 import com.github.sqrlserverjava.persistence.SqrlCorrelator;
-
 public class SqrlClientRequestProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(SqrlServerOperations.class);
 
 	private final SqrlClientRequest		sqrlClientRequest;
 	private final String				sqrlIdk;
 	private final SqrlRequestCommand	command;
-	private final String				logHeader;
 	private final String				correlator;
 	private final SqrlPersistence		sqrlPersistence;
 	private final SqrlConfig			sqrlconfig;
@@ -41,8 +41,6 @@ public class SqrlClientRequestProcessor {
 	public SqrlClientRequestProcessor(final SqrlClientRequest sqrlClientRequest,
 			final SqrlPersistence sqrlPersistence, final SqrlConfig sqrlConfig) throws SqrlInvalidRequestException {
 		super();
-		// Cache the logHeader since we use it a lot and it won't change here
-		this.logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		this.sqrlPersistence = sqrlPersistence;
 		this.sqrlClientRequest = sqrlClientRequest;
 		this.sqrlconfig = sqrlConfig;
@@ -80,8 +78,7 @@ public class SqrlClientRequestProcessor {
 			final boolean clientValue = sqrlClientRequest.getOptList().contains(opt);
 			final boolean dbValue = sqrlPersistence.fetchSqrlFlagForIdentity(sqrlIdk, flag);
 			if (clientValue != dbValue) { // update it
-				logger.debug("{}Updating SQRL flag {} from {} to {}", logHeader, opt, dbValue,
-						clientValue);
+				logger.debug(formatForLogging("Updating SQRL opt flag ", opt, " from ", dbValue, " to ", clientValue));
 				sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, flag, clientValue);
 				// TODO_AUDIT, client updated value to clientSet
 			}
@@ -118,8 +115,8 @@ public class SqrlClientRequestProcessor {
 
 		// What's left is unknown or unsupported to us
 		if (!unsupportedOpList.isEmpty()) {
-			logger.info("process=back detail=\"The SQRL client option(s) are not yet supported by the library: {}\"",
-					logHeader, unsupportedOpList);
+			logger.info(formatForLogging("SQRL client sent OPT that are not yet supported by the library: ",
+					unsupportedOpList));
 		}
 
 	}
@@ -140,10 +137,10 @@ public class SqrlClientRequestProcessor {
 					sqrlPersistence.setSqrlFlagForIdentity(sqrlIdk, SqrlIdentityFlag.SQRL_AUTH_ENABLED, true);
 				} else {
 					throw new SqrlInvalidRequestException(
-							logHeader + "Request was to enable SQRL but didn't contain urs signature");
+							"Request was to enable SQRL but didn't contain urs signature");
 				}
 			} else {
-				logger.warn("{}Received request to ENABLE but it already is", logHeader);
+				logger.debug(formatForLogging("Received request to ENABLE sqrl for user but it already is"));
 			}
 			return;
 		case DISABLE:
@@ -153,14 +150,13 @@ public class SqrlClientRequestProcessor {
 			if (sqrlClientRequest.containsUrs()) {
 				sqrlPersistence.deleteSqrlIdentity(sqrlIdk);
 			} else {
-				throw new SqrlInvalidRequestException(
-						logHeader + "Request was to remove SQRL but didn't contain urs signature");
+				throw new SqrlInvalidRequestException("Request was to remove SQRL but didn't contain urs signature");
 			}
 			return;
 		default:
 			// This should have been handled prior to here
-			throw new SqrlClientRequestProcessingException(
-					logHeader + "Don't know how to process SQRL command " + command);
+			throw new SqrlClientRequestProcessingException("Don't know how to process SQRL command ",
+					command.toString());
 		}
 	}
 
@@ -176,15 +172,14 @@ public class SqrlClientRequestProcessor {
 			sqrlInternalUserState = SqrlInternalUserState.DISABLED;
 		} else if (sqrlInternalUserState == SqrlInternalUserState.PIDK_EXISTS) {
 			sqrlPersistence.updateIdkForSqrlIdentity(sqrlClientRequest.getKey(pidk), sqrlIdk);
-			logger.info("{}User SQRL authenticated, updating idk={} and to replace pidk",
-					logHeader, sqrlIdk);
+			logger.info(formatForLogging("User SQRL authenticated, replacing pidk with idk", LogField.IDK, sqrlIdk));
 			// TODO_AUDIT
 		} else if (sqrlInternalUserState == SqrlInternalUserState.IDK_EXISTS) {
 			// TODO_AMBIGUOUS: do we really overwrite existing data, or only if they are new?
 			sqrlPersistence.storeSqrlDataForSqrlIdentity(sqrlIdk, sqrlClientRequest.getKeysToBePersisted());
 			sqrlInternalUserState = SqrlInternalUserState.IDK_EXISTS;
 			// TODO_AUDIT
-			logger.info("{}User SQRL authenticated idk={}", logHeader, sqrlIdk);
+			logger.info(formatForLogging("User SQRL authenticated", LogField.IDK, sqrlIdk));
 		}
 		final boolean cpsRequested = sqrlClientRequest.getOptList().contains(SqrlRequestOpt.cps);
 		if (cpsRequested) {

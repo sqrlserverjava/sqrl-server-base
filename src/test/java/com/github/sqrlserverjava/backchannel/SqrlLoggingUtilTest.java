@@ -18,6 +18,9 @@ public class SqrlLoggingUtilTest {
 		SqrlClientRequestLoggingUtil.HEADER_FIELD_ORDER.stream().forEach(f -> fullFieldList.remove(f));
 		SqrlClientRequestLoggingUtil.FOOTER_FIELD_ORDER.stream().forEach(f -> fullFieldList.remove(f));
 
-		assertTrue("Fields not being logged: " + fullFieldList, fullFieldList.isEmpty());
+		assertTrue(
+				"Need to add the following to SqrlClientRequestLoggingUtil.HEADER_FIELD_ORDER or FOOTER_FIELD_ORDER: "
+						+ fullFieldList,
+				fullFieldList.isEmpty());
 	}
 }

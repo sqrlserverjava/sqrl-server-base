@@ -12,14 +12,14 @@ public class SqrlInvalidDataException extends SqrlException {
 	/**
 	 * {@inheritDoc}
 	 */
-	public SqrlInvalidDataException(final Throwable e, final Object... messageStringPartArray) {
+	public SqrlInvalidDataException(final Throwable e, final CharSequence... messageStringPartArray) {
 		super(e, messageStringPartArray);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public SqrlInvalidDataException(final Object... messageStringPartArray) {
+	public SqrlInvalidDataException(final CharSequence... messageStringPartArray) {
 		this(null, messageStringPartArray);
 	}
 }

@@ -1,5 +1,8 @@
 package com.github.sqrlserverjava.backchannel;
 
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.setLoggingField;
+
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.Collection;
@@ -16,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.SqrlConfigOperations;
 import com.github.sqrlserverjava.SqrlPersistence;
+import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlClientParam;
@@ -43,8 +47,6 @@ public class SqrlClientRequest {
 
 	private static final String NUT_EQUALS = "nut=";
 
-	private final String logHeader;
-
 	private final Integer				negotiatedSqrlProtocolVersion;
 	private final SqrlNutToken						nut;
 	private final SqrlRequestCommand	clientCommand;
@@ -59,10 +61,11 @@ public class SqrlClientRequest {
 
 	public SqrlClientRequest(final HttpServletRequest servletRequest, final SqrlPersistence persistence,
 			final SqrlConfigOperations configOps) throws SqrlClientRequestProcessingException {
-		this.logHeader = SqrlClientRequestLoggingUtil.getLogHeader();
 		this.servletRequest = servletRequest;
 		this.clientParam = getRequiredParameter(servletRequest, "client");
+		setLoggingField(LogField.CLIENT_PARAM, clientParam);
 		this.serverParam = getRequiredParameter(servletRequest, "server");
+		setLoggingField(LogField.SERVER_PARAM, serverParam);
 		this.nut = SqrlNutTokenFactory.unmarshal(extractFromSqrlCsvString(serverParam, NUT_EQUALS), configOps);
 		final String decoded = SqrlUtil.base64UrlDecodeDataFromSqrlClientToString(clientParam);
 		// parse server - not a name value pair, just the query string we gave
@@ -93,12 +96,14 @@ public class SqrlClientRequest {
 				try {
 					final SqrlRequestOpt clientOpt = SqrlRequestOpt.valueOf(optString);
 					if(!optList.add(clientOpt)) {
-						logger.warn("{}Client sent opt {} more than once in clientParam of {}", logHeader, clientOpt, clientParam);
+						logger.debug(formatForLogging("Client sent opt ", clientOpt, " more than once in clientParam",
+								clientOpt));
 					}
 				} catch (final IllegalArgumentException e) {
-					throw new SqrlInvalidRequestException("Unknown SQRL client option '" + optString + "'", e);
+					throw new SqrlInvalidRequestException(e, "Unknown SQRL client option '", optString, "'");
 				}
 			}
+			setLoggingField(LogField.OPT_LIST, optList.toString());
 		}
 
 		// parse keys
@@ -126,7 +131,7 @@ public class SqrlClientRequest {
 				requestKeyTableBase64.put(keyType, keyBase64);
 			}
 		}
-		logger.debug("{}keys found in request: {}", logHeader, requestKeyTableBase64.keySet());
+		logger.debug(formatForLogging("keys found in request: {}", requestKeyTableBase64.keySet()));
 
 		// Per the SQRL spec, since the server response is not signed, we must check the value that comes
 		// back to ensure it wasn't tampered with
@@ -136,8 +141,8 @@ public class SqrlClientRequest {
 			throw new SqrlInvalidRequestException("Server parrot was not found in persistence");
 		}
 		if (!expectedServerValue.equals(serverParam)) {
-			logger.warn("{}Server parrot mismatch: Expected={}, Received={}", logHeader, expectedServerValue,
-					serverParam);
+			logger.warn(formatForLogging("Server parrot mismatch: Expected={}, Received={}", expectedServerValue,
+					serverParam));
 			throw new SqrlInvalidRequestException("Server parrot mismatch, possible tampering");
 		}
 
@@ -158,7 +163,7 @@ public class SqrlClientRequest {
 		// All requests must have the ids signature
 		if (!idsFound) {
 			throw new SqrlInvalidRequestException(
-					"ids was missing in SQRL client request: " + clientNameValuePairTable);
+					"ids was missing in SQRL client request: ", clientNameValuePairTable.toString());
 		}
 
 		final String clientCommandString = clientNameValuePairTable.get(SqrlClientParam.cmd.toString());
@@ -166,10 +171,8 @@ public class SqrlClientRequest {
 			this.clientCommand = SqrlRequestCommand.valueOf(clientCommandString.toUpperCase());
 		} catch (final IllegalArgumentException e) {
 			// We handle all SQRL v1 verbs, so don't set FUNCTIONS_NOT_SUPPORTED, treat it as an invalid
-			// request
-			// instead
-			throw new SqrlInvalidRequestException(
-					logHeader + "Recevied invalid SQRL command from client: '" + clientCommandString + "'");
+			// request instead
+			throw new SqrlInvalidRequestException("Recevied invalid SQRL command from client: '" ,clientCommandString ,"'");
 		}
 	}
 
@@ -193,7 +196,7 @@ public class SqrlClientRequest {
 			SqrlSanitize.inspectIncomingSqrlData(value);
 		} catch (final SqrlInvalidDataException e) {
 			// Convert to SqrlInvalidRequestException since it came from a SQRL client app
-			throw new SqrlInvalidRequestException(e.getMessage(), e);
+			throw new SqrlInvalidRequestException(e, e.getMessage());
 		}
 		return value;
 	}
@@ -225,7 +228,7 @@ public class SqrlClientRequest {
 			SqrlSanitize.inspectIncomingSqrlData(value);
 		} catch (final SqrlInvalidDataException e) {
 			// Convert to SqrlInvalidRequestException since it came from a SQRL client app
-			throw new SqrlInvalidRequestException(e.getMessage(), e);
+			throw new SqrlInvalidRequestException(e, e.getMessage());
 		}
 		return value;
 	}
@@ -237,19 +240,17 @@ public class SqrlClientRequest {
 		try {
 			final byte[] publicKey = requestKeyTableRaw.get(keyName);
 			if (publicKey == null) {
-				throw new SqrlInvalidRequestException(
-						SqrlClientRequestLoggingUtil.getLogHeader() + keyName + " not found in client param: " + clientParam);
+				throw new SqrlInvalidRequestException(keyName.toString(), " not found in client param: ", clientParam);
 			}
 			final byte[] messageBytes = (clientParam + serverParam).getBytes();
 			final boolean isSignatureValid = SqrlUtil.verifyED25519(signatureFromMessage, messageBytes, publicKey);
 			if (!isSignatureValid) {
-				throw new SqrlInvalidRequestException(
-						SqrlClientRequestLoggingUtil.getLogHeader() + "Signature for " + keyName + " was invalid");
+				throw new SqrlInvalidRequestException("Signature for ", keyName.toString(), " was invalid");
 			}
 		} catch (final SqrlInvalidRequestException e) {
 			throw e;
 		} catch (final Exception e) {
-			throw new SqrlInvalidRequestException("Error computing signature for " + keyName, e);
+			throw new SqrlInvalidRequestException(e, "Error computing signature for ", keyName.toString());
 		}
 	}
 
@@ -269,7 +270,7 @@ public class SqrlClientRequest {
 			}
 			return table;
 		} catch (final Exception e) {
-			throw new SqrlInvalidRequestException("Exception parsing decoded <" + decoded + ">", e);
+			throw new SqrlInvalidRequestException(e, "Exception parsing decoded <", decoded, ">");
 		}
 	}
 

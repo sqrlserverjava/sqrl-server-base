@@ -108,7 +108,7 @@ public class SqrlUtil {
 		try {
 			return base64UrlDecode(toDecodeParam);
 		} catch (final SqrlException e) {
-			throw new SqrlInvalidRequestException(e.getMessage(), e.getCause());
+			throw new SqrlInvalidRequestException(e, e.getMessage());
 		}
 	}
 
@@ -142,7 +142,7 @@ public class SqrlUtil {
 		try {
 			return base64UrlDecodeToString(toDecode);
 		} catch (final SqrlException e) {
-			throw new SqrlInvalidRequestException(e.getMessage(), e.getCause());
+			throw new SqrlInvalidRequestException(e, e.getMessage());
 		}
 	}
 

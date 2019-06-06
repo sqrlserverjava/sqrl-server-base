@@ -31,7 +31,7 @@ public class SqrlConfigHelperTest {
 		final SqrlConfig sqrlConfig = SqrlConfigHelper.loadFromClasspath();
 		assertNotNull(sqrlConfig);
 		assertEquals("sqrlbc", sqrlConfig.getBackchannelServletPath());
-		byte[] expectedAesKeyBytes = Base64.getDecoder().decode("DhMncY4ErDcLRfwfyeN02Q==".getBytes(SqrlConstants.UTF8_CHARSET)); 
+		final byte[] expectedAesKeyBytes = Base64.getDecoder().decode("DhMncY4ErDcLRfwfyeN02Q==".getBytes(SqrlConstants.UTF8_CHARSET)); 
 		assertEquals("DhMncY4ErDcLRfwfyeN02Q==", sqrlConfig.getAesKeyBase64());
 		// Verify defaults are in effect since they were not defined in XML
 		assertNull(sqrlConfig.getClientAuthStateUpdaterClass());  // Will be null at first, set later
@@ -44,7 +44,7 @@ public class SqrlConfigHelperTest {
 		assertEquals(15, sqrlConfig.getCleanupTaskExecInMinutes());
 		assertEquals(500, sqrlConfig.getAuthSyncCheckInMillis());
 		assertEquals("/sqrllogin", sqrlConfig.getSqrlLoginServletPath());
-		assertEquals(false, sqrlConfig.isEnableCps());
+		assertEquals(true, sqrlConfig.isEnableCps());
 		assertEquals("sqrlcorrelator", sqrlConfig.getCorrelatorCookieName());
 		assertEquals("sqrlfirstnut", sqrlConfig.getFirstNutCookieName());
 		assertNull(sqrlConfig.getCookieDomain()); // Will be null at first, set later
@@ -52,7 +52,7 @@ public class SqrlConfigHelperTest {
 	}
 
 	// TODO: test all default values are loaded
-	
+
 	@Test
 	public void testLoadAll() throws Throwable {
 		final SqrlConfig sqrlConfig = SqrlConfigHelper.loadFromClasspath("sqrlConfigAll.xml");
@@ -60,7 +60,7 @@ public class SqrlConfigHelperTest {
 
 		// Check data		
 		assertEquals("sqrlbc", sqrlConfig.getBackchannelServletPath());
-		byte[] expectedAesKeyBytes = Base64.getDecoder().decode("oYqoDiWZiODUW2eJ5y8dNA==".getBytes(SqrlConstants.UTF8_CHARSET)); 
+		final byte[] expectedAesKeyBytes = Base64.getDecoder().decode("oYqoDiWZiODUW2eJ5y8dNA==".getBytes(SqrlConstants.UTF8_CHARSET)); 
 		assertEquals("oYqoDiWZiODUW2eJ5y8dNA==", sqrlConfig.getAesKeyBase64());
 		assertEquals("com.me.MyClientAuthStateUpdaterClass", sqrlConfig.getClientAuthStateUpdaterClass());
 		assertEquals(300, sqrlConfig.getNutValidityInSeconds());
@@ -77,18 +77,18 @@ public class SqrlConfigHelperTest {
 		assertEquals("sauth.me.com", sqrlConfig.getCookieDomain());
 		assertEquals("/sauth", sqrlConfig.getCookiePath());
 	}
-	
+
 	@Test
 	public void testLoadMultipleXForwardedForHeaders() throws Throwable {
 		final SqrlConfig sqrlConfig = SqrlConfigHelper.loadFromClasspath("sqrlConfigHeaders.xml");
 		assertNotNull(sqrlConfig);
 		assertEquals(2, sqrlConfig.getIpForwardedForHeader().length);
 		assertEquals(Arrays.toString(new String[] {"one", "two"}), Arrays.toString(sqrlConfig.getIpForwardedForHeader()));
-		
+
 		assertEquals(2, sqrlConfig.getIpForwardedForHeaderList().size());
 		assertEquals(Arrays.asList(new String[] {"one", "two"}), sqrlConfig.getIpForwardedForHeaderList());
 	}
-	
+
 	@Test
 	public void testNotFound() throws Throwable {
 		try {

@@ -122,7 +122,7 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 			final byte[] cipherbytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(sqBase64EncryptedNut);
 			cleartextBytes = cipher.doFinal(cipherbytes);
 		} catch (final GeneralSecurityException e) {
-			throw new SqrlInvalidRequestException("Error during nut decryption for " + sqBase64EncryptedNut, e);
+			throw new SqrlInvalidRequestException(e, "Error during nut decryption for " + sqBase64EncryptedNut);
 		}
 
 		try (final ByteArrayInputStream bais = new ByteArrayInputStream(cleartextBytes);

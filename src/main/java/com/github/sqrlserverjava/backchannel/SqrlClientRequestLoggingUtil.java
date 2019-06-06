@@ -3,12 +3,16 @@ package com.github.sqrlserverjava.backchannel;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CHANNEL;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_COMMAND;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_IP;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_PARAM;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.COR;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.IDK;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.OPT_LIST;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.POLL_BROWSER_STATE;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.POLL_TRANSPORT;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.POLL_UUID;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.PROCESS;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.PROTOCOL_VERSION;
+import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.SERVER_PARAM;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.SQRL_AGENT;
 import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.USER_AGENT;
 
@@ -36,7 +40,7 @@ import com.github.sqrlserverjava.util.SqrlUtil;
  * @author Dave Badia
  *
  */
-public class SqrlClientRequestLoggingUtil {
+public class SqrlClientRequestLoggingUtil { // TODO: rename
 	private static final Logger logger = LoggerFactory.getLogger(SqrlClientRequestLoggingUtil.class);
 	private static final boolean LOG_EMPTY_FIELDS = false;
 	private static SqrlConfig sqrlConfig = null;
@@ -57,7 +61,11 @@ public class SqrlClientRequestLoggingUtil {
 		CLIENT_COMMAND("command"),
 		PROTOCOL_VERSION("protover"),
 		POLL_TRANSPORT("polltransport"),
-		POLL_BROWSER_STATE("pollstate"),
+		POLL_BROWSER_STATE("pollstate"), 
+		IDK("idk"),
+		CLIENT_PARAM("clientParam"),
+		SERVER_PARAM("serverParam"),
+		OPT_LIST("optList"),
 		;
 
 		private String logFormat;
@@ -77,8 +85,7 @@ public class SqrlClientRequestLoggingUtil {
 	// Visible for unit testing
 	protected static List<LogField> FOOTER_FIELD_ORDER = Collections
 			.unmodifiableList(Arrays.asList(POLL_BROWSER_STATE, USER_AGENT, CLIENT_IP, SQRL_AGENT, POLL_TRANSPORT,
-					POLL_UUID,
-					PROTOCOL_VERSION));
+					POLL_UUID, PROTOCOL_VERSION, IDK, OPT_LIST, CLIENT_PARAM, SERVER_PARAM));
 
 	private SqrlClientRequestLoggingUtil() {
 		// util class
@@ -136,15 +143,18 @@ public class SqrlClientRequestLoggingUtil {
 	 *            additional field=value pairs. Expected to be even in size
 	 * @return
 	 */
-	public static String formatForLogging(final CharSequence message, final String... additionalFieldPairs) {
+	public static String formatForLogging(final CharSequence message, final Object... additionalFieldPairs) {
 		final StringBuilder buf = new StringBuilder(300 + message.length());
 		buf.append(tlHeader.get());
 		buf.append(" message=\"").append(message).append("\"");
 		for (int i = 0; i < additionalFieldPairs.length; i += 2) {
-			final String name = additionalFieldPairs[i];
+			String name = "null";
+			if (additionalFieldPairs[i] != null) {
+				name = additionalFieldPairs[i].toString();
+			}
 			final boolean hasValue = i + 1 < additionalFieldPairs.length;
 			if (hasValue) {
-				append(buf, additionalFieldPairs[i], additionalFieldPairs[i + 1]);
+				append(buf, name, additionalFieldPairs[i + 1]);
 			} else {
 				// Just log the first item on it's own
 				buf.append(name);
@@ -260,10 +270,14 @@ public class SqrlClientRequestLoggingUtil {
 		append(buf, field.logformat(), value);
 	}
 
-	private static void append(final StringBuilder buf, final String field, final String valueParam) {
-		if (SqrlUtil.isNotBlank(valueParam)) {
+	private static void append(final StringBuilder buf, final String field, final Object valueParam) {
+		String stringValue = "null";
+		if (valueParam != null) {
+			stringValue = valueParam.toString();
+		}
+		if (SqrlUtil.isNotBlank(stringValue)) {
 			// Replace double quote with single quotes
-			final String value = valueParam.replace("\"", "\\\"");
+			final String value = stringValue.replace("\"", "\\\"");
 			buf.append(" ").append(field).append("=");
 			if (value.contains(" ")) {
 				buf.append("\"").append(value).append("\"");

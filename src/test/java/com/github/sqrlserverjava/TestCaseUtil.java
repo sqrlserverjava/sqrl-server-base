@@ -63,6 +63,7 @@ public class TestCaseUtil {
 		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
 		// set AES key to all zeros for test cases
 		config.setAesKeyBase64(AES_TEST_KEY);
+		config.setCpsCancelUri("www.google.com");
 
 		return config;
 	}
@@ -80,8 +81,15 @@ public class TestCaseUtil {
 		// If we didn't set a secure random, SecureRandom.getInstance will be called
 		// which would slow down most of our test cases for no good reason
 		config.setSecureRandom(new TestSecureRandom(null));
+		config.setCpsCancelUri("www.google.com");
 
 		return config;
+	}
+
+	public static SqrlConfig buildTestSqrlConfig(final boolean enableCps) {
+		final SqrlConfig sqrlConfig = buildTestSqrlConfig();
+		sqrlConfig.setEnableCps(enableCps);
+		return sqrlConfig;
 	}
 
 	public static void setupSqrlPersistence(final String correlatorFromServerParam, final String serverParam)
@@ -125,8 +133,8 @@ public class TestCaseUtil {
 	 * @throws URISyntaxException
 	 */
 	public static MockHttpServletRequest buildMockRequest(final String requestUrl, final String mockDataParams,
-			String requestIpOnServletRequest)
-			throws URISyntaxException {
+			final String requestIpOnServletRequest)
+					throws URISyntaxException {
 		final MockHttpServletRequest mockRequest = buildMockRequest(requestUrl);
 		for (final String nameValuePair : mockDataParams.split("&")) {
 			final String[] parts = nameValuePair.split("=");
@@ -176,7 +184,7 @@ public class TestCaseUtil {
 		return TestCaseSqrlNutHelper.buildValidSqrlNut(timestamp, config);
 	}
 
-	public static SqrlConfigOperations buildSqrlConfigOperations(SqrlConfig config) {
+	public static SqrlConfigOperations buildSqrlConfigOperations(final SqrlConfig config) {
 		return new SqrlConfigOperations(config);
 	}
 
@@ -228,7 +236,7 @@ public class TestCaseUtil {
 	}
 
 	public static String sqrlBase64UrlEncode(final byte[] bytes) {
-		String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8_CHARSET);
+		final String encoded = new String(Base64.getUrlEncoder().encode(bytes), SqrlConstants.UTF8_CHARSET);
 		return encoded;
 	}
 

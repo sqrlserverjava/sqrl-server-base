@@ -103,7 +103,8 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 				base64UrlEncryptedNut);
 		// Now we know the aad data was not modified
 		if(formatId != FORMAT_ID) {
-			throw new SqrlClientRequestProcessingException(null, "Nut token contained incorrect formatId=", formatId, " expected ", FORMAT_ID);
+			throw new SqrlClientRequestProcessingException("Nut token contained incorrect formatId=",
+					Integer.toString(formatId), " expected ", Integer.toString(FORMAT_ID));
 		}
 		final String jsonString = new String(plainText, SqrlConstants.UTF8_CHARSET);
 		logger.debug("after decryption jsonString={}", jsonString);

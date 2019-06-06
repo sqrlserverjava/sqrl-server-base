@@ -12,8 +12,8 @@ import com.github.sqrlserverjava.util.SqrlUtil;
 public class SqrlException extends Exception {
 	private static final long serialVersionUID = -693580346221526789L;
 
-	public SqrlException(final Throwable e, final Object... messagePartArray) {
-		super(SqrlClientRequestLoggingUtil.formatForException(messagePartArray), e);
+	public SqrlException(final Throwable e, final CharSequence... messagePartArray) {
+		super(SqrlClientRequestLoggingUtil.formatForException((Object[]) messagePartArray), e);
 	}
 
 	/**
@@ -23,11 +23,12 @@ public class SqrlException extends Exception {
 		this(null, messagePartArray);
 	}
 
-	static String buildMessageWithHeader(final Object[] originalArray, final CharSequence header) {
+	// TODO: is this used?
+	static String buildMessageWithHeader(final CharSequence[] originalArray, final CharSequence header) {
 		final int originalArrayLength = originalArray.length;
-		final Object[] newArray = new Object[originalArrayLength + 1];
+		final CharSequence[] newArray = new CharSequence[originalArrayLength + 1];
 		newArray[0] = header;
 		System.arraycopy(originalArray, 0, newArray, 1, originalArrayLength);
-		return SqrlUtil.buildString(newArray);
+		return SqrlUtil.buildString((Object[]) newArray);
 	}
 }

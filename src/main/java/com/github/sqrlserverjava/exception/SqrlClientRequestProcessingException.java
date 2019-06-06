@@ -12,7 +12,7 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	private static final long serialVersionUID = -7986435707384269525L;
 	private final SqrlTifFlag			tifFlagToAdd;
 
-	public SqrlClientRequestProcessingException(final Object... messagePartArray) {
+	public SqrlClientRequestProcessingException(final CharSequence... messagePartArray) {
 		// The caller does not wish to set an extra tif, so just re-use COMMAND_FAILED which is always added on a
 		// failure
 		this(SqrlTifFlag.COMMAND_FAILED, null, messagePartArray);
@@ -23,7 +23,7 @@ public class SqrlClientRequestProcessingException extends SqrlException {
 	 * @param tifToAdd
 	 */
 	public SqrlClientRequestProcessingException(final SqrlTifFlag tifToAdd, final Throwable cause,
-			final Object... messagePartArray) {
+			final CharSequence... messagePartArray) {
 		super(cause, messagePartArray);
 		this.tifFlagToAdd = tifToAdd;
 	}
