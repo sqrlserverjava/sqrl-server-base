@@ -253,11 +253,6 @@ public class SqrlClientRequestLoggingUtil { // TODO: rename
 		append(buf, field.logformat(), tlDataTable.get().get(field));
 	}
 
-	@Deprecated // TODO: delete
-	private static void append(final StringBuilder buf, final LogField field, final String value) {
-		append(buf, field.logformat(), value);
-	}
-
 	private static void append(final StringBuilder buf, final String field, final Object valueParam) {
 		String stringValue = "null";
 		if (valueParam != null) {

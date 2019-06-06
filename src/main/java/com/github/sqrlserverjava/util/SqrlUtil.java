@@ -246,7 +246,7 @@ public class SqrlUtil {
 		return buf.toString();
 	}
 
-	// TODO: delete
+	// TODO: delete - need to decide on cookies first
 	public static Cookie createOrUpdateCookie(final HttpServletRequest request, final String cookieDomain,
 			final String name, final String value, final int maxAgeInSeconds, final SqrlConfig config) {
 		Cookie cookie = findCookie(request, name);
