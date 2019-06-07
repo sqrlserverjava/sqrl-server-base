@@ -108,13 +108,6 @@ public class SqrlConfig {
 	private SqrlQrCodeImageFormat qrCodeImageFormat = SqrlQrCodeImageFormat.PNG;
 
 	/**
-	 * The SQRL Server Friendly Name
-	 * 
-	 * Default: the hostname of the site
-	 */
-	private String serverFriendlyName;
-
-	/**
 	 * The secureRandom instance that is used to generate various random tokens; defaults to
 	 * {@link SecureRandom#SecureRandom()}. Can only be set via setter, not by config file
 	 * 
@@ -454,17 +447,6 @@ public class SqrlConfig {
 		this.secureRandom = secureRandom;
 	}
 
-
-	@XmlElement(required = false)
-	public String getServerFriendlyName() {
-		return serverFriendlyName;
-	}
-
-	// TODO: delete this since it is no longer part of the spec
-	public void setServerFriendlyName(final String serverFriendlyName) {
-		this.serverFriendlyName = serverFriendlyName;
-	}
-
 	/**
 	 * The system time is certainly not part of our config, but this
 	 * provides an easy way for test cases to hardcode a time to 
@@ -518,11 +500,6 @@ public class SqrlConfig {
 		this.sqrlDomainExtensionSpecifierUriCount = sqrlDomainExtensionSpecifierUriCount;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -542,8 +519,6 @@ public class SqrlConfig {
 		result = prime * result + (int) (nutValidityInMillis ^ (nutValidityInMillis >>> 32));
 		result = prime * result + nutValidityInSeconds;
 		result = prime * result + ((qrCodeImageFormat == null) ? 0 : qrCodeImageFormat.hashCode());
-		result = prime * result + ((secureRandom == null) ? 0 : secureRandom.hashCode());
-		result = prime * result + ((serverFriendlyName == null) ? 0 : serverFriendlyName.hashCode());
 		result = prime * result + sqrlDomainExtensionSpecifierUriCount;
 		result = prime * result + ((sqrlLoginServletPath == null) ? 0 : sqrlLoginServletPath.hashCode());
 		result = prime * result + sqrlNutTokenFormat;
@@ -551,11 +526,6 @@ public class SqrlConfig {
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -643,20 +613,6 @@ public class SqrlConfig {
 			return false;
 		}
 		if (qrCodeImageFormat != other.qrCodeImageFormat) {
-			return false;
-		}
-		if (secureRandom == null) {
-			if (other.secureRandom != null) {
-				return false;
-			}
-		} else if (!secureRandom.equals(other.secureRandom)) {
-			return false;
-		}
-		if (serverFriendlyName == null) {
-			if (other.serverFriendlyName != null) {
-				return false;
-			}
-		} else if (!serverFriendlyName.equals(other.serverFriendlyName)) {
 			return false;
 		}
 		if (sqrlDomainExtensionSpecifierUriCount != other.sqrlDomainExtensionSpecifierUriCount) {

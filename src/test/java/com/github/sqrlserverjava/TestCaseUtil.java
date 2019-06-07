@@ -50,7 +50,6 @@ public class TestCaseUtil {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public static final SqrlConfig buildTestSqrlConfig(final String nutString) throws Exception {
 		final SqrlConfig config = new TCSqrlConfig(System.currentTimeMillis());
 		// Set SqrlServerOperations counter to generate the expected value
@@ -59,7 +58,6 @@ public class TestCaseUtil {
 		// config.setSecureRandom(new TestSecureRandom(buffer.array())); // TODO: fix or remove?
 		config.setSecureRandom(new TestSecureRandom(null));
 
-		config.setServerFriendlyName("SFN is DEPRECATED");
 		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
 		// set AES key to all zeros for test cases
 		config.setAesKeyBase64(AES_TEST_KEY);
@@ -68,12 +66,10 @@ public class TestCaseUtil {
 		return config;
 	}
 
-	@SuppressWarnings("deprecation") // test cases can use deprecated TestSecureRandom
 	public static final SqrlConfig buildTestSqrlConfig() {
 		final SqrlServiceExecutor executor = new SqrlServiceExecutor();
 		executor.contextInitialized(null);
 		final SqrlConfig config = new SqrlConfig();
-		config.setServerFriendlyName("Dave Test");
 		config.setBackchannelServletPath("http://127.0.0.1:8080/sqrlbc");
 		// set AES key to all zeros for test cases
 		config.setAesKeyBase64(AES_TEST_KEY);

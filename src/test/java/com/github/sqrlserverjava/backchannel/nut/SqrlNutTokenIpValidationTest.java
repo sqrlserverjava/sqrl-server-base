@@ -8,7 +8,7 @@ import com.github.sqrlserverjava.TestCaseUtil;
 
 public class SqrlNutTokenIpValidationTest {
 	private SqrlConfig		config		= TestCaseUtil.buildTestSqrlConfig();
-	private SqrlPersistence	persistence	= null;
+	private SqrlPersistence persistence = null;
 
 	@Before
 	public void setup() throws Exception {

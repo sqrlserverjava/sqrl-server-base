@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 
 import javax.xml.bind.JAXBContext;
@@ -19,7 +18,6 @@ import org.junit.Test;
 import com.github.sqrlserverjava.enums.SqrlQrCodeImageFormat;
 import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
 import com.github.sqrlserverjava.util.SqrlConfigHelper;
-import com.github.sqrlserverjava.util.SqrlConstants;
 
 import junitx.framework.ObjectAssert;
 import junitx.framework.StringAssert;
@@ -31,8 +29,6 @@ public class SqrlConfigHelperTest {
 		final SqrlConfig sqrlConfig = SqrlConfigHelper.loadFromClasspath();
 		assertNotNull(sqrlConfig);
 		assertEquals("sqrlbc", sqrlConfig.getBackchannelServletPath());
-		final byte[] expectedAesKeyBytes = Base64.getDecoder().decode("DhMncY4ErDcLRfwfyeN02Q==".getBytes(SqrlConstants.UTF8_CHARSET)); 
-		assertEquals("DhMncY4ErDcLRfwfyeN02Q==", sqrlConfig.getAesKeyBase64());
 		// Verify defaults are in effect since they were not defined in XML
 		assertNull(sqrlConfig.getClientAuthStateUpdaterClass());  // Will be null at first, set later
 		assertEquals(900, sqrlConfig.getNutValidityInSeconds());
@@ -60,7 +56,6 @@ public class SqrlConfigHelperTest {
 
 		// Check data		
 		assertEquals("sqrlbc", sqrlConfig.getBackchannelServletPath());
-		final byte[] expectedAesKeyBytes = Base64.getDecoder().decode("oYqoDiWZiODUW2eJ5y8dNA==".getBytes(SqrlConstants.UTF8_CHARSET)); 
 		assertEquals("oYqoDiWZiODUW2eJ5y8dNA==", sqrlConfig.getAesKeyBase64());
 		assertEquals("com.me.MyClientAuthStateUpdaterClass", sqrlConfig.getClientAuthStateUpdaterClass());
 		assertEquals(300, sqrlConfig.getNutValidityInSeconds());
