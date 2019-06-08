@@ -1,7 +1,7 @@
 package com.github.sqrlserverjava.backchannel;
 
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.setLoggingField;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.formatForLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.setLoggingField;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.SqrlConfigOperations;
 import com.github.sqrlserverjava.SqrlPersistence;
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.LoggingUtil.LogField;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken0;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlClientParam;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
@@ -48,7 +48,7 @@ public class SqrlClientRequest {
 	private static final String NUT_EQUALS = "nut=";
 
 	private final Integer				negotiatedSqrlProtocolVersion;
-	private final SqrlNutToken						nut;
+	private final SqrlNutToken0						nut;
 	private final SqrlRequestCommand	clientCommand;
 	private final Map<SqrlServerSideKey, byte[]>	requestKeyTableRaw			= new ConcurrentHashMap<>();
 	private final Map<SqrlServerSideKey, String>	requestKeyTableBase64	= new ConcurrentHashMap<>();
@@ -193,7 +193,7 @@ public class SqrlClientRequest {
 					+ ".  Request contained: " + SqrlUtil.buildRequestParamList(servletRequest));
 		}
 		try {
-			SqrlSanitize.inspectIncomingSqrlData(value);
+			SqrlSanitize.inspectIncomingData(value);
 		} catch (final SqrlInvalidDataException e) {
 			// Convert to SqrlInvalidRequestException since it came from a SQRL client app
 			throw new SqrlInvalidRequestException(e, e.getMessage());
@@ -225,7 +225,7 @@ public class SqrlClientRequest {
 			value = value.substring(0, index);
 		}
 		try {
-			SqrlSanitize.inspectIncomingSqrlData(value);
+			SqrlSanitize.inspectIncomingData(value);
 		} catch (final SqrlInvalidDataException e) {
 			// Convert to SqrlInvalidRequestException since it came from a SQRL client app
 			throw new SqrlInvalidRequestException(e, e.getMessage());
@@ -278,7 +278,7 @@ public class SqrlClientRequest {
 		return clientCommand;
 	}
 
-	public SqrlNutToken getNut() {
+	public SqrlNutToken0 getNut() {
 		return nut;
 	}
 

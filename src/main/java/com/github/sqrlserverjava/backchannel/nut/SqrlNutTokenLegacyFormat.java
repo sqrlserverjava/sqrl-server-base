@@ -44,7 +44,7 @@ import com.github.sqrlserverjava.util.SqrlUtil;
  * @deprecated SqrlNutTokenEmbedded is preferred
  */
 @Deprecated
-public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
+public class SqrlNutTokenLegacyFormat extends SqrlNutToken0 {
 	private static final Logger			logger				= LoggerFactory.getLogger(SqrlNutTokenLegacyFormat.class);
 	private static final int			IPV6_TO_PACK_BYTES	= 4;
 	private static final AtomicInteger	COUNTER				= new AtomicInteger(0);
@@ -263,7 +263,7 @@ public class SqrlNutTokenLegacyFormat extends SqrlNutToken {
 	 * always be 0000.
 	 *
 	 * @return the millis time at which the Nut token was created with <b>second precision</b>. For example, if
-	 *         {@link SqrlNutToken#Nut(int, SqrlConfig, int, long, int)} was called with a timestamp of
+	 *         {@link SqrlNutToken0#Nut(int, SqrlConfig, int, long, int)} was called with a timestamp of
 	 *         <code>1463948680679</code>, then this would return <code>1463948680000</code>
 	 *
 	 */

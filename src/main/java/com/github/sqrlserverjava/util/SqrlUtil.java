@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.SqrlConfig;
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
+import com.github.sqrlserverjava.backchannel.LoggingUtil;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.exception.SqrlInvalidRequestException;
 
@@ -432,7 +432,7 @@ public class SqrlUtil {
 			}
 			buf.append(" ");
 		}
-		logger.debug(SqrlClientRequestLoggingUtil.formatForLogging("requestHeaders=[{}]"), buf.toString().trim());
+		logger.debug(LoggingUtil.formatForLogging("requestHeaders=[{}]"), buf.toString().trim());
 	}
 
 	public static InetAddress findClientIpAddress(final HttpServletRequest servletRequest, final SqrlConfig config)

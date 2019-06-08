@@ -1,6 +1,6 @@
 package com.github.sqrlserverjava.exception;
 
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
+import com.github.sqrlserverjava.backchannel.LoggingUtil;
 import com.github.sqrlserverjava.util.SqrlUtil;
 
 /**
@@ -13,7 +13,7 @@ public class SqrlException extends Exception {
 	private static final long serialVersionUID = -693580346221526789L;
 
 	public SqrlException(final Throwable e, final CharSequence... messagePartArray) {
-		super(SqrlClientRequestLoggingUtil.formatForException((Object[]) messagePartArray), e);
+		super(LoggingUtil.formatForException((Object[]) messagePartArray), e);
 	}
 
 	/**

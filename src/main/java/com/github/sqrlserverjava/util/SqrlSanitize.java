@@ -20,7 +20,7 @@ public class SqrlSanitize {
 	 * @throws SqrlInvalidDataException
 	 *             if data validation fails
 	 */
-	public static void inspectIncomingSqrlData(final String data) throws SqrlInvalidDataException {
+	public static void inspectIncomingData(final String data) throws SqrlInvalidDataException {
 		if (SqrlUtil.isBlank(data)) {
 			return;
 		}

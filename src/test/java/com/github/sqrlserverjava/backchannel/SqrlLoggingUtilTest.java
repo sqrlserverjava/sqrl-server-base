@@ -8,15 +8,15 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
+import com.github.sqrlserverjava.backchannel.LoggingUtil.LogField;
 
 public class SqrlLoggingUtilTest {
 	@Test
 	public void testAllFieldsLogged() {
 		final List<LogField> fullFieldList = new ArrayList<>(Arrays.asList(LogField.values()));
 
-		SqrlClientRequestLoggingUtil.HEADER_FIELD_ORDER.stream().forEach(f -> fullFieldList.remove(f));
-		SqrlClientRequestLoggingUtil.FOOTER_FIELD_ORDER.stream().forEach(f -> fullFieldList.remove(f));
+		LoggingUtil.HEADER_FIELD_ORDER.stream().forEach(f -> fullFieldList.remove(f));
+		LoggingUtil.FOOTER_FIELD_ORDER.stream().forEach(f -> fullFieldList.remove(f));
 
 		assertTrue(
 				"Need to add the following to SqrlClientRequestLoggingUtil.HEADER_FIELD_ORDER or FOOTER_FIELD_ORDER: "

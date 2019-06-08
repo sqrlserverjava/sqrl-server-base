@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken0;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.exception.SqrlPersistenceException;
@@ -158,7 +158,7 @@ public interface SqrlPersistence {
 	 * Check persistence to see if this token has already been used
 	 *
 	 * @param nutTokenString
-	 *            the {@link SqrlNutToken} token in base64url format as received from the client the token sent by the
+	 *            the {@link SqrlNutToken0} token in base64url format as received from the client the token sent by the
 	 *            SQRL client in the request
 	 * @return true if the token was already used, false if not
 	 */
@@ -166,11 +166,11 @@ public interface SqrlPersistence {
 
 	/**
 	 * Mark the given token as used in persistence. After this call, any subsequent calls to
-	 * {@link #hasTokenBeenUsed(SqrlNutToken)} must return true for this token until expiryTime. Once the expiryTime has
+	 * {@link #hasTokenBeenUsed(SqrlNutToken0)} must return true for this token until expiryTime. Once the expiryTime has
 	 * been reached, persistence cleanup can occur and this token can be deleted from persistence
 	 *
 	 * @param nutTokenString
-	 *            the {@link SqrlNutToken} token in base64url format as received from the client
+	 *            the {@link SqrlNutToken0} token in base64url format as received from the client
 	 * @param expiryTime
 	 *            the time at which this token can safely be deleted from persistence since it will fail timestamp
 	 *            validation

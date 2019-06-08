@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.github.sqrlserverjava.backchannel.SqrlClientRequest;
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken0;
 import com.github.sqrlserverjava.backchannel.nut.TestCaseSqrlNutHelper;
 import com.github.sqrlserverjava.enums.SqrlRequestCommand;
 import com.github.sqrlserverjava.enums.SqrlRequestOpt;
@@ -165,17 +165,17 @@ public class TestCaseUtil {
 		return mockRequest;
 	}
 
-	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config) throws Exception {
+	public static SqrlNutToken0 buildValidSqrlNut(final SqrlConfig config) throws Exception {
 		return buildValidSqrlNut(config, System.currentTimeMillis());
 	}
 
-	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config, final LocalDateTime nutIssuedAt)
+	public static SqrlNutToken0 buildValidSqrlNut(final SqrlConfig config, final LocalDateTime nutIssuedAt)
 			throws Exception {
 		final long timestamp = nutIssuedAt.toEpochSecond(ZoneOffset.UTC);
 		return TestCaseSqrlNutHelper.buildValidSqrlNut(timestamp, config);
 	}
 
-	public static SqrlNutToken buildValidSqrlNut(final SqrlConfig config, final long timestamp)
+	public static SqrlNutToken0 buildValidSqrlNut(final SqrlConfig config, final long timestamp)
 			throws Exception {
 		return TestCaseSqrlNutHelper.buildValidSqrlNut(timestamp, config);
 	}

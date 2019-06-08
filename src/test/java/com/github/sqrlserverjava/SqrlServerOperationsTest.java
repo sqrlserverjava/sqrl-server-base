@@ -34,7 +34,7 @@ public class SqrlServerOperationsTest {
 		// Generate the login page data
 		final MockHttpServletRequest loginPageRequest = TestCaseUtil.buildMockRequest(loginRequestUrl);
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
-		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
+		final AuthPageData authPageData = sqrlServerOps.browserFacingOperations()
 				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse,
 				250);
 		assertNotNull(authPageData);

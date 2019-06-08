@@ -1,6 +1,6 @@
 package com.github.sqrlserverjava.backchannel;
 
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.formatForLogging;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.IDK_EXISTS;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.NONE_EXIST;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.PIDK_EXISTS;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlPersistence;
 import com.github.sqrlserverjava.SqrlServerOperations;
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
+import com.github.sqrlserverjava.backchannel.LoggingUtil.LogField;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlIdentityFlag;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;

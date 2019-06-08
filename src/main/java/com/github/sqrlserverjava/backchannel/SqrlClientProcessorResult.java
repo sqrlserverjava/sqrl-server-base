@@ -14,7 +14,6 @@ public class SqrlClientProcessorResult {
 	private SqrlInternalUserState sqrlInternalUserState = SqrlInternalUserState.NONE_EXIST;
 	private final Map<String, String> replyDataTable = new ConcurrentHashMap<>();
 
-
 	void addDataToReply(final String name, final String value) {
 		final String oldValue = replyDataTable.get(name);
 		if (oldValue != null) {

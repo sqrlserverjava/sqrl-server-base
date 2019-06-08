@@ -1,9 +1,9 @@
 package com.github.sqrlserverjava;
 
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.initLogging;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.isLogging;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.setLoggingField;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.formatForLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.initLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.isLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.setLoggingField;
 import static com.github.sqrlserverjava.enums.SqrlAuthenticationStatus.AUTHENTICATED_CPS;
 import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTPS_COLON;
 import static com.github.sqrlserverjava.util.SqrlConstants.SCHEME_HTTP_COLON;
@@ -30,9 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.Channel;
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField;
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.LoggingUtil.Channel;
+import com.github.sqrlserverjava.backchannel.LoggingUtil.LogField;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken0;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlClientParam;
@@ -54,14 +54,14 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
  * @author Dave Badia
  *
  */
-public class SqrlBrowserFacingOperations {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlBrowserFacingOperations.class);
+public class BrowserFacingOperations {
+	private static final Logger logger = LoggerFactory.getLogger(BrowserFacingOperations.class);
 
 	private final SqrlConfig config;
 	private final SqrlConfigOperations configOperations;
 
 
-	public SqrlBrowserFacingOperations(final SqrlConfig config, final SqrlConfigOperations configOperations) {
+	public BrowserFacingOperations(final SqrlConfig config, final SqrlConfigOperations configOperations) {
 		if (config == null) {
 			throw new IllegalArgumentException("SqrlConfig object must not be null", null);
 		}
@@ -81,7 +81,7 @@ public class SqrlBrowserFacingOperations {
 	 * @throws SqrlException
 	 *             if an error occurs
 	 */
-	public SqrlAuthPageData prepareSqrlAuthPageData(final HttpServletRequest servletRequest,
+	public AuthPageData prepareSqrlAuthPageData(final HttpServletRequest servletRequest,
 			final HttpServletResponse response, final int qrCodeSizeInPixels)
 					throws SqrlException {
 		if (!isLogging()) {
@@ -92,7 +92,7 @@ public class SqrlBrowserFacingOperations {
 		urlBuf.append(backchannelUri.toString());
 		final InetAddress userInetAddress = SqrlUtil.findClientIpAddress(servletRequest, config);
 		// Now we append the nut and our SFN
-		final SqrlNutToken nut = SqrlNutTokenFactory.buildNut(config, configOperations, backchannelUri,
+		final SqrlNutToken0 nut = SqrlNutTokenFactory.buildNut(config, configOperations, backchannelUri,
 				userInetAddress);
 		final String base64Nut = nut.asEncryptedBase64();
 		urlBuf.append("?nut=").append(base64Nut);
@@ -123,7 +123,7 @@ public class SqrlBrowserFacingOperations {
 					config.getFirstNutCookieName(), base64Nut, config.getNutValidityInSeconds(), config)); // TODO: do
 			// we need
 			// this?
-			return new SqrlAuthPageData(url, qrBaos, nut, correlator);
+			return new AuthPageData(url, qrBaos, nut, correlator);
 		}
 	}
 
@@ -197,7 +197,7 @@ public class SqrlBrowserFacingOperations {
 			throw new SqrlException(
 					"firstNutCookie with name " + config.getFirstNutCookieName() + " was not found on http request");
 		}
-		final SqrlNutToken nut = SqrlNutTokenFactory.unmarshal(nutTokenString, configOperations);
+		final SqrlNutToken0 nut = SqrlNutTokenFactory.unmarshal(nutTokenString, configOperations);
 		return nut.computeExpiresAt(config);
 	}
 

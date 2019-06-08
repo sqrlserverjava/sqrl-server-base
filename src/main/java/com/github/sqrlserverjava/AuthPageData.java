@@ -2,7 +2,7 @@ package com.github.sqrlserverjava;
 
 import java.io.ByteArrayOutputStream;
 
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken0;
 
 /**
  * Encapsulates the SQRL related data that needs to be displayed for a SQRL login to occur
@@ -10,13 +10,13 @@ import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
  * @author Dave Badia
  *
  */
-public class SqrlAuthPageData {
+public class AuthPageData {
 	private final String				url;
 	private final ByteArrayOutputStream	qrBaos;
-	private final SqrlNutToken			nut;
+	private final SqrlNutToken0			nut;
 	private final String				correlator;
 
-	public SqrlAuthPageData(final String url, final ByteArrayOutputStream qrBaos, final SqrlNutToken nut,
+	public AuthPageData(final String url, final ByteArrayOutputStream qrBaos, final SqrlNutToken0 nut,
 			final String correlator) {
 		this.url = url;
 		this.qrBaos = qrBaos;
@@ -32,7 +32,7 @@ public class SqrlAuthPageData {
 		return qrBaos;
 	}
 
-	public SqrlNutToken getNut() {
+	public SqrlNutToken0 getNut() {
 		return nut;
 	}
 

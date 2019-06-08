@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.util.SelfExpiringHashMap;
 
-public class SqrlAuthStateMonitor implements Runnable {
-	private static final Logger logger = LoggerFactory.getLogger(SqrlAuthStateMonitor.class);
+public class AuthStateMonitor implements Runnable {
+	private static final Logger logger = LoggerFactory.getLogger(AuthStateMonitor.class);
 
 	private final SqrlClientAuthStateUpdater			clientAuthStateUpdater;
 	private final SqrlServerOperations					sqrlServerOperations;
@@ -21,7 +21,7 @@ public class SqrlAuthStateMonitor implements Runnable {
 	 */
 	private final Map<String, SqrlAuthenticationStatus>	monitorTable;
 
-	public SqrlAuthStateMonitor(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations,
+	public AuthStateMonitor(final SqrlConfig sqrlConfig, final SqrlServerOperations sqrlServerOperations,
 			final SqrlClientAuthStateUpdater clientAuthStateUpdater) {
 		this.clientAuthStateUpdater = clientAuthStateUpdater;
 		this.sqrlServerOperations = sqrlServerOperations;

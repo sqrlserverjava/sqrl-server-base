@@ -36,7 +36,7 @@ public class SqrlNutTokenFactory {
 		// Factory
 	}
 
-	public static SqrlNutToken unmarshal(final String nutTokenString, final SqrlConfigOperations configOperations)
+	public static SqrlNutToken0 unmarshal(final String nutTokenString, final SqrlConfigOperations configOperations)
 			throws SqrlClientRequestProcessingException {
 		final byte[] tokenBytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(nutTokenString);
 
@@ -46,7 +46,7 @@ public class SqrlNutTokenFactory {
 			formatIdOfNutToken = 0;
 		} else {
 			// Newer token, extract the format ID to determine how to parse it
-			formatIdOfNutToken = SqrlNutToken.buildFormatId(tokenBytes[0]);
+			formatIdOfNutToken = SqrlNutToken0.buildFormatId(tokenBytes[0]);
 		}
 		if (formatIdOfNutToken == -1) {
 			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, null,
@@ -59,17 +59,17 @@ public class SqrlNutTokenFactory {
 
 		if(SqrlNutTokenLegacyFormat.FORMAT_ID == formatIdOfNutToken) {
 			return new SqrlNutTokenLegacyFormat(configOperations, nutTokenString);
-		}else if(SqrlNutTokenSingleBlockFormat.FORMAT_ID == formatIdOfNutToken) {
-			return new SqrlNutTokenSingleBlockFormat(configOperations, nutTokenString);
-		}else if(SqrlNutTokenEmbedded.FORMAT_ID == formatIdOfNutToken) {
-			return new SqrlNutTokenEmbedded(configOperations, nutTokenString);
+		}else if(SqrlNutToken1SingleBlockFormat.FORMAT_ID == formatIdOfNutToken) {
+			return new SqrlNutToken1SingleBlockFormat(configOperations, nutTokenString);
+		}else if(SqrlNutToken2Embedded.FORMAT_ID == formatIdOfNutToken) {
+			return new SqrlNutToken2Embedded(configOperations, nutTokenString);
 		} else {
 			throw new SqrlClientRequestProcessingException(SqrlTifFlag.COMMAND_FAILED, null,
 					"Cant create SqrlNutToken with formatid=", Integer.toString(formatIdOfNutToken));
 		}
 	}
 
-	public static SqrlNutToken buildNut(final SqrlConfig config, final SqrlConfigOperations configOperations, final URI backchannelUri,
+	public static SqrlNutToken0 buildNut(final SqrlConfig config, final SqrlConfigOperations configOperations, final URI backchannelUri,
 			final InetAddress browserIPAddress) throws SqrlException {
 		if(formatToUse < 0) {
 			formatToUse = config.getSqrlNutTokenFormat();
@@ -77,15 +77,15 @@ public class SqrlNutTokenFactory {
 
 		if(formatToUse == SqrlNutTokenLegacyFormat.FORMAT_ID) {
 			return new SqrlNutTokenLegacyFormat(browserIPAddress, configOperations, System.currentTimeMillis());
-		} else if (formatToUse == SqrlNutTokenSingleBlockFormat.FORMAT_ID) {
-			return new SqrlNutTokenSingleBlockFormat(browserIPAddress, configOperations, System.currentTimeMillis());
-		} else if (formatToUse == SqrlNutTokenEmbedded.FORMAT_ID) {
+		} else if (formatToUse == SqrlNutToken1SingleBlockFormat.FORMAT_ID) {
+			return new SqrlNutToken1SingleBlockFormat(browserIPAddress, configOperations, System.currentTimeMillis());
+		} else if (formatToUse == SqrlNutToken2Embedded.FORMAT_ID) {
 			// TODO: will have to perform additional refactoring to make use of these fields
 			// for now use dummy values so we represent the possible size of the real data (even though we will likely
 			// reduce it)
 			final String dummyCorrelator = "";
 			final String dummyLoginUrl = "1";
-			return new SqrlNutTokenEmbedded(browserIPAddress, configOperations, System.currentTimeMillis(),
+			return new SqrlNutToken2Embedded(browserIPAddress, configOperations, System.currentTimeMillis(),
 					dummyCorrelator, dummyLoginUrl);
 		} else {
 			throw new SqrlException("Unknown SqrlNutToken format ID of ", Integer.toString(formatToUse));

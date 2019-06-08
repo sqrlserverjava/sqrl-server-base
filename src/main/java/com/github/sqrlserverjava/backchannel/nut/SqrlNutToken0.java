@@ -10,7 +10,7 @@ import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.util.SqrlUtil;
 
-public abstract class SqrlNutToken {
+public abstract class SqrlNutToken0 {
 	/**
 	 * @return the encrypted, base64 representation of this token
 	 */

@@ -1,13 +1,13 @@
 package com.github.sqrlserverjava;
 
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.buildParamArrayForLogging;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.initLogging;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.setLoggingField;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.Channel.SQRLBC;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_COMMAND;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.COR;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.PROTOCOL_VERSION;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.buildParamArrayForLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.formatForLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.initLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.setLoggingField;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.Channel.SQRLBC;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.CLIENT_COMMAND;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.COR;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.PROTOCOL_VERSION;
 import static com.github.sqrlserverjava.enums.SqrlAuthenticationStatus.AUTHENTICATED_CPS;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.DISABLED;
 import static com.github.sqrlserverjava.enums.SqrlInternalUserState.IDK_EXISTS;
@@ -36,12 +36,12 @@ import org.slf4j.LoggerFactory;
 
 import com.github.sqrlserverjava.backchannel.SqrlClientReply;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequest;
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
+import com.github.sqrlserverjava.backchannel.LoggingUtil;
 import com.github.sqrlserverjava.backchannel.SqrlClientRequestProcessor;
 import com.github.sqrlserverjava.backchannel.SqrlTifFlag;
 import com.github.sqrlserverjava.backchannel.SqrlTifResponse;
 import com.github.sqrlserverjava.backchannel.SqrlTifResponse.SqrlTifResponseBuilder;
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken0;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenFactory;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.enums.SqrlInternalUserState;
@@ -196,19 +196,19 @@ public class SqrlClientFacingOperations {
 						e);
 			}
 		} finally {
-			SqrlClientRequestLoggingUtil.cleanup();
+			LoggingUtil.cleanup();
 		}
 	}
 
 	/**
-	 * Validates the {@link SqrlNutToken} from the {@link SqrlClientRequest} by:<br/>
+	 * Validates the {@link SqrlNutToken0} from the {@link SqrlClientRequest} by:<br/>
 	 * <li>1. check the timestamp embedded in the Nut has expired
 	 * <li>2. call {@link SqrlPersistence} to see if the Nut has been replayed
 	 * 
 	 * @throws SqrlClientRequestProcessingException
 	 *             if any validation fails or if persistence fails
 	 */
-	private void validateNut(final String correlator, final SqrlNutToken nut, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
+	private void validateNut(final String correlator, final SqrlNutToken0 nut, final SqrlConfig config, final SqrlPersistence sqrlPersistence)
 			throws SqrlClientRequestProcessingException {
 		final long nutExpiryMs = nut.computeExpiresAt(config);
 		final long now = System.currentTimeMillis();
@@ -241,7 +241,7 @@ public class SqrlClientFacingOperations {
 						Collections.emptyMap());
 			} else {
 				// Nut is one time use, so generate a new one for the reply
-				final SqrlNutToken replyNut = SqrlNutTokenFactory.buildNut(config, configOperations,
+				final SqrlNutToken0 replyNut = SqrlNutTokenFactory.buildNut(config, configOperations,
 						sqrlServerUrl, SqrlUtil.findClientIpAddress(servletRequest, config));
 
 				final Map<String, String> additionalDataTable = buildReplyAdditionalDataTable(sqrlRequest,
@@ -353,7 +353,7 @@ public class SqrlClientFacingOperations {
 		}
 	}
 
-	private void validateIpsMatch(final SqrlNutToken nut, final HttpServletRequest servletRequest,
+	private void validateIpsMatch(final SqrlNutToken0 nut, final HttpServletRequest servletRequest,
 			final SqrlTifResponseBuilder tifBuilder, final SqrlClientRequest sqrlClientRequest) throws SqrlException {
 		final InetAddress clientIpAddress = SqrlUtil.findClientIpAddress(servletRequest, config);
 		final Optional<String> mismatchDetail = nut.compareSqrlClientInetAddress(clientIpAddress, config);

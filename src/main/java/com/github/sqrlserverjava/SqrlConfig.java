@@ -10,10 +10,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken;
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenEmbedded;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken0;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken2Embedded;
 import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenLegacyFormat;
-import com.github.sqrlserverjava.backchannel.nut.SqrlNutTokenSingleBlockFormat;
+import com.github.sqrlserverjava.backchannel.nut.SqrlNutToken1SingleBlockFormat;
 import com.github.sqrlserverjava.enums.SqrlQrCodeImageFormat;
 import com.github.sqrlserverjava.persistence.SqrlJpaPersistenceFactory;
 
@@ -49,7 +49,7 @@ public class SqrlConfig {
 	private String backchannelServletPath;
 
 	/**
-	 * REQUIRED: The base64 encoded 16 byte AES key used to encrypt {@link SqrlNutToken}
+	 * REQUIRED: The base64 encoded 16 byte AES key used to encrypt {@link SqrlNutToken0}
 	 */
 	private String aesKeyBase64;
 
@@ -187,9 +187,9 @@ public class SqrlConfig {
 	 * The format ID to use when generating the SQRL nut token<br/> 
 	 * Default: 2
 	 * 
-	 * @see SqrlNutTokenEmbedded
+	 * @see SqrlNutToken2Embedded
 	 * @see SqrlNutTokenLegacyFormat
-	 * @see SqrlNutTokenSingleBlockFormat
+	 * @see SqrlNutToken1SingleBlockFormat
 	 */
 	private int	sqrlNutTokenFormat = 2;
 

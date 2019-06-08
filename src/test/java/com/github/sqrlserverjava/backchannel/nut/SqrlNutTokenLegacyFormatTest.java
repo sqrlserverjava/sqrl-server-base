@@ -31,7 +31,7 @@ public class SqrlNutTokenLegacyFormatTest {
 	public void testNut_parse() throws Exception {
 		config.setBackchannelServletPath("http://davetest.com/sqrl");
 		final SqrlConfigOperations configOps = SqrlConfigOperationsFactory.get(config);
-		final SqrlNutTokenSingleBlockFormat nut = new SqrlNutTokenSingleBlockFormat(configOps, "Jxf-R1rq5bjAnbnHrYszww");
+		final SqrlNutToken1SingleBlockFormat nut = new SqrlNutToken1SingleBlockFormat(configOps, "Jxf-R1rq5bjAnbnHrYszww");
 		assertEquals(-1408237112, nut.getInetInt());
 		assertEquals(1521722339000L, nut.getIssuedTimestampMillis());
 		assertEquals(6, nut.getRandomInt());
@@ -41,13 +41,13 @@ public class SqrlNutTokenLegacyFormatTest {
 	@Test
 	public void testPack() throws Throwable {
 		final byte[] bytes = { 27, -78, -123, 54 };
-		final int actual = SqrlNutTokenSingleBlockFormat.pack(bytes);
+		final int actual = SqrlNutToken1SingleBlockFormat.pack(bytes);
 		assertEquals(464684342, actual);
 	}
 
 	@Test
 	public void testUnpack() throws Throwable {
-		final byte[] actual = SqrlNutTokenSingleBlockFormat.unpack(464684342);
+		final byte[] actual = SqrlNutToken1SingleBlockFormat.unpack(464684342);
 		ArrayAssert.assertEquals(new byte[] { 27, -78, -123, 54 }, actual);
 	}
 
@@ -58,7 +58,7 @@ public class SqrlNutTokenLegacyFormatTest {
 		final int nutValidityInSeconds = 1000;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final long nutIssuedTime = System.currentTimeMillis();
-		final SqrlNutTokenSingleBlockFormat nut = TestCaseSqrlNutHelper.buildValidSqrlNutTokenLegacyFormat(nutIssuedTime,
+		final SqrlNutToken1SingleBlockFormat nut = TestCaseSqrlNutHelper.buildValidSqrlNutTokenLegacyFormat(nutIssuedTime,
 				config);
 		final long expiresAt = nut.computeExpiresAt(config);
 		assertTrue(expiresAt > nutIssuedTime);
@@ -71,7 +71,7 @@ public class SqrlNutTokenLegacyFormatTest {
 		final int nutValidityInSeconds = 180;
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final long nutIssuedTime = System.currentTimeMillis();
-		final SqrlNutTokenSingleBlockFormat nut = TestCaseSqrlNutHelper.buildValidSqrlNutTokenLegacyFormat(nutIssuedTime,
+		final SqrlNutToken1SingleBlockFormat nut = TestCaseSqrlNutHelper.buildValidSqrlNutTokenLegacyFormat(nutIssuedTime,
 				config);
 		final long expiresAt = nut.computeExpiresAt(config);
 		assertTrue(expiresAt > nutIssuedTime);
@@ -90,7 +90,7 @@ public class SqrlNutTokenLegacyFormatTest {
 		config.setNutValidityInSeconds(nutValidityInSeconds);
 		final LocalDateTime nutIssuedAt = LocalDateTime.parse("2016-01-03T10:15:30");
 		final long tokenIssuedAt = nutIssuedAt.toEpochSecond(ZoneOffset.UTC);
-		final SqrlNutTokenSingleBlockFormat nut = TestCaseSqrlNutHelper.buildValidSqrlNutTokenLegacyFormat(tokenIssuedAt,
+		final SqrlNutToken1SingleBlockFormat nut = TestCaseSqrlNutHelper.buildValidSqrlNutTokenLegacyFormat(tokenIssuedAt,
 				config);
 		final long nutIssuedTime = nut.getIssuedTimestampMillis();
 		final long expiresAt = nut.computeExpiresAt(config);

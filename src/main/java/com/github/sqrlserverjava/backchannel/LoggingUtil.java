@@ -1,20 +1,20 @@
 package com.github.sqrlserverjava.backchannel;
 
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CHANNEL;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_COMMAND;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_IP;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.CLIENT_PARAM;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.COR;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.IDK;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.OPT_LIST;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.POLL_BROWSER_STATE;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.POLL_TRANSPORT;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.POLL_UUID;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.PROCESS;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.PROTOCOL_VERSION;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.SERVER_PARAM;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.SQRL_AGENT;
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.LogField.USER_AGENT;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.CHANNEL;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.CLIENT_COMMAND;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.CLIENT_IP;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.CLIENT_PARAM;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.COR;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.IDK;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.OPT_LIST;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.POLL_BROWSER_STATE;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.POLL_TRANSPORT;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.POLL_UUID;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.PROCESS;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.PROTOCOL_VERSION;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.SERVER_PARAM;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.SQRL_AGENT;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.LogField.USER_AGENT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,8 +40,8 @@ import com.github.sqrlserverjava.util.SqrlUtil;
  * @author Dave Badia
  *
  */
-public class SqrlClientRequestLoggingUtil { // TODO: rename
-	private static final Logger logger = LoggerFactory.getLogger(SqrlClientRequestLoggingUtil.class);
+public class LoggingUtil {
+	private static final Logger logger = LoggerFactory.getLogger(LoggingUtil.class);
 	private static final boolean LOG_EMPTY_FIELDS = false;
 	private static SqrlConfig sqrlConfig = null;
 
@@ -87,7 +87,7 @@ public class SqrlClientRequestLoggingUtil { // TODO: rename
 			.unmodifiableList(Arrays.asList(POLL_BROWSER_STATE, USER_AGENT, CLIENT_IP, SQRL_AGENT, POLL_TRANSPORT,
 					POLL_UUID, PROTOCOL_VERSION, IDK, OPT_LIST, CLIENT_PARAM, SERVER_PARAM));
 
-	private SqrlClientRequestLoggingUtil() {
+	private LoggingUtil() {
 		// util class
 	}
 
@@ -290,7 +290,7 @@ public class SqrlClientRequestLoggingUtil { // TODO: rename
 	}
 
 	public static void setSqrlConfig(final SqrlConfig sqrlConfig) {
-		SqrlClientRequestLoggingUtil.sqrlConfig = sqrlConfig;
+		LoggingUtil.sqrlConfig = sqrlConfig;
 	}
 
 }

@@ -15,12 +15,12 @@ public class SqrlNutTokenEmbeddedTest {
 		String correlator = "cQCw_mQLJlVOC74y83JtNMinfZ8r3wEUQWfy7JhuRWk";
 		String browserLoginUrl = "https://sqrljava.com:20000/sqrlexample/app";
 		SqrlConfigOperations configOps = TestCaseUtil.buildSqrlConfigOperations(TestCaseUtil.buildTestSqrlConfig());
-		SqrlNutTokenEmbedded nutToken = new SqrlNutTokenEmbedded(inetAddress, configOps, System.currentTimeMillis(),
+		SqrlNutToken2Embedded nutToken = new SqrlNutToken2Embedded(inetAddress, configOps, System.currentTimeMillis(),
 				correlator, browserLoginUrl);
 		String encoded = nutToken.asEncryptedBase64();
 		System.out.println(nutToken.asEncryptedBase64());
 
-		nutToken = new SqrlNutTokenEmbedded(configOps, encoded);
+		nutToken = new SqrlNutToken2Embedded(configOps, encoded);
 		System.out.println("issued=" + nutToken.getIssuedTimestampMillis());
 
 	}

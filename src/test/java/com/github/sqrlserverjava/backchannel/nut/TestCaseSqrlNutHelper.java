@@ -8,16 +8,16 @@ import com.github.sqrlserverjava.TestCaseUtil;
 import com.github.sqrlserverjava.exception.SqrlException;
 
 public class TestCaseSqrlNutHelper {
-	public static SqrlNutToken buildValidSqrlNut(long timestamp, SqrlConfig config)
+	public static SqrlNutToken0 buildValidSqrlNut(long timestamp, SqrlConfig config)
 			throws SqrlException, UnknownHostException {
-		final SqrlNutTokenSingleBlockFormat nut = new SqrlNutTokenSingleBlockFormat(getLocalHost(),
+		final SqrlNutToken1SingleBlockFormat nut = new SqrlNutToken1SingleBlockFormat(getLocalHost(),
 				TestCaseUtil.buildSqrlConfigOperations(config), timestamp);
 		return nut;
 	}
 
-	public static SqrlNutTokenSingleBlockFormat buildValidSqrlNutTokenLegacyFormat(long timestamp, SqrlConfig config)
+	public static SqrlNutToken1SingleBlockFormat buildValidSqrlNutTokenLegacyFormat(long timestamp, SqrlConfig config)
 			throws SqrlException, UnknownHostException {
-		final SqrlNutTokenSingleBlockFormat nut = new SqrlNutTokenSingleBlockFormat(getLocalHost(),
+		final SqrlNutToken1SingleBlockFormat nut = new SqrlNutToken1SingleBlockFormat(getLocalHost(),
 				TestCaseUtil.buildSqrlConfigOperations(config), timestamp);
 		return nut;
 	}

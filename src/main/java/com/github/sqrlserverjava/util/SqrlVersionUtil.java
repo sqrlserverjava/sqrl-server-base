@@ -1,6 +1,6 @@
 package com.github.sqrlserverjava.util;
 
-import static com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil.formatForLogging;
+import static com.github.sqrlserverjava.backchannel.LoggingUtil.formatForLogging;
 
 import java.util.ArrayList;
 import java.util.Collection;

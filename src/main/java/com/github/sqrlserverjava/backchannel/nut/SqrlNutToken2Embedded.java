@@ -32,8 +32,8 @@ import com.github.sqrlserverjava.util.SqrlUtil;
  * @author Dave Badia
  *
  */
-public class SqrlNutTokenEmbedded extends SqrlNutToken {
-	private static final Logger	logger		= LoggerFactory.getLogger(SqrlNutTokenEmbedded.class);
+public class SqrlNutToken2Embedded extends SqrlNutToken0 {
+	private static final Logger	logger		= LoggerFactory.getLogger(SqrlNutToken2Embedded.class);
 	private static final int	AES_KEY_SIZE_BITS		= 128;
 	/**
 	 * NIST recommends a 96 bit IV: https://csrc.nist.gov/publications/detail/sp/800-38d/final
@@ -59,7 +59,7 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 	private final String		base64UrlEncryptedNut;
 
 	// marshal to string
-	public SqrlNutTokenEmbedded(final InetAddress browserIPAddress, final SqrlConfigOperations configOperations,
+	public SqrlNutToken2Embedded(final InetAddress browserIPAddress, final SqrlConfigOperations configOperations,
 			final long timestamp, final String correlator, final String browserLoginUrl) throws SqrlException {
 		final SqrlConfig config = configOperations.getSqrlConfig();
 		this.issuedTimestamp = timestamp;
@@ -86,7 +86,7 @@ public class SqrlNutTokenEmbedded extends SqrlNutToken {
 	}
 
 	// unmarshal from string
-	public SqrlNutTokenEmbedded(final SqrlConfigOperations configOps, final String base64UrlEncryptedNut)
+	public SqrlNutToken2Embedded(final SqrlConfigOperations configOps, final String base64UrlEncryptedNut)
 			throws SqrlClientRequestProcessingException {
 		this.base64UrlEncryptedNut = base64UrlEncryptedNut;
 		final byte[] decoded = SqrlUtil.base64UrlDecodeDataFromSqrlClient(base64UrlEncryptedNut);

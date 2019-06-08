@@ -1,8 +1,5 @@
 package com.github.sqrlserverjava;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.sqrlserverjava.backchannel.SqrlClientRequestLoggingUtil;
+import com.github.sqrlserverjava.backchannel.LoggingUtil;
 import com.github.sqrlserverjava.enums.SqrlAuthenticationStatus;
 import com.github.sqrlserverjava.exception.SqrlException;
 import com.github.sqrlserverjava.exception.SqrlIllegalStateException;
@@ -49,7 +46,7 @@ public class SqrlServerOperations {
 	private final SqrlConfigOperations			configOperations;
 	private final SqrlPersistenceFactory		persistenceFactory;
 
-	private final SqrlBrowserFacingOperations	sqrlBrowserFacingOperations;
+	private final BrowserFacingOperations	sqrlBrowserFacingOperations;
 	private final SqrlClientFacingOperations	sqrlClientFacingOperations;
 
 	/**
@@ -65,10 +62,10 @@ public class SqrlServerOperations {
 		}
 		logger.info(VersionExtractor.extractDetailedBuildInfo(Module.BASE));
 		this.config = config;
-		SqrlClientRequestLoggingUtil.setSqrlConfig(config);
+		LoggingUtil.setSqrlConfig(config);
 		this.configOperations = SqrlConfigOperationsFactory.get(config);
 		this.persistenceFactory = configOperations.getSqrlPersistenceFactory();
-		this.sqrlBrowserFacingOperations = new SqrlBrowserFacingOperations(config, configOperations);
+		this.sqrlBrowserFacingOperations = new BrowserFacingOperations(config, configOperations);
 		this.sqrlClientFacingOperations = new SqrlClientFacingOperations(config, configOperations);
 
 		// It's bad form to pass "this" to another object from our constructor since technically, we aren't
@@ -128,7 +125,7 @@ public class SqrlServerOperations {
 							+ " was not an instance of ClientAuthStateUpdater");
 				}
 				final SqrlClientAuthStateUpdater clientAuthStateUpdater = (SqrlClientAuthStateUpdater) object;
-				final SqrlAuthStateMonitor authStateMonitor = new SqrlAuthStateMonitor(config, serverOperations, clientAuthStateUpdater);
+				final AuthStateMonitor authStateMonitor = new AuthStateMonitor(config, serverOperations, clientAuthStateUpdater);
 
 				clientAuthStateUpdater.initSqrl(serverOperations, config, authStateMonitor);
 				final long intervalInMilis = config.getAuthSyncCheckInMillis();
@@ -144,7 +141,7 @@ public class SqrlServerOperations {
 		authStateMonitorInitialized.set(true);
 	}
 
-	public SqrlBrowserFacingOperations browserFacingOperations() {
+	public BrowserFacingOperations browserFacingOperations() {
 		return sqrlBrowserFacingOperations;
 	}
 
@@ -161,29 +158,6 @@ public class SqrlServerOperations {
 		SqrlServerOperations.sqrlServiceExecutor = sqrlServiceExecutor;
 	}
 
-	// TODO: remove
-	static void storeBrowserFacingUrlAndContextPathOLD(final HttpServletRequest request) throws SqrlException {
-		URL currentRequestBrowserFacingUri;
-		try {
-			currentRequestBrowserFacingUri = new URI(request.getRequestURL().toString())
-					.resolve(request.getContextPath()).toURL();
-		} catch (final URISyntaxException | MalformedURLException e) {
-			throw new SqrlException(e, "Error computing currentRequestBrowserFacingUri");
-		}
-		if (browserFacingUrlAndContextPath == null) {
-			logger.debug("Setting browserFacingUrlAndContextPath to {}", currentRequestBrowserFacingUri.toString());
-			browserFacingUrlAndContextPath = currentRequestBrowserFacingUri;
-		} else if (!browserFacingUrlAndContextPath.equals(currentRequestBrowserFacingUri)) {
-			throw new SqrlException(SqrlUtil.buildString(
-					"Found multiple browser facing login paths which is not currently supported: ",
-					browserFacingUrlAndContextPath.toString(), " and ", currentRequestBrowserFacingUri.toString()));
-		}
-	}
-
-	// TODO: remove
-	static URL getBrowserFacingUrlAndContextPathOLD() {
-		return browserFacingUrlAndContextPath;
-	}
 
 	// @formatter:off
 	/*

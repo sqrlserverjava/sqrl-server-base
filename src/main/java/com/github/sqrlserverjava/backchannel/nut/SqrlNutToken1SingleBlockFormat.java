@@ -42,8 +42,8 @@ import com.github.sqrlserverjava.util.SqrlUtil;
  * @deprecated SqrlNutTokenEmbedded is preferred
  */
 @Deprecated
-public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
-	private static final Logger	logger				= LoggerFactory.getLogger(SqrlNutTokenSingleBlockFormat.class);
+public class SqrlNutToken1SingleBlockFormat extends SqrlNutToken0 {
+	private static final Logger	logger				= LoggerFactory.getLogger(SqrlNutToken1SingleBlockFormat.class);
 
 	private static final int	IPV6_TO_PACK_BYTES	= 4;
 	static final int			FORMAT_ID			= 1;
@@ -67,7 +67,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	 * @deprecated SqrlNutTokenEmbedded is preferred
 	 */
 	@Deprecated
-	SqrlNutTokenSingleBlockFormat(final InetAddress browserIp, final SqrlConfigOperations configOps, 
+	SqrlNutToken1SingleBlockFormat(final InetAddress browserIp, final SqrlConfigOperations configOps, 
 			final long timestamp) throws SqrlException {
 		this.inetInt = pack(browserIp.getAddress());
 		// Convert the timestamp param from millis precision to second precision
@@ -102,12 +102,12 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 		}
 	}
 
-	SqrlNutTokenSingleBlockFormat(final SqrlConfigOperations configOps, final String sqBase64EncryptedNut)
+	SqrlNutToken1SingleBlockFormat(final SqrlConfigOperations configOps, final String sqBase64EncryptedNut)
 			throws SqrlClientRequestProcessingException {
 		this.base64UrlEncryptedNut = sqBase64EncryptedNut;
 		// Verify the format ID which is the first byte of decoded data
 		final byte[] nutBytes = SqrlUtil.base64UrlDecodeDataFromSqrlClient(sqBase64EncryptedNut);
-		verifyFormatId(SqrlNutToken.buildFormatId(nutBytes[0]));
+		verifyFormatId(SqrlNutToken0.buildFormatId(nutBytes[0]));
 		// Decrypt the nut
 		byte[] cleartextBytes = null;
 		try {
@@ -225,7 +225,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 	 * always be 0000.
 	 *
 	 * @return the millis time at which the Nut token was created with <b>second precision</b>. For example, if
-	 *         {@link SqrlNutTokenSingleBlockFormat#Nut(int, SqrlConfig, int, long, int)} was called with a timestamp of
+	 *         {@link SqrlNutToken1SingleBlockFormat#Nut(int, SqrlConfig, int, long, int)} was called with a timestamp of
 	 *         <code>1463948680679</code>, then this would return <code>1463948680000</code>
 	 *
 	 */
@@ -309,7 +309,7 @@ public class SqrlNutTokenSingleBlockFormat extends SqrlNutToken {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		final SqrlNutTokenSingleBlockFormat other = (SqrlNutTokenSingleBlockFormat) obj;
+		final SqrlNutToken1SingleBlockFormat other = (SqrlNutToken1SingleBlockFormat) obj;
 		if (inetInt != other.inetInt) {
 			return false;
 		}

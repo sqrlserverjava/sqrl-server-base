@@ -16,10 +16,10 @@ public interface SqrlClientAuthStateUpdater {
 	 * need
 	 */
 	public void initSqrl(SqrlServerOperations sqrlServerOperations, final SqrlConfig sqrlConfig,
-			SqrlAuthStateMonitor sqrlAuthStateMonitor);
+			AuthStateMonitor sqrlAuthStateMonitor);
 
 	/**
-	 * Invoked by {@link SqrlAuthStateMonitor} when it is time to respond to a browsers polling request with an update
+	 * Invoked by {@link AuthStateMonitor} when it is time to respond to a browsers polling request with an update
 	 */
 	public void pushStatusUpdateToBrowser(final String browserId, final SqrlAuthenticationStatus oldAuthStatus,
 			final SqrlAuthenticationStatus newAuthStatus);

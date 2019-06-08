@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import com.github.sqrlserverjava.SqrlAuthPageData;
+import com.github.sqrlserverjava.AuthPageData;
 import com.github.sqrlserverjava.SqrlConfig;
 import com.github.sqrlserverjava.SqrlServerOperations;
 import com.github.sqrlserverjava.TestCaseUtil;
@@ -53,7 +53,7 @@ public class SqrlServerOperationsQrCodeTest {
 		// Emulate the login page generation
 		final MockHttpServletRequest loginPageRequest = TestCaseUtil.buildMockRequest(loginRequestUrl);
 		final MockHttpServletResponse loginPageResponse = new MockHttpServletResponse();
-		final SqrlAuthPageData authPageData = sqrlServerOps.browserFacingOperations()
+		final AuthPageData authPageData = sqrlServerOps.browserFacingOperations()
 				.prepareSqrlAuthPageData(loginPageRequest, loginPageResponse, 250);
 		assertNotNull(authPageData);
 		assertNotNull(authPageData.getQrCodeOutputStream());
