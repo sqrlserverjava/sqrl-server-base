@@ -25,16 +25,16 @@ Interoperability testing is ONLY to be performed against clients that are under 
 
 | SQRL Client  | Tested Version |Site                |Chrome        |Firefox|IE |Edge|Opera
 | ------------- | ------------- | ------------------- |------ |------ |------ |------ |------ |
-| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)     | build 71  |[CPS](https://sqrljava.com:20000/sqrlexample/login)         |&#9989;|&#9989;|&#9989;|&#9989;|&#9989;
-| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)       | build 71  |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989;|&#9989;|&#9989;|&#9989;|&#9989;
-| [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 0.15.0 |[CPS](https://sqrljava.com:20000/sqrlexample/login) &#185;     |&#9989; |&#9989;  |? |&#9989;  |&#9989;  |
-| [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 0.15.0 |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989; |&#9989; |?|&#9989; |&#9989; |
+| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)     | #72  |[CPS](https://sqrljava.com:20000/sqrlexample/login)         |&#9989;|&#9989;|&#9989;|&#9989;|&#9989;
+| [GRC Windows](https://sqrl.grc.com/forums/grcs-sqrl-app.9/)       | #72 |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989;|&#9989;|&#9989;|&#9989;|&#9989;
+| [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 1.5.0 |[CPS](https://sqrljava.com:20000/sqrlexample/login) &#185;     |&#9989; |&#9989;  |? |&#9989;  |&#9989;  |
+| [Android](https://sqrl.grc.com/forums/daniel-perssons-android-app.11/)           | 1.5.0 |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989; |&#9989; |?|&#9989; |&#9989; |
 | [iOS](https://sqrl.grc.com/forums/jeff-arthurs-ios-app.10/)           | ? |[CPS](https://sqrljava.com:20000/sqrlexample/login) &#185;      |&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |?|&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |
 | [iOS](https://sqrl.grc.com/forums/jeff-arthurs-ios-app.10/)           | ? |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |?|&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |&#10060; [#4](https://github.com/sqrlserverjava/sqrl-server-base/issues/4) |
 | [Linux](https://sqrl.grc.com/forums/bert-puts-native-app-for-linux.18)           | ? |[CPS](https://sqrljava.com:20000/sqrlexample/login)     |&#10060;[#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6) |&#10060;[#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6) |? |&#10060;[#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6) |&#10060;[#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6) |
 | [Linux](https://sqrl.grc.com/forums/bert-puts-native-app-for-linux.18)           | ? |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#10060; [#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6)|&#10060;[#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6)|?|&#10060;[#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6)|&#10060;[#6](https://github.com/sqrlserverjava/sqrl-server-base/issues/6)
-| [WebExtension ](https://sqrl.grc.com/forums/jaaps-chrome-firefox-webextension.23/)           | ? |[CPS](https://sqrljava.com:20000/sqrlexample/login)     |&#9989;  |&#9989; |n/a |n/a |n/a |
-| [WebExtension ](https://sqrl.grc.com/forums/jaaps-chrome-firefox-webextension.23/)          | ? |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989; |&#9989;|n/a |n/a |n/a |
+| [WebExtension ](https://sqrl.grc.com/forums/jaaps-chrome-firefox-webextension.23/)           | Aug 2019 |[CPS](https://sqrljava.com:20000/sqrlexample/login)     |&#9989;  |&#9989; |n/a |n/a |n/a |
+| [WebExtension ](https://sqrl.grc.com/forums/jaaps-chrome-firefox-webextension.23/)          | Aug 2019 |[No CPS](https://sqrljava.com:20000/sqrlexample-nocps/login)   |&#9989; |&#9989;|n/a |n/a |n/a |
 
 
 
