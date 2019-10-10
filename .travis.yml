@@ -1,7 +1,7 @@
 language: java
 script: mvn clean install -Dmaven.javadoc.skip=false
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 env:
   global:
